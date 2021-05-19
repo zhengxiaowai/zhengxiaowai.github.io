@@ -1,0 +1,158 @@
+<html>
+    <!DOCTYPE html>
+<html lang="zh">
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<meta http-equiv="X-UA-Compatible" content="ie=edge">
+
+	
+
+	<title>「译」Python 项目应该都有什么？ | 正小歪的博客</title>
+	<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1">
+	<link rel="shortcut icon" href="/favicon.ico">	
+	<link rel="stylesheet" href="/css/bootstrap.min.css">
+	<link rel="stylesheet" href="/css/style.css">
+    <script async src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+<link rel="stylesheet" href="/css/prism.css" type="text/css"></head>
+
+    <body>
+        <div class="root">
+            <div class='topnavs container fixed-690'>
+    <nav class="navbar navbar-expand-lg navbar-light">
+        <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent" aria-controls="navbarSupportedContent"
+            aria-expanded="false" aria-label="Toggle navigation">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse" id="navbarSupportedContent">
+            <ul class="navbar-nav mr-auto">
+                
+                    <li class="nav-item">
+                        <a class="nav-link" href="/">
+                            首页
+                        </a>
+                    </li>
+                    
+                    <li class="nav-item">
+                        <a class="nav-link" href="/categories">
+                            分类
+                        </a>
+                    </li>
+                    
+                    <li class="nav-item">
+                        <a class="nav-link" href="/archives">
+                            归档
+                        </a>
+                    </li>
+                    
+            </ul>
+        </div>
+    </nav>
+</div>
+                <section class="container mainbody fixed-690">
+                    <div class="post">
+    <div class="post-title">
+        <h1>
+            「译」Python 项目应该都有什么？ 
+        </h1>
+
+        
+        <div class="post-title-views">
+            <span id="busuanzi_container_page_pv">
+                本文总阅读量 <span id="busuanzi_value_page_pv"></span> 次
+            </span>
+        </div>
+        
+    </div>
+    <div class="post-content markdown">
+        <blockquote>
+<p><a href="https://vladcalin.github.io/what-every-python-project-should-have.html#what-every-python-project-should-have" target="_blank" rel="noopener">原文地址</a></p>
+</blockquote>
+<p>Python 语言在过去的几年有着突飞猛进的发展，社区也在快速发展。在发展过程中，社区中出现了许多工具保持着资源的结构性和可获取性。在这篇文章中，我将提供一个简短列表，让每个 Python 项目中都具有可访问性和可维护性。</p>
+<a id="more"></a>
+<h2 id="requirements-txt"><a href="#requirements-txt" class="headerlink" title="requirements.txt"></a>requirements.txt</h2><p>首先， <code>requirements.txt</code> 在安装项目时候是十分重要的，通常是一个纯文本文件，通过 <code>pip</code> 安装，每行一个项目的依赖。</p>
+<p>真是简单又实用。</p>
+<p>你也可以有多个用于不同目的 <code>requirements.txt</code>。例如，<code>requirements.txt</code> 是让项目正常启动的依赖，<code>requirements_dev.txt</code> 是用于开发模式的依赖，<code>requirements_docs.txt</code> 是生成文档的依赖（像 <code>Sphinx</code> 需要的主题）</p>
+<h2 id="setup-py"><a href="#setup-py" class="headerlink" title="setup.py"></a>setup.py</h2><p><code>setup.py</code> 文件在通过 <code>pip</code> 安装时候时候是十分重要的。编写容易，很好的可配置性并且可以处理很多事情，例如导入，项目元数据，更新源，安装依赖项等等。</p>
+<p>可以查看 <a href="https://setuptools.readthedocs.io/en/latest/" target="_blank" rel="noopener">setuptools</a> 文档获取更多的信息。</p>
+<h2 id="正确的项目结构"><a href="#正确的项目结构" class="headerlink" title="正确的项目结构"></a>正确的项目结构</h2><p>项目结构至关重要。有了一个组织良好的结构，它会更容易组织的东西，找到某些源文件，并鼓励其他人贡献。</p>
+<p>一个项目目录应具有类似的结构</p>
+<pre><code>root/
+        docs/
+        tests/
+        mymodule/
+        scripts/
+        requirements.txt
+        setup.py
+        README
+        LICENSE
+</code></pre><p>当然，这不是组织项目的唯一方法，但这肯定是最常用的模板。</p>
+<h2 id="测试"><a href="#测试" class="headerlink" title="测试"></a>测试</h2><p>单元测试对项目十分重要，可以保证代码的稳定性。我推荐 <code>unittest</code> 模块，因为它是内置的，并且足够灵活，完成正确工作。</p>
+<p>还有其他可用于测试项目的库，例如 <code>test.py</code> 或 <code>nose</code>。</p>
+<h2 id="文档"><a href="#文档" class="headerlink" title="文档"></a>文档</h2><p>如果你开发一个项目，我确信你不只是为你自己写。其他人也要必须知道如何使用你的项目。即使你只是为自己编写的项目（虽然是开源的目的），但是一段时间后不开发后，你一定不会记得你的代码中发生的任何事情（或API）。</p>
+<p>因此，为了实现可重用的代码，你应该：</p>
+<ul>
+<li>设计一个简单的API，易于使用和记忆</li>
+<li>API应该足够灵活，容易配置</li>
+<li>记录相关使用例子</li>
+<li>例子不要追求 100% ，最合适的是覆盖 80％ 。</li>
+</ul>
+<p>为了充分的记录你的代码，你应该使用特殊的工具开完成文档工作，例如 <code>Sphinx</code> 或者 <code>mkdocs</code> ，所以你可以使用一个流行的标记语言（rst或markdown）来生成具有适当引用链接的漂亮的文档。</p>
+<h2 id="结论"><a href="#结论" class="headerlink" title="结论"></a>结论</h2><p>在熟悉上述话题之后，一定能够生成符合社区标准的漂亮的结构化项目和库。不要忘记总是使用PEP-8！</p>
+ 
+    </div>
+    <div class="post-foot">
+        <div id="disqus_thread"></div>
+    </div>
+</div>
+
+
+                </section>
+                <footer class="container fixed-690 footer">
+    <div>
+        <span>Power by <a href="https://hexo.io">Hexo</a></span>
+    </div>
+    <div>
+        <span>Theme <a href="https://github.com/zhengxiaowai/hexo-theme-lessless">lessless</a></span>
+    </div>
+        
+            
+<div>
+    <span id="hexiangyutest_container_site_pv">
+    PV: <span id="busuanzi_value_site_pv"></span>
+    </span>
+    <span id="busuanzi_container_site_uv">
+    UV: <span id="busuanzi_value_site_uv"></span>
+    </span>
+</div>
+
+        
+        
+            <div>
+    <span><a href="https://beian.miit.gov.cn/#/Integrated/index" target="_blank">闽ICP备17000267号-1</a></span>
+</div>
+        
+</footer>
+        </div>
+        
+<script src="/js/jquery-3.2.1.slim.min.js"></script>
+<script src="/js/popper.min.js"></script>
+<script src="/js/bootstrap.min.js"></script>
+
+
+    
+<script type="text/javascript">
+    var disqus_config = function () {
+        this.page.url = 'http://hexiangyu.me/2017/01/30/what-every-python-project-should-have/';
+        this.page.identifier = '2017/01/30/what-every-python-project-should-have/';
+        this.page.title = '「译」Python 项目应该都有什么？';
+    };
+    var d = document, s = d.createElement('script');
+    s.src = '//hexiangyus.disqus.com/embed.js';
+    s.setAttribute('data-timestamp', '' + +new Date());
+    (d.head || d.body).appendChild(s);
+</script>
+
+
+    </body>
+</html>

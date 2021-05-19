@@ -1,0 +1,146 @@
+<html>
+    <!DOCTYPE html>
+<html lang="zh">
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<meta http-equiv="X-UA-Compatible" content="ie=edge">
+
+	
+
+	<title>MySQL 排序机制 | 正小歪的博客</title>
+	<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1">
+	<link rel="shortcut icon" href="/favicon.ico">	
+	<link rel="stylesheet" href="/css/bootstrap.min.css">
+	<link rel="stylesheet" href="/css/style.css">
+    <script async src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+<link rel="stylesheet" href="/css/prism.css" type="text/css"></head>
+
+    <body>
+        <div class="root">
+            <div class='topnavs container fixed-690'>
+    <nav class="navbar navbar-expand-lg navbar-light">
+        <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent" aria-controls="navbarSupportedContent"
+            aria-expanded="false" aria-label="Toggle navigation">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse" id="navbarSupportedContent">
+            <ul class="navbar-nav mr-auto">
+                
+                    <li class="nav-item">
+                        <a class="nav-link" href="/">
+                            首页
+                        </a>
+                    </li>
+                    
+                    <li class="nav-item">
+                        <a class="nav-link" href="/categories">
+                            分类
+                        </a>
+                    </li>
+                    
+                    <li class="nav-item">
+                        <a class="nav-link" href="/archives">
+                            归档
+                        </a>
+                    </li>
+                    
+            </ul>
+        </div>
+    </nav>
+</div>
+                <section class="container mainbody fixed-690">
+                    <div class="post">
+    <div class="post-title">
+        <h1>
+            MySQL 排序机制 
+        </h1>
+
+        
+        <div class="post-title-views">
+            <span id="busuanzi_container_page_pv">
+                本文总阅读量 <span id="busuanzi_value_page_pv"></span> 次
+            </span>
+        </div>
+        
+    </div>
+    <div class="post-content markdown">
+        <p>在 MySQL 中经常使用 Order by 对数据进行排序，其实排序这个行为是比较消耗 IO 的过程，有时候需要回表多次才可以完成排序，所以在任何时候都需要对排序的原理要心知肚明。</p>
+<p>在 MySQL 中排序按照是否使用外部存储可以分为，内存排序和外部排序两种。根据排序所需的字段可以分成 rowid 排序和全字段排序两种。</p>
+<p>在 MySQL 执行排序的时候会分配一块内存 sort_buffer，MySQL 把需要排序的字段放入这个 sort_buffer 中，让，后在 sort_buffer 执行排序的过程，如果 sort_buffer 大小不够，就要使用外部存储。</p>
+<a id="more"></a>
+<p>一般来说 sort_buffer_size 的大小取决于排序的是使用快排（内存排序）还是归并排序（外部排序）。</p>
+<p><img src="https://static.zhengxiaowai.cc/2019-04-21-132106.jpg" alt=""></p>
+<p>以上的排序过程都是使用全字段进行排序的，但是如果 sort_buffer 不足以存放所有排序字段，那么这时候就需要用到 rowid 排序。</p>
+<p>对于 rowid 排序支取 id 和需要排序的字段放入 sort_buffer 中，在 sort_buffer 开始对字段进行排序。根据排序完成后的 id 再回表找到其他字段组合成结果集返回。</p>
+<p><img src="https://static.zhengxiaowai.cc/2019-04-21-132653.jpg" alt=""></p>
+<p>对于 rowid 排序和全字段排序最大差别在于多一次回表的过程，这也是一次 io 消耗过程（不一定是随机读过程）。同时扫描次数 rowid 会多余全字段排序 n 行，这个 n 就是第二次回表过程根据 id 找到的行的数量。</p>
+<p>对于 MySQL 来说如果内存够，就要多利用内存，尽量减少磁盘访问，只有分配的内存不够用的时候才会使用 rowid 排序。</p>
+<p>那么，这个过程如何优化？我们可以发现优化的地方有两个，一个是排序所消耗的时间，一个是回表再次读取的时间。所以优化就可以根据这两个来。</p>
+<p>对于回表这个操作经常和数据量有关系没有什么好办法，一种比较常用的方法就是建立复合索引以减少排序所耗费的时间。如果再 order by 时候字段满足最左匹配原则，那么这时候第一次从表加载到 sort_buffer 中本身就有序的，那么这时候可以直接当做结果返回了，就不需要排序了。</p>
+<p>最后，使用 explain 可以分析 SQL 的排序方式：</p>
+<ul>
+<li>Using index：覆盖索引</li>
+<li>Using filesort：使用外部排序</li>
+<li>没有 Using index 和 Using filesort：使用联合索引</li>
+</ul>
+<h2 id="参考"><a href="#参考" class="headerlink" title="参考"></a>参考</h2><ul>
+<li>极客时间《MySQL实战45讲》：“order by” 是怎么工作的？</li>
+</ul>
+ 
+    </div>
+    <div class="post-foot">
+        <div id="disqus_thread"></div>
+    </div>
+</div>
+
+
+                </section>
+                <footer class="container fixed-690 footer">
+    <div>
+        <span>Power by <a href="https://hexo.io">Hexo</a></span>
+    </div>
+    <div>
+        <span>Theme <a href="https://github.com/zhengxiaowai/hexo-theme-lessless">lessless</a></span>
+    </div>
+        
+            
+<div>
+    <span id="hexiangyutest_container_site_pv">
+    PV: <span id="busuanzi_value_site_pv"></span>
+    </span>
+    <span id="busuanzi_container_site_uv">
+    UV: <span id="busuanzi_value_site_uv"></span>
+    </span>
+</div>
+
+        
+        
+            <div>
+    <span><a href="https://beian.miit.gov.cn/#/Integrated/index" target="_blank">闽ICP备17000267号-1</a></span>
+</div>
+        
+</footer>
+        </div>
+        
+<script src="/js/jquery-3.2.1.slim.min.js"></script>
+<script src="/js/popper.min.js"></script>
+<script src="/js/bootstrap.min.js"></script>
+
+
+    
+<script type="text/javascript">
+    var disqus_config = function () {
+        this.page.url = 'http://hexiangyu.me/2019/04/21/mysql-order-by-md/';
+        this.page.identifier = '2019/04/21/mysql-order-by-md/';
+        this.page.title = 'MySQL 排序机制';
+    };
+    var d = document, s = d.createElement('script');
+    s.src = '//hexiangyus.disqus.com/embed.js';
+    s.setAttribute('data-timestamp', '' + +new Date());
+    (d.head || d.body).appendChild(s);
+</script>
+
+
+    </body>
+</html>

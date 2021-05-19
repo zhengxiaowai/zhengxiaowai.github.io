@@ -1,0 +1,168 @@
+<html>
+    <!DOCTYPE html>
+<html lang="zh">
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<meta http-equiv="X-UA-Compatible" content="ie=edge">
+
+	
+
+	<title>「译」把项目从 Dep 迁移到 Go Modules | 正小歪的博客</title>
+	<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1">
+	<link rel="shortcut icon" href="/favicon.ico">	
+	<link rel="stylesheet" href="/css/bootstrap.min.css">
+	<link rel="stylesheet" href="/css/style.css">
+    <script async src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+<link rel="stylesheet" href="/css/prism.css" type="text/css"></head>
+
+    <body>
+        <div class="root">
+            <div class='topnavs container fixed-690'>
+    <nav class="navbar navbar-expand-lg navbar-light">
+        <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent" aria-controls="navbarSupportedContent"
+            aria-expanded="false" aria-label="Toggle navigation">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse" id="navbarSupportedContent">
+            <ul class="navbar-nav mr-auto">
+                
+                    <li class="nav-item">
+                        <a class="nav-link" href="/">
+                            首页
+                        </a>
+                    </li>
+                    
+                    <li class="nav-item">
+                        <a class="nav-link" href="/categories">
+                            分类
+                        </a>
+                    </li>
+                    
+                    <li class="nav-item">
+                        <a class="nav-link" href="/archives">
+                            归档
+                        </a>
+                    </li>
+                    
+            </ul>
+        </div>
+    </nav>
+</div>
+                <section class="container mainbody fixed-690">
+                    <div class="post">
+    <div class="post-title">
+        <h1>
+            「译」把项目从 Dep 迁移到 Go Modules 
+        </h1>
+
+        
+        <div class="post-title-views">
+            <span id="busuanzi_container_page_pv">
+                本文总阅读量 <span id="busuanzi_value_page_pv"></span> 次
+            </span>
+        </div>
+        
+    </div>
+    <div class="post-content markdown">
+        <p><a href="http://elliot.land/post/migrating-projects-from-dep-to-go-modules" target="_blank" rel="noopener">原文地址</a></p>
+<p>Go Modules 是 Go 管理的未来方向。已经在 Go 1.11 中可以试用，将会是 Go 1.13 中的默认行为。</p>
+<p>我不会在这篇文章中描述包管理工具的工作流程。我会主要讨论的是如何把现有的项目中 dep 迁移的 Go Module。</p>
+<a id="more"></a>
+<p>在我的实例中，我会使用一个私有的仓库地址 <code>github.com/kuinta/luigi</code> ，它是使用 Go 语言编写，在好几个项目中被使用，是一个绝佳的候选人。</p>
+<p>首先，我们需要初始化 Module：</p>
+<pre class=" language-shell"><code class="language-shell">cd github.com/kounta/luigi
+go mod init github.com/kounta/luigi
+</code></pre>
+<p>完成后只会有两行输出：</p>
+<pre class=" language-shell"><code class="language-shell">go: create now go.mod: module github.com/kounta/luigi
+go: copying requirments from Gopkg.lock
+</code></pre>
+<p>是的，这样就对了。这样就已经完成从 <code>dep</code> 迁移了。</p>
+<p>现在你只要看一眼新生成的文件 <code>go.mod</code> 就像下面这样：</p>
+<pre><code>module github.com/kounta/luigi
+
+go 1.12
+
+require (
+   github.com/elliotchance/tf v1.5.0
+   github.com/gin-gonic/gin v1.3.0
+   github.com/go-redis/redis v6.15.0+incompatible
+)
+</code></pre><p>其实在 <code>require</code> 中还有更多的内容，为了保持整洁我把他们删除了。</p>
+<p>就像 <code>dep</code> 区分 <code>toml</code> 和 <code>lock</code> 文件一样。我们需要生成 <code>go.sum</code> 文件，只要执行：</p>
+<pre class=" language-shell"><code class="language-shell">go build
+</code></pre>
+<p>现在你可以删除 <code>Gopkg.lock</code> 和 <code>Gopkg.toml</code> 文件，然后提交 <code>go.mod</code> 和 <code>go.sum</code> 文件。</p>
+<h2 id="Travis-CI"><a href="#Travis-CI" class="headerlink" title="Travis CI"></a>Travis CI</h2><p>如果你使用 Travis CI，你需要在 Go 1.13 之前通过设置环境变量来启用该功能。</p>
+<pre><code>GO111MODULE=on
+</code></pre><h2 id="私有仓库"><a href="#私有仓库" class="headerlink" title="私有仓库"></a>私有仓库</h2><p>如果你要导入私有仓库，你可以会发现这个错误：</p>
+<pre><code>invalid module version &quot;v6.5.0&quot;: unknown revision v6.5.0
+</code></pre><p>这是一个误导。它真正想说的，无法识别这个 URL (在这里是指的是 github.com)。无法找到这个仓库是因为 Github 没有权限确认仓库的存在。</p>
+<p>修复这个问题也很简单：</p>
+<ol>
+<li>登录 Github 账号，然后到 Setting -&gt;  Personal access tokens</li>
+<li>创建一个有访问私有仓库权限的 token</li>
+<li>然后执行</li>
+</ol>
+<pre class=" language-shell"><code class="language-shell">export GITHUB_TOKEN=xxx
+
+git config --global url."https://${GITHUB_TOKEN}:x-oauth-basic@github.com/kounta".insteadOf "https://github.com/kounta"
+</code></pre>
+ 
+    </div>
+    <div class="post-foot">
+        <div id="disqus_thread"></div>
+    </div>
+</div>
+
+
+                </section>
+                <footer class="container fixed-690 footer">
+    <div>
+        <span>Power by <a href="https://hexo.io">Hexo</a></span>
+    </div>
+    <div>
+        <span>Theme <a href="https://github.com/zhengxiaowai/hexo-theme-lessless">lessless</a></span>
+    </div>
+        
+            
+<div>
+    <span id="hexiangyutest_container_site_pv">
+    PV: <span id="busuanzi_value_site_pv"></span>
+    </span>
+    <span id="busuanzi_container_site_uv">
+    UV: <span id="busuanzi_value_site_uv"></span>
+    </span>
+</div>
+
+        
+        
+            <div>
+    <span><a href="https://beian.miit.gov.cn/#/Integrated/index" target="_blank">闽ICP备17000267号-1</a></span>
+</div>
+        
+</footer>
+        </div>
+        
+<script src="/js/jquery-3.2.1.slim.min.js"></script>
+<script src="/js/popper.min.js"></script>
+<script src="/js/bootstrap.min.js"></script>
+
+
+    
+<script type="text/javascript">
+    var disqus_config = function () {
+        this.page.url = 'http://hexiangyu.me/2019/03/25/migrating-projects-from-dep-to-go-modules/';
+        this.page.identifier = '2019/03/25/migrating-projects-from-dep-to-go-modules/';
+        this.page.title = '「译」把项目从 Dep 迁移到 Go Modules';
+    };
+    var d = document, s = d.createElement('script');
+    s.src = '//hexiangyus.disqus.com/embed.js';
+    s.setAttribute('data-timestamp', '' + +new Date());
+    (d.head || d.body).appendChild(s);
+</script>
+
+
+    </body>
+</html>

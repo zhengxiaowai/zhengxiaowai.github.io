@@ -1,0 +1,205 @@
+<html>
+    <!DOCTYPE html>
+<html lang="zh">
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<meta http-equiv="X-UA-Compatible" content="ie=edge">
+
+	
+
+	<title>Go 语言中 Namespace 用法 | 正小歪的博客</title>
+	<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1">
+	<link rel="shortcut icon" href="/favicon.ico">	
+	<link rel="stylesheet" href="/css/bootstrap.min.css">
+	<link rel="stylesheet" href="/css/style.css">
+    <script async src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+<link rel="stylesheet" href="/css/prism.css" type="text/css"></head>
+
+    <body>
+        <div class="root">
+            <div class='topnavs container fixed-690'>
+    <nav class="navbar navbar-expand-lg navbar-light">
+        <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent" aria-controls="navbarSupportedContent"
+            aria-expanded="false" aria-label="Toggle navigation">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse" id="navbarSupportedContent">
+            <ul class="navbar-nav mr-auto">
+                
+                    <li class="nav-item">
+                        <a class="nav-link" href="/">
+                            首页
+                        </a>
+                    </li>
+                    
+                    <li class="nav-item">
+                        <a class="nav-link" href="/categories">
+                            分类
+                        </a>
+                    </li>
+                    
+                    <li class="nav-item">
+                        <a class="nav-link" href="/archives">
+                            归档
+                        </a>
+                    </li>
+                    
+            </ul>
+        </div>
+    </nav>
+</div>
+                <section class="container mainbody fixed-690">
+                    <div class="post">
+    <div class="post-title">
+        <h1>
+            Go 语言中 Namespace 用法 
+        </h1>
+
+        
+        <div class="post-title-views">
+            <span id="busuanzi_container_page_pv">
+                本文总阅读量 <span id="busuanzi_value_page_pv"></span> 次
+            </span>
+        </div>
+        
+    </div>
+    <div class="post-content markdown">
+        <p>总所周知 Docker 最早诞生于 Linux 平台，利用的是 Linux LXC 技术作为基础。Docker 作为一种 “轻量级虚拟机” 跑在通用操作系统中，那么势必就要对容器进行隔离，保证在宿主机内的独立性。</p>
+<a id="more"></a>
+<h2 id="Namespace-Overview"><a href="#Namespace-Overview" class="headerlink" title="Namespace Overview"></a>Namespace Overview</h2><p>在 Linux Kernel 中有一组名为 Namespace 的系统调用 API。主要作用是封装了全局的系统资源的调用分配，在一个进程中隔离了其他进程的可见性，让自己 “拥有” 整个计算机的资源的能力。一个典型的用途就是容器的实现。</p>
+<p>namespace 一种只有 4 个 API：</p>
+<ul>
+<li>clone：创建一个隔离的进程，可以通过参数控制所拥有的资源</li>
+<li>setns：允许一个进程到现有的 namespace</li>
+<li>unshare：从现有 namespace 中移除一个进程</li>
+<li>ioctl：用法发现 namespace 信息</li>
+</ul>
+<p>接下来主要讨论如何创建一个具有隔离性的进程，也就是 clone 这个系统调用的用法。</p>
+<p>clone 创建一个新的 namespace（进程），可以对其控制几个方面的资源（通过 CLONE_NEW* 这系列参数）。</p>
+<ul>
+<li>IPC：CLONE_NEWIPC，System V IPC 和 POSIX message queue</li>
+<li>Network：CLONE_NEWNET，网络设备等</li>
+<li>Mount：CLONE_NEWNS，挂载点</li>
+<li>PID：CLONE_NEWPID，进程的 ID</li>
+<li>User：CLONE_NEWUSER：用户或组的 ID</li>
+<li>UTS：CLONE_NEWUTS：Hostname 和 NIS domain</li>
+</ul>
+<p>这里 CLONE_NEWNS 比较奇特，这是最早的一个参数，后面也想不到还有更多粒度的资源控制，所以这是一个历史遗留问题。</p>
+<h2 id="Namespace-Usage"><a href="#Namespace-Usage" class="headerlink" title="Namespace Usage"></a>Namespace Usage</h2><p>由于 Namespace 是 Linux 的系统调用，所以在其他操作系统是无法编译通过的。可以在 build 时候通过设置 <code>GOOS = linux</code> 解决，但是运行还是要放在 Linux 上运行。</p>
+<p>在 Golang 中创建一个新的进程，通过 CLONE_NEW* flag 设置资源隔离。</p>
+<pre class=" language-go"><code class="language-go"><span class="token comment" spellcheck="true">// +build linux</span>
+
+<span class="token keyword">package</span> main
+
+<span class="token keyword">import</span> <span class="token punctuation">(</span>
+    <span class="token string">"log"</span>
+    <span class="token string">"os"</span>
+    <span class="token string">"os/exec"</span>
+    <span class="token string">"syscall"</span>
+<span class="token punctuation">)</span>
+
+<span class="token keyword">func</span> <span class="token function">main</span><span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token punctuation">{</span>
+    cmd <span class="token operator">:=</span> exec<span class="token punctuation">.</span><span class="token function">Command</span><span class="token punctuation">(</span><span class="token string">"sh"</span><span class="token punctuation">)</span>
+
+    cmd<span class="token punctuation">.</span>SysProcAttr <span class="token operator">=</span> <span class="token operator">&amp;</span>syscall<span class="token punctuation">.</span>SysProcAttr<span class="token punctuation">{</span>
+        Cloneflags<span class="token punctuation">:</span> syscall<span class="token punctuation">.</span>CLONE_NEWUTS <span class="token operator">|</span> 
+        syscall<span class="token punctuation">.</span>CLONE_NEWIPC <span class="token operator">|</span> 
+        syscall<span class="token punctuation">.</span>CLONE_NEWPID <span class="token operator">|</span> 
+        syscall<span class="token punctuation">.</span>CLONE_NEWNS <span class="token operator">|</span> 
+        syscall<span class="token punctuation">.</span>CLONE_NEWUSER <span class="token operator">|</span> 
+        syscall<span class="token punctuation">.</span>CLONE_NEWNET<span class="token punctuation">,</span>
+    <span class="token punctuation">}</span>
+
+    cmd<span class="token punctuation">.</span>Stdin <span class="token operator">=</span> os<span class="token punctuation">.</span>Stdin
+    cmd<span class="token punctuation">.</span>Stdout <span class="token operator">=</span> os<span class="token punctuation">.</span>Stdout
+    cmd<span class="token punctuation">.</span>Stderr <span class="token operator">=</span> os<span class="token punctuation">.</span>Stderr
+
+    <span class="token keyword">if</span> err <span class="token operator">:=</span> cmd<span class="token punctuation">.</span><span class="token function">Run</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span> err <span class="token operator">!=</span> <span class="token boolean">nil</span> <span class="token punctuation">{</span>
+        log<span class="token punctuation">.</span><span class="token function">Fatal</span><span class="token punctuation">(</span>err<span class="token punctuation">)</span>
+    <span class="token punctuation">}</span>
+<span class="token punctuation">}</span>
+</code></pre>
+<p>使用 <code>env GOOS=linux go build -o nsprocess</code> 编译后，copy <code>nsprocess</code> 到 linux 机器上执行。</p>
+<p>先看一下 CLONE_NEWUSER 的功能：</p>
+<pre class=" language-shell"><code class="language-shell">$ id
+uid=65534(nobody) gid=65534(nogroup) groups=65534(nogroup)
+</code></pre>
+<p>我们可以看到，这时候 UID 和我们宿主机上的不同，表明 user 资源被隔离了。</p>
+<pre class=" language-shell"><code class="language-shell">$ ifconfig
+$
+</code></pre>
+<p>网络设备信息也是空的，CLONE_NEWNET 的隔离也生效了。</p>
+<pre class=" language-shell"><code class="language-shell"># hostname -b zxytest
+# hostname
+zxytest
+</code></pre>
+<p>修改 hostname 后到宿主机发现 hostname 并没有被修改，这就是 CLONE_NEWUTS 的隔离性。</p>
+<pre class=" language-shell"><code class="language-shell"># mount -t proc proc /proc
+# ps -ef
+UID        PID  PPID  C STIME TTY          TIME CMD
+root         1     0  0 12:16 pts/0    00:00:00 sh
+root         3     1  0 12:17 pts/0    00:00:00 ps -ef
+</code></pre>
+<p>mount proc 之后发现进程信息都没有了，只有当前的进程信息。</p>
+<blockquote>
+<p>ps 命名是通过读取 /proc 文件输出的，所以要先 mount proc</p>
+</blockquote>
+<p>以上就 Linux Namespace 的基本用法，也是 docker 的基础技术。</p>
+ 
+    </div>
+    <div class="post-foot">
+        <div id="disqus_thread"></div>
+    </div>
+</div>
+
+
+                </section>
+                <footer class="container fixed-690 footer">
+    <div>
+        <span>Power by <a href="https://hexo.io">Hexo</a></span>
+    </div>
+    <div>
+        <span>Theme <a href="https://github.com/zhengxiaowai/hexo-theme-lessless">lessless</a></span>
+    </div>
+        
+            
+<div>
+    <span id="hexiangyutest_container_site_pv">
+    PV: <span id="busuanzi_value_site_pv"></span>
+    </span>
+    <span id="busuanzi_container_site_uv">
+    UV: <span id="busuanzi_value_site_uv"></span>
+    </span>
+</div>
+
+        
+        
+            <div>
+    <span><a href="https://beian.miit.gov.cn/#/Integrated/index" target="_blank">闽ICP备17000267号-1</a></span>
+</div>
+        
+</footer>
+        </div>
+        
+<script src="/js/jquery-3.2.1.slim.min.js"></script>
+<script src="/js/popper.min.js"></script>
+<script src="/js/bootstrap.min.js"></script>
+
+
+    
+<script type="text/javascript">
+    var disqus_config = function () {
+        this.page.url = 'http://hexiangyu.me/2019/04/07/golang-namespace-usage/';
+        this.page.identifier = '2019/04/07/golang-namespace-usage/';
+        this.page.title = 'Go 语言中 Namespace 用法';
+    };
+    var d = document, s = d.createElement('script');
+    s.src = '//hexiangyus.disqus.com/embed.js';
+    s.setAttribute('data-timestamp', '' + +new Date());
+    (d.head || d.body).appendChild(s);
+</script>
+
+
+    </body>
+</html>

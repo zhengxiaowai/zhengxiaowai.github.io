@@ -1,0 +1,200 @@
+<html>
+    <!DOCTYPE html>
+<html lang="zh">
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<meta http-equiv="X-UA-Compatible" content="ie=edge">
+
+	
+
+	<title>「译」Goroutine 泄露——被遗弃的接受者 | 正小歪的博客</title>
+	<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1">
+	<link rel="shortcut icon" href="/favicon.ico">	
+	<link rel="stylesheet" href="/css/bootstrap.min.css">
+	<link rel="stylesheet" href="/css/style.css">
+    <script async src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+<link rel="stylesheet" href="/css/prism.css" type="text/css"></head>
+
+    <body>
+        <div class="root">
+            <div class='topnavs container fixed-690'>
+    <nav class="navbar navbar-expand-lg navbar-light">
+        <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent" aria-controls="navbarSupportedContent"
+            aria-expanded="false" aria-label="Toggle navigation">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse" id="navbarSupportedContent">
+            <ul class="navbar-nav mr-auto">
+                
+                    <li class="nav-item">
+                        <a class="nav-link" href="/">
+                            首页
+                        </a>
+                    </li>
+                    
+                    <li class="nav-item">
+                        <a class="nav-link" href="/categories">
+                            分类
+                        </a>
+                    </li>
+                    
+                    <li class="nav-item">
+                        <a class="nav-link" href="/archives">
+                            归档
+                        </a>
+                    </li>
+                    
+            </ul>
+        </div>
+    </nav>
+</div>
+                <section class="container mainbody fixed-690">
+                    <div class="post">
+    <div class="post-title">
+        <h1>
+            「译」Goroutine 泄露——被遗弃的接受者 
+        </h1>
+
+        
+        <div class="post-title-views">
+            <span id="busuanzi_container_page_pv">
+                本文总阅读量 <span id="busuanzi_value_page_pv"></span> 次
+            </span>
+        </div>
+        
+    </div>
+    <div class="post-content markdown">
+        <p><a href="https://www.ardanlabs.com/blog/2018/12/goroutine-leaks-the-abandoned-receivers.html" target="_blank" rel="noopener">原文地址</a></p>
+<h2 id="简介"><a href="#简介" class="headerlink" title="简介"></a>简介</h2><p>Goroutine 泄露在 Go 编程中是很常见的问题。在我的前一篇文章中，我介绍了 Goroutine 泄露的问题，并提供一个许多开发者都会犯的错误。这篇文章继续前文，讨论另一个关于 Goroutine 泄露的场景。</p>
+<a id="more"></a>
+<h2 id="被遗弃接收者的泄露"><a href="#被遗弃接收者的泄露" class="headerlink" title="被遗弃接收者的泄露"></a>被遗弃接收者的泄露</h2><p><strong>在这个例子中，你将可以看到多个 Goroutine 被阻塞，等待永远不会被发送的值</strong></p>
+<p>文章中的这个程序启动了多个 Goroutine 来处理文件中一批数据。每个 Goroutine 从输入 channel 接受值，然后通过输出 channel 发送新值。</p>
+<p><strong>Listing 1</strong></p>
+<p><a href="https://play.golang.org/p/Jtpla_UvrmN" target="_blank" rel="noopener">https://play.golang.org/p/Jtpla_UvrmN</a></p>
+<pre class=" language-go"><code class="language-go"><span class="token number">35</span> <span class="token comment" spellcheck="true">// processRecords is given a slice of values such as lines</span>
+<span class="token number">36</span> <span class="token comment" spellcheck="true">// from a file. The order of these values is not important</span>
+<span class="token number">37</span> <span class="token comment" spellcheck="true">// so the function can start multiple workers to perform some</span>
+<span class="token number">38</span> <span class="token comment" spellcheck="true">// processing on each record then feed the results back.</span>
+<span class="token number">39</span> <span class="token keyword">func</span> <span class="token function">processRecords</span><span class="token punctuation">(</span>records <span class="token punctuation">[</span><span class="token punctuation">]</span><span class="token builtin">string</span><span class="token punctuation">)</span> <span class="token punctuation">{</span>
+<span class="token number">40</span> 
+<span class="token number">41</span>     <span class="token comment" spellcheck="true">// Load all of the records into the input channel. It is</span>
+<span class="token number">42</span>     <span class="token comment" spellcheck="true">// buffered with just enough capacity to hold all of the</span>
+<span class="token number">43</span>     <span class="token comment" spellcheck="true">// records so it will not block.</span>
+<span class="token number">44</span> 
+<span class="token number">45</span>     total <span class="token operator">:=</span> <span class="token function">len</span><span class="token punctuation">(</span>records<span class="token punctuation">)</span>
+<span class="token number">46</span>     input <span class="token operator">:=</span> <span class="token function">make</span><span class="token punctuation">(</span><span class="token keyword">chan</span> <span class="token builtin">string</span><span class="token punctuation">,</span> total<span class="token punctuation">)</span>
+<span class="token number">47</span>     <span class="token keyword">for</span> <span class="token boolean">_</span><span class="token punctuation">,</span> record <span class="token operator">:=</span> <span class="token keyword">range</span> records <span class="token punctuation">{</span>
+<span class="token number">48</span>         input <span class="token operator">&lt;-</span> record
+<span class="token number">49</span>     <span class="token punctuation">}</span>
+<span class="token number">50</span>     <span class="token comment" spellcheck="true">// close(input) // What if we forget to close the channel?</span>
+<span class="token number">51</span> 
+<span class="token number">52</span>     <span class="token comment" spellcheck="true">// Start a pool of workers to process input and send</span>
+<span class="token number">53</span>     <span class="token comment" spellcheck="true">// results to output. Base the size of the worker pool on</span>
+<span class="token number">54</span>     <span class="token comment" spellcheck="true">// the number of logical CPUs available.</span>
+<span class="token number">55</span> 
+<span class="token number">56</span>     output <span class="token operator">:=</span> <span class="token function">make</span><span class="token punctuation">(</span><span class="token keyword">chan</span> <span class="token builtin">string</span><span class="token punctuation">,</span> total<span class="token punctuation">)</span>
+<span class="token number">57</span>     workers <span class="token operator">:=</span> runtime<span class="token punctuation">.</span><span class="token function">NumCPU</span><span class="token punctuation">(</span><span class="token punctuation">)</span>
+<span class="token number">58</span>     <span class="token keyword">for</span> i <span class="token operator">:=</span> <span class="token number">0</span><span class="token punctuation">;</span> i <span class="token operator">&lt;</span> workers<span class="token punctuation">;</span> i<span class="token operator">++</span> <span class="token punctuation">{</span>
+<span class="token number">59</span>         <span class="token keyword">go</span> <span class="token function">worker</span><span class="token punctuation">(</span>i<span class="token punctuation">,</span> input<span class="token punctuation">,</span> output<span class="token punctuation">)</span>
+<span class="token number">60</span>     <span class="token punctuation">}</span>
+<span class="token number">61</span> 
+<span class="token number">62</span>     <span class="token comment" spellcheck="true">// Receive from output the expected number of times. If 10</span>
+<span class="token number">63</span>     <span class="token comment" spellcheck="true">// records went in then 10 will come out.</span>
+<span class="token number">64</span> 
+<span class="token number">65</span>     <span class="token keyword">for</span> i <span class="token operator">:=</span> <span class="token number">0</span><span class="token punctuation">;</span> i <span class="token operator">&lt;</span> total<span class="token punctuation">;</span> i<span class="token operator">++</span> <span class="token punctuation">{</span>
+<span class="token number">66</span>         result <span class="token operator">:=</span> <span class="token operator">&lt;-</span>output
+<span class="token number">67</span>         fmt<span class="token punctuation">.</span><span class="token function">Printf</span><span class="token punctuation">(</span><span class="token string">"[result  ]: output %s\n"</span><span class="token punctuation">,</span> result<span class="token punctuation">)</span>
+<span class="token number">68</span>     <span class="token punctuation">}</span>
+<span class="token number">69</span> <span class="token punctuation">}</span>
+<span class="token number">70</span> 
+<span class="token number">71</span> <span class="token comment" spellcheck="true">// worker is the work the program wants to do concurrently.</span>
+<span class="token number">72</span> <span class="token comment" spellcheck="true">// This is a blog post so all the workers do is capitalize a</span>
+<span class="token number">73</span> <span class="token comment" spellcheck="true">// string but imagine they are doing something important.</span>
+<span class="token number">74</span> <span class="token comment" spellcheck="true">//</span>
+<span class="token number">75</span> <span class="token comment" spellcheck="true">// Each goroutine can't know how many records it will get so</span>
+<span class="token number">76</span> <span class="token comment" spellcheck="true">// it must use the range keyword to receive in a loop.</span>
+<span class="token number">77</span> <span class="token keyword">func</span> <span class="token function">worker</span><span class="token punctuation">(</span>id <span class="token builtin">int</span><span class="token punctuation">,</span> input <span class="token operator">&lt;-</span><span class="token keyword">chan</span> <span class="token builtin">string</span><span class="token punctuation">,</span> output <span class="token keyword">chan</span><span class="token operator">&lt;-</span> <span class="token builtin">string</span><span class="token punctuation">)</span> <span class="token punctuation">{</span>
+<span class="token number">78</span>     <span class="token keyword">for</span> v <span class="token operator">:=</span> <span class="token keyword">range</span> input <span class="token punctuation">{</span>
+<span class="token number">79</span>         fmt<span class="token punctuation">.</span><span class="token function">Printf</span><span class="token punctuation">(</span><span class="token string">"[worker %d]: input %s\n"</span><span class="token punctuation">,</span> id<span class="token punctuation">,</span> v<span class="token punctuation">)</span>
+<span class="token number">80</span>         output <span class="token operator">&lt;-</span> strings<span class="token punctuation">.</span><span class="token function">ToUpper</span><span class="token punctuation">(</span>v<span class="token punctuation">)</span>
+<span class="token number">81</span>     <span class="token punctuation">}</span>
+<span class="token number">82</span>     fmt<span class="token punctuation">.</span><span class="token function">Printf</span><span class="token punctuation">(</span><span class="token string">"[worker %d]: shutting down\n"</span><span class="token punctuation">,</span> id<span class="token punctuation">)</span>
+<span class="token number">83</span> <span class="token punctuation">}</span>
+</code></pre>
+<p>在第 39 行定义了一个名为 processRecords 的函数。该函数接收一个 string 的 slice 值。在第 46 行创建了一个名为 <code>input</code> 缓存的 channel。在 47 和 48 行循环把 slice 中的 string 值发送到 channel 中。创建的输入通道具有足够的容量来保存 slice 中的每个值，因此在 48 行中的发送都不会阻塞。这个 channel 作为一个 pipeline 分布在多个 Groutine 中。</p>
+<p>接下来的 56 到 60 行，程序创建了一个 Goroutine 池来从 pipeline 中接收值。56 行创建了一个名为 <code>output</code> 的缓存 channel，每个 Goroutine 都会把值发送到这个 channel。57 行到 59 行用 <code>worker</code> 函数创建等同于逻辑 CPU 数量的 Goroutine，传入循环变量 i、<code>input</code> channel、<code>output</code> channel。</p>
+<p><code>woker</code> 函数被定义在第 77 行，函数的签名定义 <code>input</code> 为 <code>&lt;- chan string</code>，意味着这是一个只读 channel；另一个参数 <code>output</code> 是 <code>chan&lt;- string</code>，意味着是只写 channel。</p>
+<p>在这个函数的 78 行中，Goroutine 使用 <code>range</code> 循环从 <code>input</code> 中接收值，使用 <code>range</code> 从 channel 中接收值直到 channel 被关闭同时再也读不出值为止。每次循环中接收到的值赋给迭代变量 <code>v</code>，同时在 79 行打印出来。然后第 80 行，<code>worker</code> 函数将 <code>v</code> 传给 <code>strings.ToUpper</code> 函数返回一个新的 <code>string</code>。这个 worker 立即把这个 string 发送到 <code>output</code> channel 中。</p>
+<p>回到 <code>processRecords</code> 函数中，现在已经执行到第 65 行。正在运行着一个循环，直到从 <code>output</code> channel 接收并处理了所有值。在 66 行 <code>processRecords</code> 函数等待接收来自另一个 Goroutine 的值，接收到的值在 67 行打印出来。当该程序接收到每个 input 值，他会退出循环并终止改功能。</p>
+<p>运行这个程序打印转换后的数据，看起来视乎很正常的工作，其实正在泄露多个 Goroutine，实际上程序永远不会到达 82 行，这行打印这个 worker 已经。及时 <code>processRecords</code> 函数已经返回，每个 worker 的 Goroutine 仍然在 78 行等待 input 中的值。实际上 channel 的接收者一直等待到 channel 关闭并且 channel 为空。这个问题就在于程序从来没有去关闭 channel。</p>
+<h2 id="FIX：通知完成"><a href="#FIX：通知完成" class="headerlink" title="FIX：通知完成"></a>FIX：通知完成</h2><p>修复这个泄露只需要一行代码 <code>close(input)</code>。关闭 channel 是表示 “不在发送数据” 的一种方式。关闭 channel 最合适的地方应该是在第 50 行发送完最后一个值之后，如 Listing 2 所示：</p>
+<p><strong>Listing 2</strong></p>
+<p><a href="https://play.golang.org/p/QNsxbT0eIay" target="_blank" rel="noopener">https://play.golang.org/p/QNsxbT0eIay</a></p>
+<pre class=" language-go"><code class="language-go"><span class="token number">45</span>     total <span class="token operator">:=</span> <span class="token function">len</span><span class="token punctuation">(</span>records<span class="token punctuation">)</span>
+<span class="token number">46</span>     input <span class="token operator">:=</span> <span class="token function">make</span><span class="token punctuation">(</span><span class="token keyword">chan</span> <span class="token builtin">string</span><span class="token punctuation">,</span> total<span class="token punctuation">)</span>
+<span class="token number">47</span>     <span class="token keyword">for</span> <span class="token boolean">_</span><span class="token punctuation">,</span> record <span class="token operator">:=</span> <span class="token keyword">range</span> records <span class="token punctuation">{</span>
+<span class="token number">48</span>         input <span class="token operator">&lt;-</span> record
+<span class="token number">49</span>     <span class="token punctuation">}</span>
+<span class="token number">50</span>     <span class="token function">close</span><span class="token punctuation">(</span>input<span class="token punctuation">)</span>
+</code></pre>
+<p>关闭一个缓冲 channel 后，channal 中的值仍然是有效的，channel 被仅仅是关闭发送而不是接收。worker Goroutine 运行 <code>range input</code> 将会得到缓冲 channel 已经被关闭的信号，这可以让 worker 在程序退出前终止循环退出。</p>
+<h2 id="结论"><a href="#结论" class="headerlink" title="结论"></a>结论</h2><p>正如前一篇文章中所提到的，Go 中使用 Goroutine 变得简单，但是你有责任好好的使用它们。在这篇文章中我展示了另一个使用 Goroutine 很容易犯的错误。还是有更多使用 Goroutine 并发泄露的陷阱。未来的文章我们会继续这些陷阱。和以前一样，我将继续重复这一建议 “<a href="https://dave.cheney.net/2016/12/22/never-start-a-goroutine-without-knowing-how-it-will-stop" target="_blank" rel="noopener">永远不要启动一个你不知道如何停止的 Goroutine</a>”。</p>
+<p><strong>并发是一种有用的工具，但必须谨慎使用。</strong></p>
+ 
+    </div>
+    <div class="post-foot">
+        <div id="disqus_thread"></div>
+    </div>
+</div>
+
+
+                </section>
+                <footer class="container fixed-690 footer">
+    <div>
+        <span>Power by <a href="https://hexo.io">Hexo</a></span>
+    </div>
+    <div>
+        <span>Theme <a href="https://github.com/zhengxiaowai/hexo-theme-lessless">lessless</a></span>
+    </div>
+        
+            
+<div>
+    <span id="hexiangyutest_container_site_pv">
+    PV: <span id="busuanzi_value_site_pv"></span>
+    </span>
+    <span id="busuanzi_container_site_uv">
+    UV: <span id="busuanzi_value_site_uv"></span>
+    </span>
+</div>
+
+        
+        
+            <div>
+    <span><a href="https://beian.miit.gov.cn/#/Integrated/index" target="_blank">闽ICP备17000267号-1</a></span>
+</div>
+        
+</footer>
+        </div>
+        
+<script src="/js/jquery-3.2.1.slim.min.js"></script>
+<script src="/js/popper.min.js"></script>
+<script src="/js/bootstrap.min.js"></script>
+
+
+    
+<script type="text/javascript">
+    var disqus_config = function () {
+        this.page.url = 'http://hexiangyu.me/2019/05/12/goroutine-leaks-the-abandoned-receivers/';
+        this.page.identifier = '2019/05/12/goroutine-leaks-the-abandoned-receivers/';
+        this.page.title = '「译」Goroutine 泄露——被遗弃的接受者';
+    };
+    var d = document, s = d.createElement('script');
+    s.src = '//hexiangyus.disqus.com/embed.js';
+    s.setAttribute('data-timestamp', '' + +new Date());
+    (d.head || d.body).appendChild(s);
+</script>
+
+
+    </body>
+</html>

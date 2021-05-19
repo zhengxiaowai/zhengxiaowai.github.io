@@ -1,0 +1,800 @@
+<html>
+    <!DOCTYPE html>
+<html lang="zh">
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<meta http-equiv="X-UA-Compatible" content="ie=edge">
+
+	
+
+	<title>CSS 设计指南读书笔记 | 正小歪的博客</title>
+	<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1">
+	<link rel="shortcut icon" href="/favicon.ico">	
+	<link rel="stylesheet" href="/css/bootstrap.min.css">
+	<link rel="stylesheet" href="/css/style.css">
+    <script async src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+<link rel="stylesheet" href="/css/prism.css" type="text/css"></head>
+
+    <body>
+        <div class="root">
+            <div class='topnavs container fixed-690'>
+    <nav class="navbar navbar-expand-lg navbar-light">
+        <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent" aria-controls="navbarSupportedContent"
+            aria-expanded="false" aria-label="Toggle navigation">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse" id="navbarSupportedContent">
+            <ul class="navbar-nav mr-auto">
+                
+                    <li class="nav-item">
+                        <a class="nav-link" href="/">
+                            首页
+                        </a>
+                    </li>
+                    
+                    <li class="nav-item">
+                        <a class="nav-link" href="/categories">
+                            分类
+                        </a>
+                    </li>
+                    
+                    <li class="nav-item">
+                        <a class="nav-link" href="/archives">
+                            归档
+                        </a>
+                    </li>
+                    
+            </ul>
+        </div>
+    </nav>
+</div>
+                <section class="container mainbody fixed-690">
+                    <div class="post">
+    <div class="post-title">
+        <h1>
+            CSS 设计指南读书笔记 
+        </h1>
+
+        
+        <div class="post-title-views">
+            <span id="busuanzi_container_page_pv">
+                本文总阅读量 <span id="busuanzi_value_page_pv"></span> 次
+            </span>
+        </div>
+        
+    </div>
+    <div class="post-content markdown">
+        <h2 id="剖析CSS规则"><a href="#剖析CSS规则" class="headerlink" title="剖析CSS规则"></a>剖析CSS规则</h2><p>给文档添加样式的方法有三种：<strong>行内样式</strong>、<strong>嵌入样式</strong>、<strong>链接样式</strong>。</p>
+<ol>
+<li><p><strong>行内样式</strong></p>
+<p> 直接写在属性里：</p>
+<pre class=" language-html"><code class="language-html"> <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>p</span><span class="token style-attr language-css"><span class="token attr-name"> <span class="token attr-name">style</span></span><span class="token punctuation">="</span><span class="token attr-value"><span class="token property">font-size</span><span class="token punctuation">:</span> <span class="token number">14</span>px<span class="token punctuation">;</span> <span class="token property">color</span><span class="token punctuation">:</span> red<span class="token punctuation">;</span></span><span class="token punctuation">"</span></span><span class="token punctuation">></span></span>我是一个内容<span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>p</span><span class="token punctuation">></span></span>
+</code></pre>
+<p> 行内样式只能影响所在的标签，而且还会覆盖嵌入样式和链接样式。</p>
+</li>
+<li><p><strong>嵌入样式</strong></p>
+<p> 写在 <code>style</code> 标签中：</p>
+<pre class=" language-html"><code class="language-html"> <span class="token doctype">&lt;!DOCTYPE html></span>
+ <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>html</span><span class="token punctuation">></span></span>
+ <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>head</span><span class="token punctuation">></span></span>
+     <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>title</span><span class="token punctuation">></span></span><span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>title</span><span class="token punctuation">></span></span>
+     <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>style</span> <span class="token attr-name">type</span><span class="token attr-value"><span class="token punctuation">=</span><span class="token punctuation">"</span>text/css<span class="token punctuation">"</span></span><span class="token punctuation">></span></span><span class="token style language-css">
+         <span class="token selector">h1 </span><span class="token punctuation">{</span><span class="token property">font-size</span><span class="token punctuation">:</span> <span class="token number">15</span>px<span class="token punctuation">;</span><span class="token punctuation">}</span>
+         <span class="token selector">p </span><span class="token punctuation">{</span><span class="token property">color</span><span class="token punctuation">:</span> red<span class="token punctuation">;</span><span class="token punctuation">}</span>
+     </span><span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>style</span><span class="token punctuation">></span></span>
+ <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>head</span><span class="token punctuation">></span></span>
+ <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>body</span><span class="token punctuation">></span></span>
+     <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>h1</span><span class="token punctuation">></span></span>我是h1标签<span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>h1</span><span class="token punctuation">></span></span>
+     <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>p</span><span class="token punctuation">></span></span>我是p标签<span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>p</span><span class="token punctuation">></span></span>
+ <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>body</span><span class="token punctuation">></span></span>
+ <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>html</span><span class="token punctuation">></span></span>
+</code></pre>
+<p> 嵌入样式只适用于当前页面，会覆盖链接样式，同时会被行内样式覆盖。</p>
+</li>
+<li><p><strong>链接样式</strong></p>
+<p> 写在 <code>link</code> 标签中：</p>
+<pre class=" language-html"><code class="language-html"> <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>link</span> <span class="token attr-name">rel</span><span class="token attr-value"><span class="token punctuation">=</span><span class="token punctuation">"</span>stylesheet<span class="token punctuation">"</span></span> <span class="token attr-name">type</span><span class="token attr-value"><span class="token punctuation">=</span><span class="token punctuation">"</span>text/css<span class="token punctuation">"</span></span> <span class="token attr-name">href</span><span class="token attr-value"><span class="token punctuation">=</span><span class="token punctuation">"</span>css/style.css<span class="token punctuation">"</span></span><span class="token punctuation">></span></span>
+</code></pre>
+<p> 链接样式适用于全部网站，前提是要把他引入。会被行内样式和嵌入样式覆盖，同时会被下一个链接样式覆盖。</p>
+</li>
+</ol>
+<h3 id="CSS命名规则"><a href="#CSS命名规则" class="headerlink" title="CSS命名规则"></a>CSS命名规则</h3><p>CSS的规则由<strong>选择符</strong>和<strong>声明符</strong>两部分组成。</p>
+<pre class=" language-css"><code class="language-css"><span class="token selector">p </span><span class="token punctuation">{</span><span class="token property">color</span><span class="token punctuation">:</span> red<span class="token punctuation">;</span><span class="token punctuation">}</span>
+</code></pre>
+<ul>
+<li><code>p</code> 是选择符，选择了<code>p</code>标签</li>
+<li><code>{color: red;}</code> 是声明符</li>
+</ul>
+<p>选择符可以有：</p>
+<ul>
+<li>上下文选择符</li>
+<li>ID和类选择符</li>
+<li>属性选择符</li>
+</ul>
+<p>声明符由三部分组成：</p>
+<ol>
+<li><code>{ }</code> 花括号包围</li>
+<li><code>color</code> 标签的一个属性</li>
+<li><code>red</code> 属性的一个值</li>
+</ol>
+<p>有三种使用方法：</p>
+<ul>
+<li><p>一条规则多个声明</p>
+<pre class=" language-css"><code class="language-css"><span class="token selector">p </span><span class="token punctuation">{</span>
+  <span class="token property">color</span><span class="token punctuation">:</span> red<span class="token punctuation">;</span>
+  <span class="token property">font-size</span><span class="token punctuation">:</span> <span class="token number">14</span>px<span class="token punctuation">;</span>
+  <span class="token property">font-weight</span><span class="token punctuation">:</span> bold<span class="token punctuation">;</span>
+<span class="token punctuation">}</span>
+</code></pre>
+</li>
+<li><p>多个属性选择符共用某些属性</p>
+<pre class=" language-css"><code class="language-css"><span class="token selector">h1 h2 h3 </span><span class="token punctuation">{</span>
+  <span class="token property">color</span><span class="token punctuation">:</span> red<span class="token punctuation">;</span>
+  <span class="token property">font-size</span><span class="token punctuation">:</span> <span class="token number">14</span>px<span class="token punctuation">;</span>
+  <span class="token property">font-weight</span><span class="token punctuation">:</span> bold<span class="token punctuation">;</span>
+<span class="token punctuation">}</span>
+</code></pre>
+</li>
+<li><p>对一个属性设置多次</p>
+<pre class=" language-css"><code class="language-css"><span class="token selector">h1 h2 h3 </span><span class="token punctuation">{</span>
+  <span class="token property">color</span><span class="token punctuation">:</span> red<span class="token punctuation">;</span>
+  <span class="token property">font-size</span><span class="token punctuation">:</span> <span class="token number">14</span>px<span class="token punctuation">;</span>
+  <span class="token property">font-weight</span><span class="token punctuation">:</span> bold<span class="token punctuation">;</span>
+<span class="token punctuation">}</span>
+<span class="token selector">h3 </span><span class="token punctuation">{</span><span class="token property">font-style</span><span class="token punctuation">:</span> italic<span class="token punctuation">;</span><span class="token punctuation">}</span>
+</code></pre>
+</li>
+</ul>
+<h3 id="上下文选择符"><a href="#上下文选择符" class="headerlink" title="上下文选择符"></a>上下文选择符</h3><p>格式：标签1 标签2 {声明}</p>
+<p>多个标签用空格分隔，而不是逗号分隔。</p>
+<p>假如有下面设个代码片段：</p>
+<pre class=" language-css"><code class="language-css">&lt;body>
+    &lt;article>
+        &lt;h<span class="token number">1</span>>Contextual selectors are &lt;em>very&lt;/em> selective&lt;/h<span class="token number">1</span>>
+        &lt;p>This example shows how to target a &lt;em>specific&lt;/em> tag<span class="token number">.</span>&lt;/p>
+    &lt;/article>
+    &lt;aside>
+        &lt;p>Contextual selectors are &lt;em>very&lt;/em> useful!&lt;/p>
+    &lt;/aside>
+    &lt;footer>
+    &amp;copy<span class="token punctuation">;</span><span class="token number">2015</span>
+    &lt;/footer>
+&lt;/body>
+</code></pre>
+<p>要想把 <code>article</code> 下所有的 <code>em</code> 变成红色:</p>
+<pre class=" language-css"><code class="language-css"><span class="token selector">article em </span><span class="token punctuation">{</span>
+    <span class="token property">color</span><span class="token punctuation">:</span> red<span class="token punctuation">;</span>
+<span class="token punctuation">}</span>
+</code></pre>
+<p>只要是在 <code>article</code> 下的所有 <code>em</code> 标签都会有影响，无论在什么地方。但是 <code>aside</code> 下的 <code>em</code> 标签没有影响。</p>
+<h4 id="子选择器"><a href="#子选择器" class="headerlink" title="子选择器"></a>子选择器</h4><p>格式： 标签1 &gt; 标签2 &gt; … {声明}</p>
+<pre class=" language-css"><code class="language-css"><span class="token selector">article > h1 > em </span><span class="token punctuation">{</span>
+    <span class="token property">color</span><span class="token punctuation">:</span> blue<span class="token punctuation">;</span>
+<span class="token punctuation">}</span>
+</code></pre>
+<p>每级的标签必须有父子关系，就像 <code>article</code> 是 <code>h1</code> 的父元素，<code>h1是</code> 的 <code>em</code> 父元素。</p>
+<h4 id="紧邻同胞选择器"><a href="#紧邻同胞选择器" class="headerlink" title="紧邻同胞选择器"></a>紧邻同胞选择器</h4><p>格式：标签1 + 标签2 + … {声明}</p>
+<pre class=" language-css"><code class="language-css"><span class="token selector">h1 + p </span><span class="token punctuation">{</span>
+    <span class="token property">color</span><span class="token punctuation">:</span> blue<span class="token punctuation">;</span>
+<span class="token punctuation">}</span>
+</code></pre>
+<p>只会影响 <code>article</code> 中的 <code>h1</code> 和 <code>p</code>, 因为他们是同胞元素而且 <code>p</code> 紧跟着 <code>h1</code>。</p>
+<h4 id="一般同胞选择器"><a href="#一般同胞选择器" class="headerlink" title="一般同胞选择器"></a>一般同胞选择器</h4><p>格式： 标签1 ~ 标签2 ~ … {声明}</p>
+<pre class=" language-css"><code class="language-css"><span class="token selector">article ~ footer</span><span class="token punctuation">{</span>
+    <span class="token property">text-align</span><span class="token punctuation">:</span> center<span class="token punctuation">;</span>
+<span class="token punctuation">}</span>
+</code></pre>
+<p><code>article</code> 和 <code>footer</code> 同胞元素就可以。</p>
+<h4 id="通用选择符"><a href="#通用选择符" class="headerlink" title="通用选择符"></a>通用选择符</h4><p><code>*</code> 代表所有元素</p>
+<pre class=" language-css"><code class="language-css"><span class="token selector">* </span><span class="token punctuation">{</span>
+    <span class="token property">padding</span><span class="token punctuation">:</span> <span class="token number">0</span>px<span class="token punctuation">;</span>
+    <span class="token property">margin</span><span class="token punctuation">:</span> <span class="token number">0</span>px<span class="token punctuation">;</span>
+<span class="token punctuation">}</span>
+</code></pre>
+<p>取消所有元素的内外边距。</p>
+<pre class=" language-css"><code class="language-css"><span class="token selector">article * em </span><span class="token punctuation">{</span>
+    <span class="token property">color</span><span class="token punctuation">:</span>red<span class="token punctuation">;</span>
+<span class="token punctuation">}</span>
+</code></pre>
+<p>只要 <code>em</code> 是祖父元素是 <code>article</code> 就会被设置成红色，无论父元素是什么。</p>
+<h3 id="ID和类选择器"><a href="#ID和类选择器" class="headerlink" title="ID和类选择器"></a>ID和类选择器</h3><p>对于每个标签都可为它设置一个ID或者多个类。</p>
+<h4 id="类属性"><a href="#类属性" class="headerlink" title="类属性"></a>类属性</h4><p><strong>格式： .类名</strong></p>
+<pre class=" language-html"><code class="language-html"><span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>h1</span> <span class="token attr-name">class</span><span class="token attr-value"><span class="token punctuation">=</span><span class="token punctuation">"</span>specialtext<span class="token punctuation">"</span></span><span class="token punctuation">></span></span>
+    This is a heading with the <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>span</span><span class="token punctuation">></span></span>same class<span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>span</span><span class="token punctuation">></span></span> as the second paragraph.
+<span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>h1</span><span class="token punctuation">></span></span>
+
+<span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>p</span><span class="token punctuation">></span></span>
+    This tag has no class.
+<span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>p</span><span class="token punctuation">></span></span>
+
+<span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>p</span> <span class="token attr-name">class</span><span class="token attr-value"><span class="token punctuation">=</span><span class="token punctuation">"</span>specialtext featured<span class="token punctuation">"</span></span><span class="token punctuation">></span></span> 
+    When a tag has a class attribute, you can target it <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>span</span><span class="token punctuation">></span></span>regardless<span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>span</span><span class="token punctuation">></span></span> of its position in the hierarchy.
+<span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>p</span><span class="token punctuation">></span></span>
+</code></pre>
+<ul>
+<li>类选择符</li>
+</ul>
+<pre class=" language-css"><code class="language-css"><span class="token selector"><span class="token class">.specialtext</span> </span><span class="token punctuation">{</span>
+    <span class="token property">color</span><span class="token punctuation">:</span> red<span class="token punctuation">;</span>
+<span class="token punctuation">}</span>
+</code></pre>
+<p>选择 <code>class=&quot;specialtext&quot;</code> 的标签设置前景色为红色。</p>
+<ul>
+<li>标签带类选择符</li>
+</ul>
+<pre class=" language-css"><code class="language-css"><span class="token selector">p<span class="token class">.specialtext</span> </span><span class="token punctuation">{</span>
+    <span class="token property">color</span><span class="token punctuation">:</span> blue<span class="token punctuation">;</span>
+<span class="token punctuation">}</span>
+</code></pre>
+<p>选择所有类名为 <code>specialtext</code> 的p标签。</p>
+<ul>
+<li>多类选择符</li>
+</ul>
+<pre class=" language-css"><code class="language-css"><span class="token selector"><span class="token class">.specialtext.featured</span> </span><span class="token punctuation">{</span>
+    <span class="token property">color</span><span class="token punctuation">:</span> balck<span class="token punctuation">;</span>
+<span class="token punctuation">}</span>
+</code></pre>
+<p>选择 类名同时为 <code>specialtext</code> 和 <code>featured</code> 的标签。</p>
+<h4 id="ID选择器"><a href="#ID选择器" class="headerlink" title="ID选择器"></a>ID选择器</h4><p>ID作为一个独一无二的存在，不能重复，使用方法了类选择器一样。例外，ID选择器可以作为页面内的跳转标记。</p>
+<pre class=" language-html"><code class="language-html"><span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>ul</span><span class="token punctuation">></span></span>
+    <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>li</span><span class="token punctuation">></span></span><span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>a</span> <span class="token attr-name">href</span><span class="token attr-value"><span class="token punctuation">=</span><span class="token punctuation">"</span>#paragraph1<span class="token punctuation">"</span></span><span class="token punctuation">></span></span>第一段<span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>a</span><span class="token punctuation">></span></span><span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>li</span><span class="token punctuation">></span></span>
+    <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>li</span><span class="token punctuation">></span></span>&lt;a href="#paragraph2>第二段<span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>a</span><span class="token punctuation">></span></span><span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>li</span><span class="token punctuation">></span></span>
+    <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>li</span><span class="token punctuation">></span></span>&lt;a href="#paragraph3>第三段<span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>a</span><span class="token punctuation">></span></span><span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>li</span><span class="token punctuation">></span></span>
+<span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>ul</span><span class="token punctuation">></span></span>
+</code></pre>
+<p>点击可以跳转到id为 <code>paragraph1</code> 的段落，<code>#</code>默认回到顶部。</p>
+<h4 id="何时使用类选择器和ID选择器"><a href="#何时使用类选择器和ID选择器" class="headerlink" title="何时使用类选择器和ID选择器"></a>何时使用类选择器和ID选择器</h4><ul>
+<li>给页面独一无二的元素使用ID选择器，比如一个主布局 <code>&lt;div id=&quot;main&quot;&gt;&lt;/div&gt;</code></li>
+<li>拥有相同类型的元素使用类选择器，比如操作一个显示热门商品的列表。</li>
+</ul>
+<h3 id="属性选择器"><a href="#属性选择器" class="headerlink" title="属性选择器"></a>属性选择器</h3><p><strong>格式： 标签名[属性名]</strong></p>
+<pre class=" language-html"><code class="language-html"><span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>img</span> <span class="token attr-name">src</span><span class="token attr-value"><span class="token punctuation">=</span><span class="token punctuation">"</span>images/yellow_flower.jpg<span class="token punctuation">"</span></span> <span class="token attr-name">title</span><span class="token attr-value"><span class="token punctuation">=</span><span class="token punctuation">"</span>yellow flower<span class="token punctuation">"</span></span> <span class="token attr-name">alt</span><span class="token attr-value"><span class="token punctuation">=</span><span class="token punctuation">"</span>yellow flower<span class="token punctuation">"</span></span> <span class="token punctuation">/></span></span>
+</code></pre>
+<p>可以选择拥有 <code>title</code> 属性的元素</p>
+<pre class=" language-css"><code class="language-css"><span class="token selector">img<span class="token attribute">[title]</span> </span><span class="token punctuation">{</span><span class="token property">border</span><span class="token punctuation">:</span><span class="token number">4</span>px solid green<span class="token punctuation">;</span><span class="token punctuation">}</span>
+</code></pre>
+<p>也可以选择 <code>title</code> 的值为 <code>yellow flower</code> 的元素</p>
+<pre class=" language-css"><code class="language-css"><span class="token selector">img<span class="token attribute">[title="yellow flower"]</span> </span><span class="token punctuation">{</span><span class="token property">border</span><span class="token punctuation">:</span><span class="token number">4</span>px solid green<span class="token punctuation">;</span><span class="token punctuation">}</span>
+</code></pre>
+<h3 id="伪类"><a href="#伪类" class="headerlink" title="伪类"></a>伪类</h3><p>以下所有伪类只是常用的，更多伪类信息参考[点击这里] (<a href="http://www.stylinwithcss.com" target="_blank" rel="noopener">http://www.stylinwithcss.com</a>)</p>
+<p>伪类分成两种</p>
+<ol>
+<li>UI 伪类，在 HTML 元素处于某个状态下应用样式</li>
+<li>结构化伪类，在某种关系结构上应用样式</li>
+</ol>
+<h4 id="UI伪类"><a href="#UI伪类" class="headerlink" title="UI伪类"></a>UI伪类</h4><ul>
+<li><p>链接伪类</p>
+<ol>
+<li>:link：等待点击时候</li>
+<li>:visited：点击过之后</li>
+<li>:hover：鼠标悬停时候</li>
+<li><p>:active：正在被点击时候</p>
+<p>使用时候顺序以上顺序，要不然可能会因为特指度问题导致失败。</p>
+<p>可以应用到任何元素，不仅仅是 a 标签</p>
+</li>
+</ol>
+</li>
+<li><p>:focus 伪类</p>
+<p>  当元素获取焦点时候，也就是鼠标点击的时候</p>
+<pre class=" language-css"><code class="language-css">  <span class="token selector">input<span class="token pseudo-class">:focus</span></span><span class="token punctuation">{</span><span class="token property">border</span><span class="token punctuation">:</span> <span class="token number">1</span>px solid blue<span class="token punctuation">;</span><span class="token punctuation">}</span>
+</code></pre>
+</li>
+<li><p>:target 伪类</p>
+<p>  当点击一个跳转到其他页面的链接，那个带有链接的元素就是 target,可以用伪伪类选中</p>
+<p>  点击以下链接</p>
+<pre class=" language-html"><code class="language-html">  <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>a</span> <span class="token attr-name">href</span><span class="token attr-value"><span class="token punctuation">=</span><span class="token punctuation">"</span>#more_info<span class="token punctuation">"</span></span><span class="token punctuation">></span></span>More Information<span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>a</span><span class="token punctuation">></span></span>
+</code></pre>
+<p>  跳转到</p>
+<pre class=" language-html"><code class="language-html">  <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>h2</span> <span class="token attr-name">id</span><span class="token attr-value"><span class="token punctuation">=</span><span class="token punctuation">"</span>more_info<span class="token punctuation">"</span></span><span class="token punctuation">></span></span>This is the information you are looking for.<span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>h2</span><span class="token punctuation">></span></span>
+</code></pre>
+<p>  使用伪类设置 target 的样式</p>
+<pre class=" language-css"><code class="language-css">  <span class="token selector"><span class="token id">#more_info</span><span class="token pseudo-class">:target</span> </span><span class="token punctuation">{</span><span class="token property">background</span><span class="token punctuation">:</span><span class="token hexcode">#eee</span><span class="token punctuation">;</span><span class="token punctuation">}</span>
+</code></pre>
+</li>
+</ul>
+<h4 id="结构化伪类"><a href="#结构化伪类" class="headerlink" title="结构化伪类"></a>结构化伪类</h4><p>结构化伪类可以根据标签的结构来指定样式</p>
+<ul>
+<li><p>:first-child 和 last-chile</p>
+<p>  把一组同胞元素的第一个和最后一个设置样式</p>
+<pre class=" language-html"><code class="language-html">  <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>ol</span> <span class="token attr-name">class</span><span class="token attr-value"><span class="token punctuation">=</span><span class="token punctuation">"</span>results<span class="token punctuation">"</span></span><span class="token punctuation">></span></span>
+      <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>li</span><span class="token punctuation">></span></span>My Fast Pony<span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>li</span><span class="token punctuation">></span></span>
+      <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>li</span><span class="token punctuation">></span></span>Steady Trotter<span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>li</span><span class="token punctuation">></span></span>
+      <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>li</span><span class="token punctuation">></span></span>Slow Ol' Nag<span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>li</span><span class="token punctuation">></span></span>
+  <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>ol</span><span class="token punctuation">></span></span>
+</code></pre>
+<pre class=" language-css"><code class="language-css">  <span class="token selector">ol<span class="token class">.results</span> li<span class="token pseudo-class">:last-child</span> </span><span class="token punctuation">{</span><span class="token property">color</span><span class="token punctuation">:</span>red<span class="token punctuation">;</span><span class="token punctuation">}</span>
+</code></pre>
+<p>  最后一个 li 被设置成红色</p>
+</li>
+<li><p>:ntc-child(n)</p>
+<p>  选择同胞元素中的第 n 个设置样式</p>
+</li>
+</ul>
+<h4 id="伪元素"><a href="#伪元素" class="headerlink" title="伪元素"></a>伪元素</h4><ul>
+<li><p>::first-letter</p>
+<p>  选择内容首字母，放大 3 倍</p>
+<pre class=" language-css"><code class="language-css">  <span class="token selector">p<span class="token pseudo-element">::first-letter</span> </span><span class="token punctuation">{</span><span class="token property">font-size</span><span class="token punctuation">:</span><span class="token number">300%</span><span class="token punctuation">;</span><span class="token punctuation">}</span>
+</code></pre>
+</li>
+<li><p>:: first-line</p>
+<p>  选择首段落与浏览器窗口大小有关，设置字体</p>
+<pre class=" language-css"><code class="language-css">  <span class="token selector">p<span class="token pseudo-element">::first-line</span> </span><span class="token punctuation">{</span><span class="token property">font-variant</span><span class="token punctuation">:</span>small-caps<span class="token punctuation">;</span><span class="token punctuation">}</span>
+</code></pre>
+</li>
+<li><p>::before 和 ::after</p>
+<p>  在某个元素前后添加内容</p>
+<pre class=" language-css"><code class="language-css">  <span class="token selector">p<span class="token class">.age</span><span class="token pseudo-element">::before</span> </span><span class="token punctuation">{</span><span class="token property">content</span><span class="token punctuation">:</span><span class="token string">"Age: "</span><span class="token punctuation">;</span><span class="token punctuation">}</span>
+  <span class="token selector">p<span class="token class">.age</span><span class="token pseudo-element">::after</span> </span><span class="token punctuation">{</span><span class="token property">content</span><span class="token punctuation">:</span><span class="token string">" years."</span><span class="token punctuation">;</span><span class="token punctuation">}</span>
+</code></pre>
+</li>
+</ul>
+<h2 id="盒子模型"><a href="#盒子模型" class="headerlink" title="盒子模型"></a>盒子模型</h2><p>一个元素或者也可以叫一个盒子，是由四部分组成</p>
+<ul>
+<li>content</li>
+<li>padding</li>
+<li>border</li>
+<li>margin</li>
+</ul>
+<p>它们由内而外分别是 <strong>content-&gt;panding-&gt;border-&gt;margin</strong> </p>
+<h3 id="盒子的边框"><a href="#盒子的边框" class="headerlink" title="盒子的边框"></a>盒子的边框</h3><p>盒子的边框位于 padding 和 margin 之间的分界线叫做 border。</p>
+<p>border 有三个相关的属性</p>
+<ul>
+<li>border-width 用于设置宽度。有 thin、medium、thick等文本值，也可以使用除了百分比和负值之外的数值，</li>
+<li>border-style 用于设置样式。有 none、dotted、dashed、solid、double、groove、ridge、inset和outset等文本值。</li>
+<li>border-color 用于设置颜色。可以使用 RGB、HSL、十六进制、关键字。</li>
+<li>border-radius </li>
+</ul>
+<p>border-width 中的的3个文本值会因为浏览器的不同而不同，border-style 中只有 soild 是 CSS 明确规定的。</p>
+<h3 id="盒子的内边距"><a href="#盒子的内边距" class="headerlink" title="盒子的内边距"></a>盒子的内边距</h3><p>盒子内边距位于 content 和 border 之前的区域。</p>
+<p>相关属性有</p>
+<ul>
+<li>padding</li>
+<li>padding-top</li>
+<li>padding-right</li>
+<li>padding-bottom</li>
+<li>padding-left</li>
+</ul>
+<p>四个属性都是设置内边距的宽度，可以指定 px、em等。</p>
+<p>其中 padding 为可以简写模式，也可以非简写模式</p>
+<pre class=" language-css"><code class="language-css"><span class="token selector">//简写模式，设置上下为10px，左右为5px
+p </span><span class="token punctuation">{</span><span class="token property">padding</span><span class="token punctuation">:</span> <span class="token number">10</span>px <span class="token number">5</span>px<span class="token punctuation">;</span><span class="token punctuation">}</span>
+</code></pre>
+<pre class=" language-css"><code class="language-css"><span class="token selector">//非简写模式，分别设置上右下左内边距（即顺时针）为 1px、2px、3px、4px
+p </span><span class="token punctuation">{</span><span class="token property">padding</span><span class="token punctuation">:</span> <span class="token number">1</span>px <span class="token number">2</span>px <span class="token number">3</span>px <span class="token number">4</span>px<span class="token punctuation">;</span><span class="token punctuation">}</span>
+</code></pre>
+<h3 id="盒子的外边距"><a href="#盒子的外边距" class="headerlink" title="盒子的外边距"></a>盒子的外边距</h3><p>盒子的外边距位于 border 之外。</p>
+<p>属性和使用方法和 padding 一模一样 使用 margin 替代 padding 即可。</p>
+<p>盒子的外边距在 block 元素中会有叠加发生，inline 元素则不会有。</p>
+<p>例如有两个 p 标签</p>
+<pre class=" language-html"><code class="language-html"><span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>p</span> <span class="token attr-name">id</span><span class="token attr-value"><span class="token punctuation">=</span><span class="token punctuation">"</span>p1<span class="token punctuation">"</span></span><span class="token punctuation">></span></span>i am p1<span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>p</span><span class="token punctuation">></span></span>
+<span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>p</span> <span class="token attr-name">id</span><span class="token attr-value"><span class="token punctuation">=</span><span class="token punctuation">"</span>p2<span class="token punctuation">"</span></span><span class="token punctuation">></span></span>i am p2<span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>p</span><span class="token punctuation">></span></span>
+</code></pre>
+<p>使用 CSS 设置他们的 margin</p>
+<pre class=" language-css"><code class="language-css"><span class="token selector">p<span class="token id">#p1</span> </span><span class="token punctuation">{</span><span class="token property">margin</span><span class="token punctuation">:</span> <span class="token number">10</span>px <span class="token number">0</span>px<span class="token punctuation">;</span><span class="token punctuation">}</span>
+<span class="token selector">p<span class="token id">#p2</span> </span><span class="token punctuation">{</span><span class="token property">margin</span><span class="token punctuation">:</span> <span class="token number">5</span>px <span class="token number">0</span>px<span class="token punctuation">;</span><span class="token punctuation">}</span>
+</code></pre>
+<p>这时 p1 和 p2 之间的距离是较大的那个外边距就是 10px，如果相同，那么就是那个值。</p>
+<p>对于 inline 元素则完全不同，就是两个左或者右边距相加。</p>
+<h2 id="盒子有多大"><a href="#盒子有多大" class="headerlink" title="盒子有多大"></a>盒子有多大</h2><p>世界上有两种盒子，一种是设置了 width 和 没有设置 width 的。</p>
+<p>对于没有设置 width 的盒子 宽度默认是父元素的宽度。<br>有设置 width 的盒子，这里设置 width 只是设置了内容的宽度。</p>
+<p>对没有 width 的盒子，给他添加左右 padding 和 margin 会使得内容区域变窄，盒子大小不变。<br>对于有 width 的盒子，添加左右 padding 和 margin 内容区域不变，盒子变大。</p>
+<h2 id="浮动与删除"><a href="#浮动与删除" class="headerlink" title="浮动与删除"></a>浮动与删除</h2><p>让元素层叠的关键就是 float 属性，可以让元素浮动在其他元素之上，使用 clear 可以设置不允许有浮动元素层叠。</p>
+<h3 id="浮动"><a href="#浮动" class="headerlink" title="浮动"></a>浮动</h3><p>float 属性目的是实现文本围绕图片，同时也能做分栏。</p>
+<h4 id="文本围绕图片"><a href="#文本围绕图片" class="headerlink" title="文本围绕图片"></a>文本围绕图片</h4><pre class=" language-html"><code class="language-html">    <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>img</span> <span class="token attr-name">src</span><span class="token attr-value"><span class="token punctuation">=</span><span class="token punctuation">"</span>st3.png<span class="token punctuation">"</span></span> <span class="token attr-name">height</span><span class="token attr-value"><span class="token punctuation">=</span><span class="token punctuation">"</span>50<span class="token punctuation">"</span></span> <span class="token attr-name">width</span><span class="token attr-value"><span class="token punctuation">=</span><span class="token punctuation">"</span>130<span class="token punctuation">"</span></span><span class="token punctuation">></span></span>
+    <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>p</span><span class="token punctuation">></span></span>
+        CSS3 Multi-column Layout Module 规定了如何用CSS 定义多栏布局。但在本书写作
+    时，只有Opera 和IE10 支持相应属性。因此在可以预见的未来，float 属性仍然是
+    创建多栏布局的最佳途径。
+    <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>p</span><span class="token punctuation">></span></span>
+</code></pre>
+<p>这时候布局是上面是 img，在它下面是 p</p>
+<p>想让文本包围 img</p>
+<pre class=" language-css"><code class="language-css"><span class="token selector">img </span><span class="token punctuation">{</span><span class="token property">float</span><span class="token punctuation">:</span>left<span class="token punctuation">;</span><span class="token punctuation">}</span>
+</code></pre>
+<h4 id="分栏"><a href="#分栏" class="headerlink" title="分栏"></a>分栏</h4><p>再次设置一次 float 并设置一下 p 的 width 属性。同时你的一行足够容纳下这些元素。</p>
+<p>使用 float 时候必须设置 width ，图片有自己本身的 width 所有不用设置也可以。</p>
+<h3 id="围住浮动元素的三种方法"><a href="#围住浮动元素的三种方法" class="headerlink" title="围住浮动元素的三种方法"></a>围住浮动元素的三种方法</h3><p>浮动了元素之后， 该元素脱离文本流，它的父元素找不到他了，自然也无法包围他。</p>
+<ol>
+<li>设置父元素属性 <code>overflow:hidden;</code></li>
+<li>设置父元素浮动 <code>float:left; width:100%;</code></li>
+<li>添加非浮动的清除元素</li>
+</ol>
+<p>对于第三种方法是最好的方法，实现方式有两种</p>
+<pre class=" language-html"><code class="language-html"><span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>section</span><span class="token punctuation">></span></span>
+    <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>img</span> <span class="token attr-name">src</span><span class="token attr-value"><span class="token punctuation">=</span><span class="token punctuation">"</span>images/rubber_duck.jpg<span class="token punctuation">"</span></span><span class="token punctuation">></span></span>
+    <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>p</span><span class="token punctuation">></span></span>It's fun to float.<span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>p</span><span class="token punctuation">></span></span>
+    <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>div</span> <span class="token attr-name">class</span><span class="token attr-value"><span class="token punctuation">=</span><span class="token punctuation">"</span>clear_me<span class="token punctuation">"</span></span><span class="token punctuation">></span></span><span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>div</span><span class="token punctuation">></span></span>
+<span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>section</span><span class="token punctuation">></span></span>
+</code></pre>
+<p>添加一个空的 div 并设置 clear </p>
+<pre class=" language-css"><code class="language-css"><span class="token selector"><span class="token class">.clear_me</span> </span><span class="token punctuation">{</span><span class="token property">clear</span><span class="token punctuation">:</span>left<span class="token punctuation">;</span><span class="token punctuation">}</span>
+</code></pre>
+<p>还有一种方式是不添加这个没有显示功能的 div，可以给父元素添加一个类</p>
+<pre class=" language-html"><code class="language-html"><span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>section</span> <span class="token attr-name">class</span><span class="token attr-value"><span class="token punctuation">=</span><span class="token punctuation">"</span>clearfix<span class="token punctuation">"</span></span><span class="token punctuation">></span></span>
+    <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>img</span> <span class="token attr-name">src</span><span class="token attr-value"><span class="token punctuation">=</span><span class="token punctuation">"</span>images/rubber_duck.jpg<span class="token punctuation">"</span></span><span class="token punctuation">></span></span>
+    <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>p</span><span class="token punctuation">></span></span>It's fun to float.<span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>p</span><span class="token punctuation">></span></span>
+<span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>section</span><span class="token punctuation">></span></span>
+</code></pre>
+<p>然后设置 <strong>.clearfix</strong></p>
+<pre class=" language-css"><code class="language-css"><span class="token selector"><span class="token class">.clearfix</span><span class="token pseudo-element">:after</span> </span><span class="token punctuation">{</span>
+    <span class="token property">content</span><span class="token punctuation">:</span><span class="token string">"."</span><span class="token punctuation">;</span>
+    <span class="token property">display</span><span class="token punctuation">:</span>block<span class="token punctuation">;</span>
+    <span class="token property">height</span><span class="token punctuation">:</span><span class="token number">0</span><span class="token punctuation">;</span>
+    <span class="token property">visibility</span><span class="token punctuation">:</span>hidden<span class="token punctuation">;</span>
+    <span class="token property">clear</span><span class="token punctuation">:</span>both<span class="token punctuation">;</span>
+<span class="token punctuation">}</span>
+</code></pre>
+<p>这是 css 设置了最小内容 <strong>.</strong> 并设置高度为 0 让其不可见， 再使用 clear 清楚两边的浮动元素，这样所有的浮动元素有会到这个 div 的下方去。</p>
+<p>三种方法不能应付的场景：</p>
+<p>不能再下来拉菜单的顶级元素使用 <strong>overflow:hidden</strong> ，因为下拉框的下拉内容是显示在父元素的区域外，而这个属性设置的是不显示超出父元素的内容，这就导致下拉框不显示。</p>
+<p>不能对已经靠自动外边距居中的元素使用“浮动父元素”技术，否则它就不会再居中，而是根据浮动值浮动到左边或右边了。</p>
+<p>有时候清除浮动元素时候并没有父元素来强制包围。可以把 <strong>.clearfix</strong> 类添加到某个具体的元素上，强制这个元素清楚周围的浮动。</p>
+<h2 id="定位"><a href="#定位" class="headerlink" title="定位"></a>定位</h2><p>css 的定位使用的 position 这个属性，这个属性有四个值 static、relative、absolute、fixed，默认值为static。通过定位可以对元素重新定位。</p>
+<h3 id="静态定位"><a href="#静态定位" class="headerlink" title="静态定位"></a>静态定位</h3><p>静态定位是默认的方式，就是按照文本流 block 元素换行， inline 元素不换行，从头到尾排列。</p>
+<h3 id="相对定位"><a href="#相对定位" class="headerlink" title="相对定位"></a>相对定位</h3><p>相对定位的相对，是相对于原来的位置。之后可以使用 top 、left 设置新的位置。</p>
+<pre class=" language-css"><code class="language-css"><span class="token selector">p<span class="token id">#specialpara</span> </span><span class="token punctuation">{</span><span class="token property">position</span><span class="token punctuation">:</span>relative<span class="token punctuation">;</span> <span class="token property">top</span><span class="token punctuation">:</span><span class="token number">25</span>px<span class="token punctuation">;</span> <span class="token property">left</span><span class="token punctuation">:</span><span class="token number">30</span>px<span class="token punctuation">;</span><span class="token punctuation">}</span>
+</code></pre>
+<p>原则上使用 top 和 left 就可以了，因为他们支持负数。元素移动出来的同时，空出来的位置会继续保留。</p>
+<h3 id="绝对定位"><a href="#绝对定位" class="headerlink" title="绝对定位"></a>绝对定位</h3><p>绝对定位和相对定位不同的是，空出来的区域被回收了，也就是说移动出来的元素，脱离了文本流。</p>
+<p>定位的位置和<strong>定位上下文</strong>有关，默认的定位上下文的 body 元素。只要把父元素的 position 属性设置为  relative 那么个这个父元素就成了新的上下文。</p>
+<h3 id="固定定位"><a href="#固定定位" class="headerlink" title="固定定位"></a>固定定位</h3><p>元素脱离文本流，固定在相对于屏幕的某个位置，随着浏览器滚动，这是元素始终在那个位置。这是功能可以用来做固定的导航。</p>
+<h2 id="显示属性"><a href="#显示属性" class="headerlink" title="显示属性"></a>显示属性</h2><p>所有的元素都有 display 属性，大多数的默认值不是 block 就是 inline，还有其他很多属性。</p>
+<p>让两个 block 元素并排显示可以设置</p>
+<pre class=" language-css"><code class="language-css"><span class="token selector">p </span><span class="token punctuation">{</span>
+    <span class="token property">display</span><span class="token punctuation">:</span> inline<span class="token punctuation">;</span>
+<span class="token punctuation">}</span>
+</code></pre>
+<p>让一个元素隐藏可以使用</p>
+<pre class=" language-css"><code class="language-css"><span class="token selector">p </span><span class="token punctuation">{</span>
+    <span class="token property">display</span><span class="token punctuation">:</span> none<span class="token punctuation">;</span>
+<span class="token punctuation">}</span>
+</code></pre>
+<p>被隐藏的元素包括他所在位置都会消失</p>
+<pre class=" language-css"><code class="language-css"><span class="token selector">p </span><span class="token punctuation">{</span>
+    <span class="token property">visibility</span><span class="token punctuation">:</span> hidden<span class="token punctuation">;</span>
+<span class="token punctuation">}</span>
+</code></pre>
+<p>但是这种方式，元素被隐藏但是空出来的位置还在。</p>
+<h2 id="背景"><a href="#背景" class="headerlink" title="背景"></a>背景</h2><p>一个元素的展现可以分成3成，由里到外是</p>
+<ol>
+<li>文本或者图片</li>
+<li>背景图片</li>
+<li>背景颜色</li>
+</ol>
+<h3 id="CSS-背景属性"><a href="#CSS-背景属性" class="headerlink" title="CSS 背景属性"></a>CSS 背景属性</h3><ul>
+<li>background-color</li>
+<li>background-image</li>
+<li>background-repeat</li>
+<li>background-position</li>
+<li>background-size</li>
+<li>background-attachment</li>
+<li>background（简写属性）</li>
+</ul>
+<h3 id="背景颜色"><a href="#背景颜色" class="headerlink" title="背景颜色"></a>背景颜色</h3><pre class=" language-css"><code class="language-css"><span class="token selector">body </span><span class="token punctuation">{</span><span class="token property">background-color</span><span class="token punctuation">:</span> <span class="token hexcode">#caebff</span><span class="token punctuation">;</span><span class="token punctuation">}</span>
+</code></pre>
+<h3 id="背景图片"><a href="#背景图片" class="headerlink" title="背景图片"></a>背景图片</h3><p>设置方式需要这样： <strong>background-image:url(图片路径/图片文件名)</strong></p>
+<p>默认图片是重复的位置也是默认在左上角，图片会重左上角重复铺开，直到填满整个元素。</p>
+<h3 id="背景重复"><a href="#背景重复" class="headerlink" title="背景重复"></a>背景重复</h3><p>控制背景重复方式的background-repeat 属性有4 个值。</p>
+<ul>
+<li>repeat （默认）</li>
+<li>repeat-x （只在水平方向重复）</li>
+<li>repeat-y （只在垂直方向上重复）</li>
+<li>no-repeat （背景图片显示一次）</li>
+</ul>
+<h3 id="背景位置"><a href="#背景位置" class="headerlink" title="背景位置"></a>背景位置</h3><p>用于控制背景位置的是 background-position 属性</p>
+<p>有五个关键字</p>
+<ul>
+<li>top</li>
+<li>left</li>
+<li>bottom</li>
+<li>right </li>
+<li>center</li>
+</ul>
+<p>background-position 属性同时设定元素和图片的原点</p>
+<p>让一张图片居中不重复的方法</p>
+<pre class=" language-css"><code class="language-css"><span class="token selector">div </span><span class="token punctuation">{</span>
+    <span class="token property">height</span><span class="token punctuation">:</span><span class="token number">150</span>px<span class="token punctuation">;</span>
+    <span class="token property">width</span><span class="token punctuation">:</span><span class="token number">250</span>px<span class="token punctuation">;</span>
+    <span class="token property">border</span><span class="token punctuation">:</span><span class="token number">2</span>px solid <span class="token hexcode">#aaa</span><span class="token punctuation">;</span>
+    <span class="token property">margin</span><span class="token punctuation">:</span><span class="token number">20</span>px auto<span class="token punctuation">;</span>
+    <span class="token property">background-image</span><span class="token punctuation">:</span><span class="token url">url(images/turq_spiral_150.png)</span><span class="token punctuation">;</span>
+    <span class="token property">background-repeat</span><span class="token punctuation">:</span>no-repeat<span class="token punctuation">;</span>
+    <span class="token property">background-position</span><span class="token punctuation">:</span><span class="token number">50%</span> <span class="token number">50%</span><span class="token punctuation">;</span>
+<span class="token punctuation">}</span>
+</code></pre>
+<p>通过把 background-position 设定为50% 50%，把background-repeat 设定为no-repeat，实现了图片在背景区域内居中的效果。</p>
+<h3 id="背景尺寸"><a href="#背景尺寸" class="headerlink" title="背景尺寸"></a>背景尺寸</h3><p>background-size 是CSS3 规定的属性，但却得到了浏览器很好的支持。</p>
+<ul>
+<li>50% 缩放图片，使其填充背景区的一半。</li>
+<li>100px 50px：把图片调整到100 像素宽，50 像素高。</li>
+<li>cover：拉大图片，使其完全填满背景区；保持宽高比。</li>
+<li>contain：缩放图片，使其恰好适合背景区；保持宽高比。</li>
+</ul>
+<h3 id="背景粘附"><a href="#背景粘附" class="headerlink" title="背景粘附"></a>背景粘附</h3><p>background-attachment 属性控制滚动元素内的背景图片是否随元素滚动而移动。</p>
+<ul>
+<li>scroll （默认） 滚动</li>
+<li>fixed 不滚动</li>
+</ul>
+<h3 id="简写背景属性"><a href="#简写背景属性" class="headerlink" title="简写背景属性"></a>简写背景属性</h3><pre class=" language-css"><code class="language-css"><span class="token selector">body </span><span class="token punctuation">{</span><span class="token property">background</span><span class="token punctuation">:</span><span class="token url">url(images/watermark.png)</span> center <span class="token hexcode">#fff</span> no-repeat contain fixed<span class="token punctuation">;</span><span class="token punctuation">}</span>
+</code></pre>
+<p>第一个路径，第二个是位置，第三个是背景色，第四个是重复方式，第五和是背景尺寸，都五个是是否滚动。</p>
+<h3 id="多背景图片"><a href="#多背景图片" class="headerlink" title="多背景图片"></a>多背景图片</h3><pre class=" language-css"><code class="language-css"><span class="token selector">p </span><span class="token punctuation">{</span>
+    <span class="token property">height</span><span class="token punctuation">:</span><span class="token number">150</span>px<span class="token punctuation">;</span>
+    <span class="token property">width</span><span class="token punctuation">:</span><span class="token number">348</span>px<span class="token punctuation">;</span>
+    <span class="token property">border</span><span class="token punctuation">:</span><span class="token number">2</span>px solid <span class="token hexcode">#aaa</span><span class="token punctuation">;</span>
+    <span class="token property">margin</span><span class="token punctuation">:</span><span class="token number">20</span>px auto<span class="token punctuation">;</span>
+    <span class="token property">font</span><span class="token punctuation">:</span><span class="token number">24</span>px/<span class="token number">150</span>px helvetica, arial, sansserif<span class="token punctuation">;</span>
+    <span class="token property">text-align</span><span class="token punctuation">:</span>center<span class="token punctuation">;</span>
+    <span class="token property">background</span><span class="token punctuation">:</span>
+    <span class="token url">url(images/turq_spiral.png)</span> <span class="token number">30</span>px -<span class="token number">10</span>px no-repeat,
+    <span class="token url">url(images/pink_spiral.png)</span> <span class="token number">145</span>px <span class="token number">0</span>px no-repeat,
+    <span class="token url">url(images/gray_spiral.png)</span> <span class="token number">140</span>px -<span class="token number">30</span>px no-repeat, <span class="token hexcode">#ffbd75</span><span class="token punctuation">;</span>
+<span class="token punctuation">}</span>
+</code></pre>
+<p>CSS 规则中先列出的图片在上层。</p>
+<h2 id="字体"><a href="#字体" class="headerlink" title="字体"></a>字体</h2><p>网页中字体的三个来源</p>
+<ul>
+<li>用户机器安装的字体</li>
+<li>第三方网站上的字体</li>
+<li>储存在 web 服务器上字体</li>
+</ul>
+<p>CSS 中有6个与字体有关的属性：font-family、font-size、font-style、font-weight、font-variant、font </p>
+<h3 id="字体族"><a href="#字体族" class="headerlink" title="字体族"></a>字体族</h3><p>font-family 可以设置 字体族，也就是指定文本用什么字体，可以设置多个，排列在前面的优先级高</p>
+<pre class=" language-css"><code class="language-css"><span class="token selector">body </span><span class="token punctuation">{</span><span class="token property">font-family</span><span class="token punctuation">:</span><span class="token string">"trebuchet ms"</span>, tahoma, sans-serif<span class="token punctuation">;</span><span class="token punctuation">}</span>
+</code></pre>
+<p>带有空格的字体需要加上引号，前面的字体优先选择，如果找不到，选择下一个，一般最后一个是要设置一个通用字体。</p>
+<ul>
+<li>serif ，也就是衬线字体，在每个字符笔画的末端会有一些装饰线；</li>
+<li>sans-serif ，也就是无衬线字体，字符笔画的末端没有装饰线；</li>
+<li>monospace ，也就是等宽字体，顾名思义，就是每个字符的宽度相等（也称代码体）；</li>
+<li>cursive ，也就是草书体或手写体</li>
+<li>fantasy ，不能归入其他类别的字体（一般都是奇形怪状的字体）</li>
+</ul>
+<h3 id="字体大小"><a href="#字体大小" class="headerlink" title="字体大小"></a>字体大小</h3><p>每个 HTML 元素都设置默认字体大小，当在修改字体大小时候都是修改了默认值，同时也是可以继承的</p>
+<pre class=" language-css"><code class="language-css"> <span class="token selector">h2 </span><span class="token punctuation">{</span><span class="token property">font-size</span><span class="token punctuation">:</span><span class="token number">18</span>px<span class="token punctuation">;</span><span class="token punctuation">}</span>
+</code></pre>
+<p>设置字体大小可以有绝对字体大小和相对字体大小</p>
+<p>绝对字体大小不会随页面缩放不会继承父元素属性，一般使用 px 单位，也可以使用关键字 x-small 、medium 、x-large</p>
+<p>相对字体大小会随着页面缩放会继续父元素的字体大小，再其基础上缩放。使用百分比、em、rem 作为单位。</p>
+<p>rem 是相对根元素的的大小</p>
+<h3 id="字体样式"><a href="#字体样式" class="headerlink" title="字体样式"></a>字体样式</h3><pre class=" language-css"><code class="language-css"><span class="token selector">h2 </span><span class="token punctuation">{</span><span class="token property">font-style</span><span class="token punctuation">:</span>italic<span class="token punctuation">;</span><span class="token punctuation">}</span>
+</code></pre>
+<ul>
+<li>normal 正常</li>
+<li>italic 斜体</li>
+</ul>
+<h3 id="字体粗细"><a href="#字体粗细" class="headerlink" title="字体粗细"></a>字体粗细</h3><p>font-weight 属性的两个值： bold 和 normal</p>
+<h3 id="字体变化"><a href="#字体变化" class="headerlink" title="字体变化"></a>字体变化</h3><p>font-variant 属性除了 normal ，就只有一个值，即 small-caps 。这个值会导致所有<br>小写英文字母变成小型大写字母：</p>
+<pre class=" language-css"><code class="language-css"><span class="token selector">h3 </span><span class="token punctuation">{</span><span class="token property">font-variant</span><span class="token punctuation">:</span>small-caps<span class="token punctuation">;</span><span class="token punctuation">}</span>
+</code></pre>
+<h2 id="文本属性"><a href="#文本属性" class="headerlink" title="文本属性"></a>文本属性</h2><p>以下是几个最有用的 CSS文本属性：</p>
+<ul>
+<li>text-indent</li>
+<li>letter-spacing</li>
+<li>word-spacing</li>
+<li>text-decoration</li>
+<li>text-align</li>
+<li>line-height</li>
+<li>text-transform</li>
+<li>vertical-align</li>
+</ul>
+<h3 id="文本缩进"><a href="#文本缩进" class="headerlink" title="文本缩进"></a>文本缩进</h3><pre class=" language-css"><code class="language-css"> <span class="token selector">p </span><span class="token punctuation">{</span><span class="token property">text-indent</span><span class="token punctuation">:</span><span class="token number">3</span>em<span class="token punctuation">;</span><span class="token punctuation">}</span>
+</code></pre>
+<p>text-indent 属性设定行内盒子相对于包含元素的起点。默认情况下，这个起点就是包含元素的左上角。</p>
+<p>正值向右，负值向左</p>
+<p>text-indent 是可以被子元素继承的。但是继承的是最终的值。</p>
+<blockquote>
+<p>假设有一个 400 像素宽的 div，包含的文本缩进 5%，则缩进的距离是 20 像素（400 的 5%）。<br>在这个 div 中有一个 200 像素宽的段落。作为子元素，它继承父元素的 text-indent 值，所以<br>它包含的文本也缩进。但继承的缩进值是多少呢？不是 5%，而是 20 像素</p>
+</blockquote>
+<h3 id="字符间距"><a href="#字符间距" class="headerlink" title="字符间距"></a>字符间距</h3><pre class=" language-css"><code class="language-css"><span class="token selector">p </span><span class="token punctuation">{</span><span class="token property">letter-spacing</span><span class="token punctuation">:</span><span class="token number">.2</span>em<span class="token punctuation">;</span><span class="token punctuation">}</span>
+</code></pre>
+<blockquote>
+<p>letter-spacing 为正值时增大字符间距，为负值时缩小间距。无论设定字体大小时使用的是什么单位，设定字符间距一定要用相对单位，以便字间距能随字体大小同比例变化。</p>
+</blockquote>
+<h3 id="单词间距"><a href="#单词间距" class="headerlink" title="单词间距"></a>单词间距</h3><pre class=" language-css"><code class="language-css"> <span class="token selector">p </span><span class="token punctuation">{</span><span class="token property">word-spacing</span><span class="token punctuation">:</span><span class="token number">.2</span>em<span class="token punctuation">;</span><span class="token punctuation">}</span>
+</code></pre>
+<h3 id="文本装饰"><a href="#文本装饰" class="headerlink" title="文本装饰"></a>文本装饰</h3><pre class=" language-css"><code class="language-css"><span class="token selector"><span class="token class">.retailprice</span> </span><span class="token punctuation">{</span><span class="token property">text-decoration</span><span class="token punctuation">:</span>line-through<span class="token punctuation">;</span><span class="token punctuation">}</span>
+</code></pre>
+<p> 值有：underline 、 overline 、 line-through 、 blink 、 none，其中 blink 不使用</p>
+<h3 id="文本对齐"><a href="#文本对齐" class="headerlink" title="文本对齐"></a>文本对齐</h3><pre class=" language-css"><code class="language-css"><span class="token selector">p </span><span class="token punctuation">{</span><span class="token property">text-align</span><span class="token punctuation">:</span>right<span class="token punctuation">;</span><span class="token punctuation">}</span>
+</code></pre>
+<blockquote>
+<p>text-align 属性只有 4 个值， left 、 right 、 center 和 justify ，控制着文本在水平方向对齐的方式。其中， center 值也可以用来在较大的元素中居中较小的固定宽度的元素或图片。</p>
+</blockquote>
+<h3 id="行高"><a href="#行高" class="headerlink" title="行高"></a>行高</h3><pre class=" language-css"><code class="language-css"> <span class="token selector">p </span><span class="token punctuation">{</span><span class="token property">line-height</span><span class="token punctuation">:</span><span class="token number">1.5</span><span class="token punctuation">;</span><span class="token punctuation">}</span>
+</code></pre>
+<p>值：任何数字值（不用指定单位）</p>
+<h3 id="文本转换"><a href="#文本转换" class="headerlink" title="文本转换"></a>文本转换</h3><pre class=" language-css"><code class="language-css"> <span class="token selector">p </span><span class="token punctuation">{</span><span class="token property">text-transform</span><span class="token punctuation">:</span>capitalize<span class="token punctuation">;</span><span class="token punctuation">}</span>
+</code></pre>
+<p>值： none 、 uppercase 、 lowercase 、 capitalize 。</p>
+<h3 id="垂直对齐"><a href="#垂直对齐" class="headerlink" title="垂直对齐"></a>垂直对齐</h3><p>值：任意长度值以及 sub 、 super 、 top 、 middle 、 bottom 等。</p>
+<pre class=" language-css"><code class="language-css"><span class="token selector">span </span><span class="token punctuation">{</span><span class="token property">vertical-align</span><span class="token punctuation">:</span><span class="token number">60%</span><span class="token punctuation">;</span><span class="token punctuation">}</span> 。
+</code></pre>
+<blockquote>
+<p>vertical-align 以基线为参照上下移动文本，但这个属性只影响行内元素。如果你想在垂直方向上对齐块级元素，必须把其 display 属性设定为 inline 。</p>
+</blockquote>
+<p> HTML 标签  sup 和 sub 有默认的上标和下标样式，但重新设定一下vertical-align 和 font-size 属性能得到更美观的效果。</p>
+<h3 id="font-face"><a href="#font-face" class="headerlink" title="@font-face"></a>@font-face</h3><pre class=" language-css"><code class="language-css"><span class="token atrule"><span class="token rule">@font-face</span></span> <span class="token punctuation">{</span>
+<span class="token comment" spellcheck="true">/*这就是将来在字体栈中引用的字体族的名字*/</span>
+<span class="token property">font-family</span><span class="token punctuation">:</span><span class="token string">'UbuntuTitlingBold'</span><span class="token punctuation">;</span>
+<span class="token property">src</span><span class="token punctuation">:</span> <span class="token url">url('UbuntuTitling-Bold-webfont.eot')</span><span class="token punctuation">;</span>
+    <span class="token property">src</span><span class="token punctuation">:</span> <span class="token url">url('UbuntuTitling-Bold-webfont.eot?#iefix')</span>
+        <span class="token function">format</span><span class="token punctuation">(</span><span class="token string">'embedded-opentype'</span><span class="token punctuation">)</span>,
+        <span class="token url">url('UbuntuTitling-Bold-webfont.woff')</span>
+        <span class="token function">format</span><span class="token punctuation">(</span><span class="token string">'woff'</span><span class="token punctuation">)</span>,
+        <span class="token url">url('UbuntuTitling-Bold-webfont.ttf')</span>
+        <span class="token function">format</span><span class="token punctuation">(</span><span class="token string">'truetype'</span><span class="token punctuation">)</span>,
+        <span class="token function">url</span><span class="token punctuation">(</span>'UbuntuTitling-Bold-webfont<span class="token number">.</span>
+        svg#UbuntuTitlingBold<span class="token string">') format('</span>svg'<span class="token punctuation">)</span><span class="token punctuation">;</span>
+<span class="token property">font-weight</span><span class="token punctuation">:</span> normal<span class="token punctuation">;</span>
+<span class="token property">font-style</span><span class="token punctuation">:</span> normal<span class="token punctuation">;</span>
+<span class="token punctuation">}</span>
+</code></pre>
+<p>把以上代码添加到网页中之后，就可以使用 font-family 以常规方式引用该字体了。引用字体时要使用 @font-face 规则中 font-family 属性的值作为字体族的名字。</p>
+<h2 id="布局"><a href="#布局" class="headerlink" title="布局"></a>布局</h2><p>多栏布局的三种基本实现方案：固定宽度、流动、弹性。</p>
+<ul>
+<li>固定宽度不会随着页面的缩放而变化，一般选择固定宽度为 960 px，能被多种整数整除，实现多栏布局。</li>
+<li>流动布局会随着浏览器的窗口大小变化而变化，这种布局能更好的适应大屏幕，但是文明本行的长度和页面的元素之间的位置关系可能会发生变化。</li>
+<li>响应式设计利用媒体查询，为提供不同的 CSS 成为可能，使得不同的屏幕可以使用固定布局，正在替代流动布局。</li>
+<li>弹性布局在浏览器大小发生变化时候，所有的元素和布局都会缩放，这种技术实现难度大。</li>
+</ul>
+<p><strong>布局高度</strong>一般要保持 auto ，这样在垂直方向上添加元素时候会自动向下拓展，如果设置的高度，那么元素可能会被剪掉，或者跑出元素外面去。</p>
+<p><strong>布局宽度</strong>需要精确的控制，在浏览器宽度合理变化时候提供合理的调整。必须要给定栏宽，其中的元素不需要给定宽度，使用默认行为填充满整个父元素的宽度。</p>
+<h2 id="三栏-固定布局"><a href="#三栏-固定布局" class="headerlink" title="三栏-固定布局"></a>三栏-固定布局</h2><p>三栏布局中，需要计算出三栏的宽度等于父元素的宽度。</p>
+<pre class=" language-html"><code class="language-html"><span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>div</span> <span class="token attr-name">id</span><span class="token attr-value"><span class="token punctuation">=</span><span class="token punctuation">"</span>wrapper<span class="token punctuation">"</span></span><span class="token punctuation">></span></span>
+    <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>nav</span><span class="token punctuation">></span></span>
+        <span class="token comment" spellcheck="true">&lt;!-- 无序列表 --></span>
+    <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>nav</span><span class="token punctuation">></span></span>
+    <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>article</span><span class="token punctuation">></span></span>
+        <span class="token comment" spellcheck="true">&lt;!-- 这里是一些文本元素 --></span>
+    <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>article</span><span class="token punctuation">></span></span>
+    <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>aside</span><span class="token punctuation">></span></span>
+        <span class="token comment" spellcheck="true">&lt;!-- 文本 --></span>
+    <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>aside</span><span class="token punctuation">></span></span>
+<span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>div</span><span class="token punctuation">></span></span>
+</code></pre>
+<p>三栏的元素分别是 nav、article、aside，假设 #wrapper 的宽度是 960px，那么这三个元素的宽度也要是 960px。</p>
+<pre class=" language-css"><code class="language-css"><span class="token selector"><span class="token id">#wrapper</span> </span><span class="token punctuation">{</span><span class="token property">width</span><span class="token punctuation">:</span><span class="token number">960</span>px<span class="token punctuation">;</span> <span class="token property">margin</span><span class="token punctuation">:</span><span class="token number">0</span> auto<span class="token punctuation">;</span> <span class="token property">border</span><span class="token punctuation">:</span><span class="token number">1</span>px solid<span class="token punctuation">;</span><span class="token punctuation">}</span>
+<span class="token selector">nav </span><span class="token punctuation">{</span>
+    <span class="token property">width</span><span class="token punctuation">:</span><span class="token number">150</span>px<span class="token punctuation">;</span>
+    <span class="token property">float</span><span class="token punctuation">:</span>left<span class="token punctuation">;</span>
+    <span class="token property">background</span><span class="token punctuation">:</span><span class="token hexcode">#dcd9c0</span><span class="token punctuation">;</span>
+<span class="token punctuation">}</span>
+<span class="token selector">nav li </span><span class="token punctuation">{</span>
+    <span class="token property">list-style-type</span><span class="token punctuation">:</span>none<span class="token punctuation">;</span>
+<span class="token punctuation">}</span>
+<span class="token selector">article </span><span class="token punctuation">{</span>
+    <span class="token property">width</span><span class="token punctuation">:</span><span class="token number">600</span>px<span class="token punctuation">;</span>
+    <span class="token property">float</span><span class="token punctuation">:</span>left<span class="token punctuation">;</span>
+    <span class="token property">background</span><span class="token punctuation">:</span><span class="token hexcode">#ffed53</span><span class="token punctuation">;</span>
+<span class="token punctuation">}</span>
+<span class="token selector">aside </span><span class="token punctuation">{</span>
+    <span class="token property">width</span><span class="token punctuation">:</span><span class="token number">210</span>px<span class="token punctuation">;</span>
+    <span class="token property">float</span><span class="token punctuation">:</span>left<span class="token punctuation">;</span>
+    <span class="token property">background</span><span class="token punctuation">:</span><span class="token hexcode">#3f7ccf</span><span class="token punctuation">;</span>
+    <span class="token property">width</span><span class="token punctuation">:</span><span class="token number">210</span>px<span class="token punctuation">;</span>
+    <span class="token property">float</span><span class="token punctuation">:</span>left<span class="token punctuation">;</span>
+    <span class="token property">background</span><span class="token punctuation">:</span><span class="token hexcode">#3f7ccf</span><span class="token punctuation">;</span>
+<span class="token punctuation">}</span>
+</code></pre>
+<p>给这三个固定宽度元素添加内外边距时，由于被指定宽度的元素再添加内外边距时候元素会被扩大，会出现元素错位的情况，有三种方式可以解决。</p>
+<ul>
+<li>计算元素宽度时候就把内外边距也考虑上，这样太麻烦，不推荐。</li>
+<li>把这三个元素用 div 包起来，由于这个 div 是没有被设置宽度的，所以添加内外边距时大小不变</li>
+<li>给三个元素使用 box-sizing:border-box 的属性，就不会导致给设定宽度的元素添加内外边距时，导致元素扩大，这个方法好。</li>
+</ul>
+<h2 id="三栏-中栏流动布局"><a href="#三栏-中栏流动布局" class="headerlink" title="三栏-中栏流动布局"></a>三栏-中栏流动布局</h2><p>目前而言 CSS 中的 table 属性是最简单、最容易实现的，但是在低于 IE7 的浏览器不被支持，也没有任何的替代方法。</p>
+<p>CSS可以把一个 HTML元素的 display 属性设定为 table 、 table-row 和 table-cell 。</p>
+<p>而通过 CSS把布局中的栏设定为 table-cell 有三个好处。</p>
+<ul>
+<li>单元格（table-cell）不需要浮动就可以并排显示，而且直接为它们应用内边距也不会破坏布局。</li>
+</ul>
+<ul>
+<li>默认情况下，一行中的所有单元格高度相同，因而也不需要人造的等高栏效果了。</li>
+</ul>
+<ul>
+<li>任何没有明确设定宽度的栏都是流动的。</li>
+</ul>
+<pre class=" language-html"><code class="language-html"><span class="token doctype">&lt;!DOCTYPE html></span>
+<span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>html</span> <span class="token attr-name">lang</span><span class="token attr-value"><span class="token punctuation">=</span><span class="token punctuation">"</span>en<span class="token punctuation">"</span></span><span class="token punctuation">></span></span>
+<span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>head</span><span class="token punctuation">></span></span>
+    <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>meta</span> <span class="token attr-name">charset</span><span class="token attr-value"><span class="token punctuation">=</span><span class="token punctuation">"</span>UTF-8<span class="token punctuation">"</span></span><span class="token punctuation">></span></span>
+    <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>title</span><span class="token punctuation">></span></span>Document<span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>title</span><span class="token punctuation">></span></span>
+    <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>style</span> <span class="token attr-name">type</span><span class="token attr-value"><span class="token punctuation">=</span><span class="token punctuation">"</span>text/css<span class="token punctuation">"</span></span><span class="token punctuation">></span></span><span class="token style language-css">
+        <span class="token selector"><span class="token id">#main</span></span><span class="token punctuation">{</span>
+            <span class="token property">width</span><span class="token punctuation">:</span> <span class="token number">960</span>px<span class="token punctuation">;</span>
+            <span class="token property">margin</span><span class="token punctuation">:</span> auto auto<span class="token punctuation">;</span>
+        <span class="token punctuation">}</span>
+      <span class="token selector">nav </span><span class="token punctuation">{</span>
+        <span class="token property">display</span><span class="token punctuation">:</span> table-cell<span class="token punctuation">;</span>
+        <span class="token property">width</span><span class="token punctuation">:</span> <span class="token number">100</span>px<span class="token punctuation">;</span>
+        <span class="token property">background-color</span><span class="token punctuation">:</span> red<span class="token punctuation">;</span>
+        <span class="token property">padding</span><span class="token punctuation">:</span> <span class="token number">20</span>px <span class="token number">20</span>px<span class="token punctuation">;</span>
+      <span class="token punctuation">}</span> 
+      <span class="token selector">article </span><span class="token punctuation">{</span>
+        <span class="token property">display</span><span class="token punctuation">:</span> table-cell<span class="token punctuation">;</span>
+        <span class="token property">width</span><span class="token punctuation">:</span> <span class="token number">600</span>px<span class="token punctuation">;</span>
+        <span class="token property">background-color</span><span class="token punctuation">:</span> blue<span class="token punctuation">;</span>
+        <span class="token property">padding</span><span class="token punctuation">:</span> <span class="token number">20</span>px <span class="token number">20</span>px<span class="token punctuation">;</span>
+      <span class="token punctuation">}</span> 
+      <span class="token selector">aside </span><span class="token punctuation">{</span>
+        <span class="token property">display</span><span class="token punctuation">:</span> table-cell<span class="token punctuation">;</span>
+        <span class="token property">width</span><span class="token punctuation">:</span> <span class="token number">260</span>px<span class="token punctuation">;</span>
+        <span class="token property">background-color</span><span class="token punctuation">:</span> yellow<span class="token punctuation">;</span>
+        <span class="token property">padding</span><span class="token punctuation">:</span> <span class="token number">20</span>px <span class="token number">20</span>px<span class="token punctuation">;</span>
+      <span class="token punctuation">}</span>
+    </span><span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>style</span><span class="token punctuation">></span></span>
+<span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>head</span><span class="token punctuation">></span></span>
+    <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>body</span><span class="token punctuation">></span></span>
+        <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>div</span> <span class="token attr-name">id</span><span class="token attr-value"><span class="token punctuation">=</span><span class="token punctuation">'</span>main<span class="token punctuation">'</span></span><span class="token punctuation">></span></span>
+            <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>nav</span><span class="token punctuation">></span></span>
+                <span class="token comment" spellcheck="true">&lt;!-- 一些东西 --></span>
+            <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>nav</span><span class="token punctuation">></span></span>
+            <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>article</span><span class="token punctuation">></span></span>
+                <span class="token comment" spellcheck="true">&lt;!-- 一些东西 --></span>
+            <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>article</span><span class="token punctuation">></span></span>
+            <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>aside</span><span class="token punctuation">></span></span>
+                <span class="token comment" spellcheck="true">&lt;!-- 一些东西 --></span>
+            <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>aside</span><span class="token punctuation">></span></span>
+        <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>div</span><span class="token punctuation">></span></span>
+    <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>body</span><span class="token punctuation">></span></span>
+<span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>html</span><span class="token punctuation">></span></span>
+</code></pre>
+ 
+    </div>
+    <div class="post-foot">
+        <div id="disqus_thread"></div>
+    </div>
+</div>
+
+
+                </section>
+                <footer class="container fixed-690 footer">
+    <div>
+        <span>Power by <a href="https://hexo.io">Hexo</a></span>
+    </div>
+    <div>
+        <span>Theme <a href="https://github.com/zhengxiaowai/hexo-theme-lessless">lessless</a></span>
+    </div>
+        
+            
+<div>
+    <span id="hexiangyutest_container_site_pv">
+    PV: <span id="busuanzi_value_site_pv"></span>
+    </span>
+    <span id="busuanzi_container_site_uv">
+    UV: <span id="busuanzi_value_site_uv"></span>
+    </span>
+</div>
+
+        
+        
+            <div>
+    <span><a href="https://beian.miit.gov.cn/#/Integrated/index" target="_blank">闽ICP备17000267号-1</a></span>
+</div>
+        
+</footer>
+        </div>
+        
+<script src="/js/jquery-3.2.1.slim.min.js"></script>
+<script src="/js/popper.min.js"></script>
+<script src="/js/bootstrap.min.js"></script>
+
+
+    
+<script type="text/javascript">
+    var disqus_config = function () {
+        this.page.url = 'http://hexiangyu.me/2015/11/01/css-designer-guide/';
+        this.page.identifier = '2015/11/01/css-designer-guide/';
+        this.page.title = 'CSS 设计指南读书笔记';
+    };
+    var d = document, s = d.createElement('script');
+    s.src = '//hexiangyus.disqus.com/embed.js';
+    s.setAttribute('data-timestamp', '' + +new Date());
+    (d.head || d.body).appendChild(s);
+</script>
+
+
+    </body>
+</html>

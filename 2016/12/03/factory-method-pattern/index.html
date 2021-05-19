@@ -1,0 +1,248 @@
+<html>
+    <!DOCTYPE html>
+<html lang="zh">
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<meta http-equiv="X-UA-Compatible" content="ie=edge">
+
+	
+
+	<title>设计模式 —— 工厂方法 | 正小歪的博客</title>
+	<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1">
+	<link rel="shortcut icon" href="/favicon.ico">	
+	<link rel="stylesheet" href="/css/bootstrap.min.css">
+	<link rel="stylesheet" href="/css/style.css">
+    <script async src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+<link rel="stylesheet" href="/css/prism.css" type="text/css"></head>
+
+    <body>
+        <div class="root">
+            <div class='topnavs container fixed-690'>
+    <nav class="navbar navbar-expand-lg navbar-light">
+        <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent" aria-controls="navbarSupportedContent"
+            aria-expanded="false" aria-label="Toggle navigation">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse" id="navbarSupportedContent">
+            <ul class="navbar-nav mr-auto">
+                
+                    <li class="nav-item">
+                        <a class="nav-link" href="/">
+                            首页
+                        </a>
+                    </li>
+                    
+                    <li class="nav-item">
+                        <a class="nav-link" href="/categories">
+                            分类
+                        </a>
+                    </li>
+                    
+                    <li class="nav-item">
+                        <a class="nav-link" href="/archives">
+                            归档
+                        </a>
+                    </li>
+                    
+            </ul>
+        </div>
+    </nav>
+</div>
+                <section class="container mainbody fixed-690">
+                    <div class="post">
+    <div class="post-title">
+        <h1>
+            设计模式 —— 工厂方法 
+        </h1>
+
+        
+        <div class="post-title-views">
+            <span id="busuanzi_container_page_pv">
+                本文总阅读量 <span id="busuanzi_value_page_pv"></span> 次
+            </span>
+        </div>
+        
+    </div>
+    <div class="post-content markdown">
+        <p>工厂方法是处理不指定对象具体类型情况下创建对象的问题。</p>
+<blockquote>
+<p>定义一个创建对象的接口，但让实现这个接口的类来决定实例化哪个类。工厂方法让类的实例化推迟到子类中进行。</p>
+</blockquote>
+<a id="more"></a>
+<p>在面向对象程序设计中，工厂是一个用来创建对象的对象，是构造方法的抽象。</p>
+<p>工厂对象一般拥有多个创建对象的方法，工厂对象可以通过参数动态创建类，可以针对不同的创建对象，进行特殊的配置。</p>
+<blockquote>
+<p>下列情况可以考虑使用工厂方法模式：</p>
+<ul>
+<li>创建对象需要大量重复的代码。</li>
+<li>创建对象需要访问某些信息，而这些信息不应该包含在复合类中。</li>
+<li>创建对象的生命周期必须集中管理，以保证在整个程序中具有一致的行为。</li>
+</ul>
+</blockquote>
+<pre class=" language-python"><code class="language-python"><span class="token keyword">def</span> <span class="token function">create_win_button</span><span class="token punctuation">(</span>button_name<span class="token punctuation">)</span><span class="token punctuation">:</span>
+    <span class="token comment" spellcheck="true"># do something for win</span>
+    <span class="token keyword">return</span> <span class="token string">'{} win button created'</span><span class="token punctuation">.</span>format<span class="token punctuation">(</span>button_name<span class="token punctuation">)</span>
+
+
+<span class="token keyword">def</span> <span class="token function">create_mac_button</span><span class="token punctuation">(</span>button_name<span class="token punctuation">)</span><span class="token punctuation">:</span>
+    <span class="token comment" spellcheck="true"># do something for mac</span>
+    <span class="token keyword">return</span> <span class="token string">'{} mac button created'</span><span class="token punctuation">.</span>format<span class="token punctuation">(</span>button_name<span class="token punctuation">)</span>
+
+
+<span class="token keyword">class</span> <span class="token class-name">ButtonFactory</span><span class="token punctuation">(</span>object<span class="token punctuation">)</span><span class="token punctuation">:</span>
+    <span class="token keyword">def</span> <span class="token function">create</span><span class="token punctuation">(</span>self<span class="token punctuation">,</span> button_name<span class="token punctuation">)</span><span class="token punctuation">:</span>
+        <span class="token keyword">raise</span> NotImplementedError
+
+
+<span class="token keyword">class</span> <span class="token class-name">WinButtonFactory</span><span class="token punctuation">(</span>ButtonFactory<span class="token punctuation">)</span><span class="token punctuation">:</span>
+    <span class="token keyword">def</span> <span class="token function">create</span><span class="token punctuation">(</span>self<span class="token punctuation">,</span> button_name<span class="token punctuation">)</span><span class="token punctuation">:</span>
+        <span class="token keyword">return</span> create_win_button<span class="token punctuation">(</span>button_name<span class="token punctuation">)</span>
+
+
+<span class="token keyword">class</span> <span class="token class-name">MacButtonFactory</span><span class="token punctuation">(</span>ButtonFactory<span class="token punctuation">)</span><span class="token punctuation">:</span>
+    <span class="token keyword">def</span> <span class="token function">create</span><span class="token punctuation">(</span>self<span class="token punctuation">,</span> button_name<span class="token punctuation">)</span><span class="token punctuation">:</span>
+        <span class="token keyword">return</span> create_mac_button<span class="token punctuation">(</span>button_name<span class="token punctuation">)</span>
+
+
+<span class="token keyword">if</span> __name__ <span class="token operator">==</span> <span class="token string">'__main__'</span><span class="token punctuation">:</span>
+    win_button_factory <span class="token operator">=</span> WinButtonFactory<span class="token punctuation">(</span><span class="token punctuation">)</span>
+    mac_button_factory <span class="token operator">=</span> MacButtonFactory<span class="token punctuation">(</span><span class="token punctuation">)</span>
+
+    show_button_on_win <span class="token operator">=</span> win_button_factory<span class="token punctuation">.</span>create<span class="token punctuation">(</span><span class="token string">'show'</span><span class="token punctuation">)</span>
+    close_button_on_mac <span class="token operator">=</span> win_button_factory<span class="token punctuation">.</span>create<span class="token punctuation">(</span><span class="token string">'close'</span><span class="token punctuation">)</span>
+
+    <span class="token keyword">print</span><span class="token punctuation">(</span>show_button_on_win<span class="token punctuation">,</span> close_button_on_mac<span class="token punctuation">)</span>
+</code></pre>
+<p>创建实例过程不一定使用单独的创建类，通常可以使用静态方法。当使用这种方式时，构造方法经常被设置成私有的，强制使用工厂方法的对象。</p>
+<blockquote>
+<p>Python 中没有私有的概念，一般用下划线表示私有</p>
+</blockquote>
+<pre class=" language-python"><code class="language-python"><span class="token keyword">from</span> collections <span class="token keyword">import</span> namedtuple
+<span class="token keyword">from</span> math <span class="token keyword">import</span> cos<span class="token punctuation">,</span> sin<span class="token punctuation">,</span> pi
+
+<span class="token comment" spellcheck="true"># 禁止「构造函数 _create()」导出</span>
+__all__ <span class="token operator">=</span> <span class="token punctuation">[</span>
+    <span class="token string">'ComplexCreator'</span>
+<span class="token punctuation">]</span>
+
+Complex <span class="token operator">=</span> namedtuple<span class="token punctuation">(</span><span class="token string">'Complex'</span><span class="token punctuation">,</span> <span class="token string">'x y'</span><span class="token punctuation">)</span>
+
+
+<span class="token keyword">def</span> <span class="token function">_create</span><span class="token punctuation">(</span>a<span class="token punctuation">,</span> b<span class="token punctuation">)</span><span class="token punctuation">:</span>
+    <span class="token keyword">return</span> Complex<span class="token punctuation">(</span>a<span class="token punctuation">,</span> b<span class="token punctuation">)</span>
+
+
+<span class="token keyword">class</span> <span class="token class-name">ComplexCreator</span><span class="token punctuation">(</span>object<span class="token punctuation">)</span><span class="token punctuation">:</span>
+    @staticmethod
+    <span class="token keyword">def</span> <span class="token function">from_cartesian_factory</span><span class="token punctuation">(</span>real<span class="token punctuation">,</span> imaginary<span class="token punctuation">)</span><span class="token punctuation">:</span>
+        <span class="token keyword">return</span> _create<span class="token punctuation">(</span>real<span class="token punctuation">,</span> imaginary<span class="token punctuation">)</span>
+
+    @staticmethod
+    <span class="token keyword">def</span> <span class="token function">from_polar_factory</span><span class="token punctuation">(</span>modulus<span class="token punctuation">,</span> angle<span class="token punctuation">)</span><span class="token punctuation">:</span>
+        <span class="token keyword">return</span> _create<span class="token punctuation">(</span>modulus <span class="token operator">*</span> cos<span class="token punctuation">(</span>angle<span class="token punctuation">)</span><span class="token punctuation">,</span> angle <span class="token operator">*</span> sin<span class="token punctuation">(</span>modulus<span class="token punctuation">)</span><span class="token punctuation">)</span>
+
+
+<span class="token keyword">if</span> __name__ <span class="token operator">==</span> <span class="token string">'__main__'</span><span class="token punctuation">:</span>
+    cartesian_complex <span class="token operator">=</span> ComplexCreator<span class="token punctuation">.</span>from_cartesian_factory<span class="token punctuation">(</span><span class="token number">3</span><span class="token punctuation">,</span> <span class="token number">4</span><span class="token punctuation">)</span>
+    polar_complex <span class="token operator">=</span> ComplexCreator<span class="token punctuation">.</span>from_polar_factory<span class="token punctuation">(</span><span class="token number">5</span><span class="token punctuation">,</span> pi<span class="token punctuation">)</span>
+
+    <span class="token keyword">print</span><span class="token punctuation">(</span>cartesian_complex<span class="token punctuation">,</span> polar_complex<span class="token punctuation">)</span>
+</code></pre>
+<p>也可以利用动态语言 Function First 的特点，在工厂中根据合适的信息创建需要的对象。</p>
+<pre class=" language-python"><code class="language-python">__all__ <span class="token operator">=</span> <span class="token punctuation">[</span>
+    <span class="token string">"image_reader_factory"</span>
+<span class="token punctuation">]</span>
+
+
+<span class="token keyword">def</span> <span class="token function">gif_reader</span><span class="token punctuation">(</span>image_file_path<span class="token punctuation">)</span><span class="token punctuation">:</span>
+    <span class="token keyword">return</span> <span class="token string">'gif reader created'</span>
+
+
+<span class="token keyword">def</span> <span class="token function">jpeg_reader</span><span class="token punctuation">(</span>image_file_path<span class="token punctuation">)</span><span class="token punctuation">:</span>
+    <span class="token keyword">return</span> <span class="token string">'jpeg reader created'</span>
+
+
+<span class="token keyword">def</span> <span class="token function">image_reader_factory</span><span class="token punctuation">(</span>image_file_path<span class="token punctuation">)</span><span class="token punctuation">:</span>
+    reader <span class="token operator">=</span> None
+    <span class="token keyword">if</span> image_file_path<span class="token punctuation">.</span>endswith<span class="token punctuation">(</span><span class="token string">'gif'</span><span class="token punctuation">)</span><span class="token punctuation">:</span>
+        reader <span class="token operator">=</span> gif_reader<span class="token punctuation">(</span>image_file_path<span class="token punctuation">)</span>
+    <span class="token keyword">elif</span> image_file_path<span class="token punctuation">.</span>endswith<span class="token punctuation">(</span><span class="token string">'jpeg'</span><span class="token punctuation">)</span><span class="token punctuation">:</span>
+        reader <span class="token operator">=</span> jpeg_reader<span class="token punctuation">(</span>image_file_path<span class="token punctuation">)</span>
+    <span class="token keyword">else</span><span class="token punctuation">:</span>
+        <span class="token keyword">raise</span> ValueError<span class="token punctuation">(</span><span class="token string">'invalid image type'</span><span class="token punctuation">)</span>
+
+    <span class="token keyword">return</span> reader
+
+<span class="token keyword">if</span> __name__ <span class="token operator">==</span> <span class="token string">'__main__'</span><span class="token punctuation">:</span>
+    gif <span class="token operator">=</span> image_reader_factory<span class="token punctuation">(</span><span class="token string">'hexiangyu.gif'</span><span class="token punctuation">)</span>
+    jpeg <span class="token operator">=</span> image_reader_factory<span class="token punctuation">(</span><span class="token string">'zhengxiaowai.jpeg'</span><span class="token punctuation">)</span>
+
+    <span class="token keyword">print</span><span class="token punctuation">(</span>gif<span class="token punctuation">,</span> jpeg<span class="token punctuation">)</span>
+</code></pre>
+<p>工厂方法有三个局限性：</p>
+<ol>
+<li>重构会破坏客户端代码，因为会把标准创建类设置为私有的不允许调用</li>
+<li>工厂方法所实例化的类具有私有的构造方法（Python没这个问题）</li>
+<li>如果扩展工厂类，那么子类必须有自己的一套实现，否则会调用父类的方法</li>
+</ol>
+<h2 id="Reference"><a href="#Reference" class="headerlink" title="Reference"></a>Reference</h2><ul>
+<li>维基百科 <a href="https://zh.wikipedia.org/wiki/%E5%B7%A5%E5%8E%82%E6%96%B9%E6%B3%95" target="_blank" rel="noopener">工厂方法</a></li>
+</ul>
+ 
+    </div>
+    <div class="post-foot">
+        <div id="disqus_thread"></div>
+    </div>
+</div>
+
+
+                </section>
+                <footer class="container fixed-690 footer">
+    <div>
+        <span>Power by <a href="https://hexo.io">Hexo</a></span>
+    </div>
+    <div>
+        <span>Theme <a href="https://github.com/zhengxiaowai/hexo-theme-lessless">lessless</a></span>
+    </div>
+        
+            
+<div>
+    <span id="hexiangyutest_container_site_pv">
+    PV: <span id="busuanzi_value_site_pv"></span>
+    </span>
+    <span id="busuanzi_container_site_uv">
+    UV: <span id="busuanzi_value_site_uv"></span>
+    </span>
+</div>
+
+        
+        
+            <div>
+    <span><a href="https://beian.miit.gov.cn/#/Integrated/index" target="_blank">闽ICP备17000267号-1</a></span>
+</div>
+        
+</footer>
+        </div>
+        
+<script src="/js/jquery-3.2.1.slim.min.js"></script>
+<script src="/js/popper.min.js"></script>
+<script src="/js/bootstrap.min.js"></script>
+
+
+    
+<script type="text/javascript">
+    var disqus_config = function () {
+        this.page.url = 'http://hexiangyu.me/2016/12/03/factory-method-pattern/';
+        this.page.identifier = '2016/12/03/factory-method-pattern/';
+        this.page.title = '设计模式 —— 工厂方法';
+    };
+    var d = document, s = d.createElement('script');
+    s.src = '//hexiangyus.disqus.com/embed.js';
+    s.setAttribute('data-timestamp', '' + +new Date());
+    (d.head || d.body).appendChild(s);
+</script>
+
+
+    </body>
+</html>

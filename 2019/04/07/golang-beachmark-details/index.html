@@ -1,0 +1,262 @@
+<html>
+    <!DOCTYPE html>
+<html lang="zh">
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<meta http-equiv="X-UA-Compatible" content="ie=edge">
+
+	
+
+	<title>「译」更详细的 Go 性能测试 | 正小歪的博客</title>
+	<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1">
+	<link rel="shortcut icon" href="/favicon.ico">	
+	<link rel="stylesheet" href="/css/bootstrap.min.css">
+	<link rel="stylesheet" href="/css/style.css">
+    <script async src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+<link rel="stylesheet" href="/css/prism.css" type="text/css"></head>
+
+    <body>
+        <div class="root">
+            <div class='topnavs container fixed-690'>
+    <nav class="navbar navbar-expand-lg navbar-light">
+        <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent" aria-controls="navbarSupportedContent"
+            aria-expanded="false" aria-label="Toggle navigation">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse" id="navbarSupportedContent">
+            <ul class="navbar-nav mr-auto">
+                
+                    <li class="nav-item">
+                        <a class="nav-link" href="/">
+                            首页
+                        </a>
+                    </li>
+                    
+                    <li class="nav-item">
+                        <a class="nav-link" href="/categories">
+                            分类
+                        </a>
+                    </li>
+                    
+                    <li class="nav-item">
+                        <a class="nav-link" href="/archives">
+                            归档
+                        </a>
+                    </li>
+                    
+            </ul>
+        </div>
+    </nav>
+</div>
+                <section class="container mainbody fixed-690">
+                    <div class="post">
+    <div class="post-title">
+        <h1>
+            「译」更详细的 Go 性能测试 
+        </h1>
+
+        
+        <div class="post-title-views">
+            <span id="busuanzi_container_page_pv">
+                本文总阅读量 <span id="busuanzi_value_page_pv"></span> 次
+            </span>
+        </div>
+        
+    </div>
+    <div class="post-content markdown">
+        <p><a href="https://medium.com/@egonelbre/benchmarking-with-details-1cf3e61d459d" target="_blank" rel="noopener">原文连接</a></p>
+<p>我一直在优化我的 go 代码并且一直优化我的性能测试方案。</p>
+<a id="more"></a>
+<p>让我们先看一个简单的例子：</p>
+<pre class=" language-go"><code class="language-go"><span class="token keyword">func</span> <span class="token function">BenchmarkReport</span><span class="token punctuation">(</span>b <span class="token operator">*</span>testing<span class="token punctuation">.</span>B<span class="token punctuation">)</span> <span class="token punctuation">{</span>
+    runtime<span class="token punctuation">.</span><span class="token function">GC</span><span class="token punctuation">(</span><span class="token punctuation">)</span>
+    <span class="token keyword">for</span> i <span class="token operator">:=</span> <span class="token number">0</span><span class="token punctuation">;</span> i <span class="token operator">&lt;</span> b<span class="token punctuation">.</span>N<span class="token punctuation">;</span> i<span class="token operator">++</span> <span class="token punctuation">{</span>
+        r <span class="token operator">:=</span> fmt<span class="token punctuation">.</span><span class="token function">Sprintf</span><span class="token punctuation">(</span><span class="token string">"hello, world %d"</span><span class="token punctuation">,</span> <span class="token number">123</span><span class="token punctuation">)</span>
+        runtime<span class="token punctuation">.</span><span class="token function">KeepAlive</span><span class="token punctuation">(</span>r<span class="token punctuation">)</span>
+    <span class="token punctuation">}</span>
+<span class="token punctuation">}</span>
+</code></pre>
+<p>执行 <code>go test -beach .</code> 会看到这样子的结果：</p>
+<pre><code>BenchmarkReport-32      20000000               107 ns/op
+</code></pre><p>这可能可以初略的估计性能表现，但是彻底的优化需要更详细的结果。</p>
+<p>将所有的内容压缩成一个数字必然是简单的。</p>
+<p><img src="https://static.zhengxiaowai.cc/2019-04-05-111610.png" alt=""></p>
+<p>让我向你们介绍我写的 <strong>hrtime</strong> 包，以便于获取更详细的性能测试结果。</p>
+<h2 id="直方图"><a href="#直方图" class="headerlink" title="直方图"></a>直方图</h2><p>第一个推荐使用的是 <code>hrtime.NewBeachmark</code>，重写上面的简单例子：</p>
+<pre class=" language-go"><code class="language-go"><span class="token keyword">func</span> <span class="token function">main</span><span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token punctuation">{</span>
+    bench <span class="token operator">:=</span> hrtime<span class="token punctuation">.</span><span class="token function">NewBenchmark</span><span class="token punctuation">(</span><span class="token number">20000000</span><span class="token punctuation">)</span>
+    <span class="token keyword">for</span> bench<span class="token punctuation">.</span><span class="token function">Next</span><span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token punctuation">{</span>
+        r <span class="token operator">:=</span> fmt<span class="token punctuation">.</span><span class="token function">Sprintf</span><span class="token punctuation">(</span><span class="token string">"hello, world %d"</span><span class="token punctuation">,</span> <span class="token number">123</span><span class="token punctuation">)</span>
+        runtime<span class="token punctuation">.</span><span class="token function">KeepAlive</span><span class="token punctuation">(</span>r<span class="token punctuation">)</span>
+    <span class="token punctuation">}</span>
+    fmt<span class="token punctuation">.</span><span class="token function">Println</span><span class="token punctuation">(</span>bench<span class="token punctuation">.</span><span class="token function">Histogram</span><span class="token punctuation">(</span><span class="token number">10</span><span class="token punctuation">)</span><span class="token punctuation">)</span>
+<span class="token punctuation">}</span>
+</code></pre>
+<p>它会输出：</p>
+<pre class=" language-go"><code class="language-go">  avg 372ns<span class="token punctuation">;</span>  min 300ns<span class="token punctuation">;</span>  p50 400ns<span class="token punctuation">;</span>  max <span class="token number">295</span>µs<span class="token punctuation">;</span>
+  p90 400ns<span class="token punctuation">;</span>  p99 500ns<span class="token punctuation">;</span>  p999 <span class="token number">1.8</span>µs<span class="token punctuation">;</span>  p9999 <span class="token number">4.3</span>µs<span class="token punctuation">;</span>
+      300ns <span class="token punctuation">[</span> <span class="token number">7332554</span><span class="token punctuation">]</span> ███████████████████████
+      400ns <span class="token punctuation">[</span><span class="token number">12535735</span><span class="token punctuation">]</span> ████████████████████████████████████████
+      600ns <span class="token punctuation">[</span>   <span class="token number">18955</span><span class="token punctuation">]</span>
+      800ns <span class="token punctuation">[</span>    <span class="token number">2322</span><span class="token punctuation">]</span>
+        <span class="token number">1</span>µs <span class="token punctuation">[</span>   <span class="token number">20413</span><span class="token punctuation">]</span>
+      <span class="token number">1.2</span>µs <span class="token punctuation">[</span>   <span class="token number">34854</span><span class="token punctuation">]</span>
+      <span class="token number">1.4</span>µs <span class="token punctuation">[</span>   <span class="token number">25096</span><span class="token punctuation">]</span>
+      <span class="token number">1.6</span>µs <span class="token punctuation">[</span>   <span class="token number">10009</span><span class="token punctuation">]</span>
+      <span class="token number">1.8</span>µs <span class="token punctuation">[</span>    <span class="token number">4688</span><span class="token punctuation">]</span>
+        <span class="token number">2</span>µs<span class="token operator">+</span><span class="token punctuation">[</span>   <span class="token number">15374</span><span class="token punctuation">]</span>
+</code></pre>
+<p>我们可以看出 P99 是 500ns，表示的是 1% 的测试超过 500ns，我们可以分配更小的字符串来优化：</p>
+<pre class=" language-go"><code class="language-go"><span class="token keyword">func</span> <span class="token function">main</span><span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token punctuation">{</span>
+    bench <span class="token operator">:=</span> hrtime<span class="token punctuation">.</span><span class="token function">NewBenchmark</span><span class="token punctuation">(</span><span class="token number">20000000</span><span class="token punctuation">)</span>
+    <span class="token keyword">var</span> back <span class="token punctuation">[</span><span class="token number">1024</span><span class="token punctuation">]</span><span class="token builtin">byte</span>
+    <span class="token keyword">for</span> bench<span class="token punctuation">.</span><span class="token function">Next</span><span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token punctuation">{</span>
+        buffer <span class="token operator">:=</span> back<span class="token punctuation">[</span><span class="token punctuation">:</span><span class="token number">0</span><span class="token punctuation">]</span>
+        buffer <span class="token operator">=</span> <span class="token function">append</span><span class="token punctuation">(</span>buffer<span class="token punctuation">,</span> <span class="token punctuation">[</span><span class="token punctuation">]</span><span class="token function">byte</span><span class="token punctuation">(</span><span class="token string">"hello, world "</span><span class="token punctuation">)</span><span class="token operator">...</span><span class="token punctuation">)</span>
+        buffer <span class="token operator">=</span> strconv<span class="token punctuation">.</span><span class="token function">AppendInt</span><span class="token punctuation">(</span>buffer<span class="token punctuation">,</span> <span class="token number">123</span><span class="token punctuation">,</span> <span class="token number">10</span><span class="token punctuation">)</span>
+        runtime<span class="token punctuation">.</span><span class="token function">KeepAlive</span><span class="token punctuation">(</span>buffer<span class="token punctuation">)</span>
+    <span class="token punctuation">}</span>
+    fmt<span class="token punctuation">.</span><span class="token function">Println</span><span class="token punctuation">(</span>bench<span class="token punctuation">.</span><span class="token function">Histogram</span><span class="token punctuation">(</span><span class="token number">10</span><span class="token punctuation">)</span><span class="token punctuation">)</span>
+<span class="token punctuation">}</span>
+</code></pre>
+<p>结果如下：</p>
+<pre class=" language-go"><code class="language-go">  avg 267ns<span class="token punctuation">;</span>  min 200ns<span class="token punctuation">;</span>  p50 300ns<span class="token punctuation">;</span>  max <span class="token number">216</span>µs<span class="token punctuation">;</span>
+  p90 300ns<span class="token punctuation">;</span>  p99 300ns<span class="token punctuation">;</span>  p999 <span class="token number">1.1</span>µs<span class="token punctuation">;</span>  p9999 <span class="token number">3.6</span>µs<span class="token punctuation">;</span>
+      200ns <span class="token punctuation">[</span> <span class="token number">7211285</span><span class="token punctuation">]</span> ██████████████████████▌
+      300ns <span class="token punctuation">[</span><span class="token number">12658260</span><span class="token punctuation">]</span> ████████████████████████████████████████
+      400ns <span class="token punctuation">[</span>   <span class="token number">81076</span><span class="token punctuation">]</span>
+      500ns <span class="token punctuation">[</span>    <span class="token number">3226</span><span class="token punctuation">]</span>
+      600ns <span class="token punctuation">[</span>     <span class="token number">343</span><span class="token punctuation">]</span>
+      700ns <span class="token punctuation">[</span>     <span class="token number">136</span><span class="token punctuation">]</span>
+      800ns <span class="token punctuation">[</span>     <span class="token number">729</span><span class="token punctuation">]</span>
+      900ns <span class="token punctuation">[</span>    <span class="token number">8108</span><span class="token punctuation">]</span>
+        <span class="token number">1</span>µs <span class="token punctuation">[</span>   <span class="token number">15436</span><span class="token punctuation">]</span>
+      <span class="token number">1.1</span>µs<span class="token operator">+</span><span class="token punctuation">[</span>   <span class="token number">21401</span><span class="token punctuation">]</span>
+</code></pre>
+<p>现在可以看到 99% 的测试已经从 500ns 降到了 300ns。</p>
+<p>如果你眼神犀利，可能已经注意到 go beachmark 给出了 107ns/op 但是 hrtime 给了 372ns/op。<br>这是获取更多测试信息的副作用，他们总是会有开销的。最终结果包括这种开销。</p>
+<h2 id="Stopwatch"><a href="#Stopwatch" class="headerlink" title="Stopwatch"></a>Stopwatch</h2><p>有时候我们还行测试并发操作，这时候可能需要 Stopwatch。</p>
+<p>假如你想在测试一个多竞争 channel 的持续时间。当然这是一个认为的例子，大致描述了如何从一个 goroutine 开始在另一个 goroutine 结束并且打印结果。</p>
+<pre class=" language-go"><code class="language-go"><span class="token keyword">func</span> <span class="token function">main</span><span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token punctuation">{</span>
+    <span class="token keyword">const</span> numberOfExperiments <span class="token operator">=</span> <span class="token number">1000</span>
+    bench <span class="token operator">:=</span> hrtime<span class="token punctuation">.</span><span class="token function">NewStopwatch</span><span class="token punctuation">(</span>numberOfExperiments<span class="token punctuation">)</span>
+    ch <span class="token operator">:=</span> <span class="token function">make</span><span class="token punctuation">(</span><span class="token keyword">chan</span> <span class="token builtin">int32</span><span class="token punctuation">,</span> <span class="token number">10</span><span class="token punctuation">)</span>
+    wait <span class="token operator">:=</span> <span class="token function">make</span><span class="token punctuation">(</span><span class="token keyword">chan</span> <span class="token keyword">struct</span><span class="token punctuation">{</span><span class="token punctuation">}</span><span class="token punctuation">)</span>
+    <span class="token comment" spellcheck="true">// start senders</span>
+    <span class="token keyword">for</span> i <span class="token operator">:=</span> <span class="token number">0</span><span class="token punctuation">;</span> i <span class="token operator">&lt;</span> numberOfExperiments<span class="token punctuation">;</span> i<span class="token operator">++</span> <span class="token punctuation">{</span>
+        <span class="token keyword">go</span> <span class="token keyword">func</span><span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token punctuation">{</span>
+            <span class="token operator">&lt;-</span>wait
+            ch <span class="token operator">&lt;-</span> bench<span class="token punctuation">.</span><span class="token function">Start</span><span class="token punctuation">(</span><span class="token punctuation">)</span>
+        <span class="token punctuation">}</span><span class="token punctuation">(</span><span class="token punctuation">)</span>
+    <span class="token punctuation">}</span>
+    <span class="token comment" spellcheck="true">// start one receiver</span>
+    <span class="token keyword">go</span> <span class="token keyword">func</span><span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token punctuation">{</span>
+        <span class="token keyword">for</span> lap <span class="token operator">:=</span> <span class="token keyword">range</span> ch <span class="token punctuation">{</span>
+            bench<span class="token punctuation">.</span><span class="token function">Stop</span><span class="token punctuation">(</span>lap<span class="token punctuation">)</span>
+        <span class="token punctuation">}</span>
+    <span class="token punctuation">}</span><span class="token punctuation">(</span><span class="token punctuation">)</span>
+    <span class="token comment" spellcheck="true">// wait for all goroutines to be created</span>
+    time<span class="token punctuation">.</span><span class="token function">Sleep</span><span class="token punctuation">(</span>time<span class="token punctuation">.</span>Second<span class="token punctuation">)</span>
+    <span class="token comment" spellcheck="true">// release all goroutines at the same time</span>
+    <span class="token function">close</span><span class="token punctuation">(</span>wait<span class="token punctuation">)</span>
+    <span class="token comment" spellcheck="true">// wait for all measurements to be completed</span>
+    bench<span class="token punctuation">.</span><span class="token function">Wait</span><span class="token punctuation">(</span><span class="token punctuation">)</span>
+    fmt<span class="token punctuation">.</span><span class="token function">Println</span><span class="token punctuation">(</span>bench<span class="token punctuation">.</span><span class="token function">Histogram</span><span class="token punctuation">(</span><span class="token number">10</span><span class="token punctuation">)</span><span class="token punctuation">)</span>
+<span class="token punctuation">}</span>
+</code></pre>
+<h2 id="hrtesting"><a href="#hrtesting" class="headerlink" title="hrtesting"></a>hrtesting</h2><p>当然重写所有的测试用例是不现实的。为此有 <code>github.com/loov/hrtime/hrtesting</code> 为测试提供 <code>testing.B</code>。</p>
+<pre class=" language-go"><code class="language-go"><span class="token keyword">func</span> <span class="token function">BenchmarkReport</span><span class="token punctuation">(</span>b <span class="token operator">*</span>testing<span class="token punctuation">.</span>B<span class="token punctuation">)</span> <span class="token punctuation">{</span>
+    bench <span class="token operator">:=</span> hrtesting<span class="token punctuation">.</span><span class="token function">NewBenchmark</span><span class="token punctuation">(</span>b<span class="token punctuation">)</span>
+    <span class="token keyword">defer</span> bench<span class="token punctuation">.</span><span class="token function">Report</span><span class="token punctuation">(</span><span class="token punctuation">)</span>
+    <span class="token keyword">for</span> bench<span class="token punctuation">.</span><span class="token function">Next</span><span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token punctuation">{</span>
+        r <span class="token operator">:=</span> fmt<span class="token punctuation">.</span><span class="token function">Sprintf</span><span class="token punctuation">(</span><span class="token string">"hello, world %d"</span><span class="token punctuation">,</span> <span class="token number">123</span><span class="token punctuation">)</span>
+        runtime<span class="token punctuation">.</span><span class="token function">KeepAlive</span><span class="token punctuation">(</span>r<span class="token punctuation">)</span>
+    <span class="token punctuation">}</span>
+<span class="token punctuation">}</span>
+</code></pre>
+<p>会打印出 P50、P90、P99：</p>
+<pre><code>BenchmarkReport-32               3000000               427 ns/op
+--- BENCH: BenchmarkReport-32
+    benchmark_old.go:11: 24.5µs₅₀ 24.5µs₉₀ 24.5µs₉₉ N=1
+    benchmark_old.go:11:  400ns₅₀  500ns₉₀ 12.8µs₉₉ N=100
+    benchmark_old.go:11:  400ns₅₀  500ns₉₀  500ns₉₉ N=10000
+    benchmark_old.go:11:  400ns₅₀  500ns₉₀  600ns₉₉ N=1000000
+    benchmark_old.go:11:  400ns₅₀  500ns₉₀  500ns₉₉ N=3000000
+</code></pre><p>在 Go 1.12 中将会打印出所有的 Beachmark 而不是最后一个，但是在 Go 1.13 中可以输出的更好：</p>
+<pre><code>BenchmarkReport-32   3174566  379 ns/op  400 ns/p50  400 ns/p90 ...
+</code></pre><p>获得的结果也可以和 beachstat 进行比较。</p>
+<h2 id="hrpolt"><a href="#hrpolt" class="headerlink" title="hrpolt"></a>hrpolt</h2><p>最后载介绍一下 <code>github.com/loov/hrtime/hrplot</code>，使用我实验性质的绘图包，我决定添加一种方便的方法来绘制测试结果。</p>
+<pre class=" language-go"><code class="language-go"><span class="token keyword">func</span> <span class="token function">BenchmarkReport</span><span class="token punctuation">(</span>b <span class="token operator">*</span>testing<span class="token punctuation">.</span>B<span class="token punctuation">)</span> <span class="token punctuation">{</span>
+    bench <span class="token operator">:=</span> hrtesting<span class="token punctuation">.</span><span class="token function">NewBenchmark</span><span class="token punctuation">(</span>b<span class="token punctuation">)</span>
+    <span class="token keyword">defer</span> bench<span class="token punctuation">.</span><span class="token function">Report</span><span class="token punctuation">(</span><span class="token punctuation">)</span>
+    <span class="token keyword">defer</span> hrplot<span class="token punctuation">.</span><span class="token function">All</span><span class="token punctuation">(</span><span class="token string">"all.svg"</span><span class="token punctuation">,</span> bench<span class="token punctuation">)</span>
+
+    runtime<span class="token punctuation">.</span><span class="token function">GC</span><span class="token punctuation">(</span><span class="token punctuation">)</span>
+    <span class="token keyword">for</span> bench<span class="token punctuation">.</span><span class="token function">Next</span><span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token punctuation">{</span>
+        r <span class="token operator">:=</span> fmt<span class="token punctuation">.</span><span class="token function">Sprintf</span><span class="token punctuation">(</span><span class="token string">"hello, world %d"</span><span class="token punctuation">,</span> <span class="token number">123</span><span class="token punctuation">)</span>
+        runtime<span class="token punctuation">.</span><span class="token function">KeepAlive</span><span class="token punctuation">(</span>r<span class="token punctuation">)</span>
+    <span class="token punctuation">}</span>
+<span class="token punctuation">}</span>
+</code></pre>
+<p>将会创建一个 SVG 文件 <code>all.svg</code>。其中包括线性图，显示了每次迭代所花费的时间；第二个就是密度图，显示了测量时间的分布图，以及最后一个百分位的详情。</p>
+<p><img src="https://static.zhengxiaowai.cc/2019-04-05-122821.jpg" alt=""></p>
+<h2 id="Conclusion"><a href="#Conclusion" class="headerlink" title="Conclusion"></a>Conclusion</h2><p>性能优化很有趣，但是有更好的根据可以变得更加有趣。</p>
+<p>去尝试 github.com/loov/hrtime 让我知道你更多的想法。</p>
+ 
+    </div>
+    <div class="post-foot">
+        <div id="disqus_thread"></div>
+    </div>
+</div>
+
+
+                </section>
+                <footer class="container fixed-690 footer">
+    <div>
+        <span>Power by <a href="https://hexo.io">Hexo</a></span>
+    </div>
+    <div>
+        <span>Theme <a href="https://github.com/zhengxiaowai/hexo-theme-lessless">lessless</a></span>
+    </div>
+        
+            
+<div>
+    <span id="hexiangyutest_container_site_pv">
+    PV: <span id="busuanzi_value_site_pv"></span>
+    </span>
+    <span id="busuanzi_container_site_uv">
+    UV: <span id="busuanzi_value_site_uv"></span>
+    </span>
+</div>
+
+        
+        
+            <div>
+    <span><a href="https://beian.miit.gov.cn/#/Integrated/index" target="_blank">闽ICP备17000267号-1</a></span>
+</div>
+        
+</footer>
+        </div>
+        
+<script src="/js/jquery-3.2.1.slim.min.js"></script>
+<script src="/js/popper.min.js"></script>
+<script src="/js/bootstrap.min.js"></script>
+
+
+    
+<script type="text/javascript">
+    var disqus_config = function () {
+        this.page.url = 'http://hexiangyu.me/2019/04/07/golang-beachmark-details/';
+        this.page.identifier = '2019/04/07/golang-beachmark-details/';
+        this.page.title = '「译」更详细的 Go 性能测试';
+    };
+    var d = document, s = d.createElement('script');
+    s.src = '//hexiangyus.disqus.com/embed.js';
+    s.setAttribute('data-timestamp', '' + +new Date());
+    (d.head || d.body).appendChild(s);
+</script>
+
+
+    </body>
+</html>

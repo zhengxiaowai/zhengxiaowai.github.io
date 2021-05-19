@@ -1,0 +1,320 @@
+<html>
+    <!DOCTYPE html>
+<html lang="zh">
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<meta http-equiv="X-UA-Compatible" content="ie=edge">
+
+	
+
+	<title>正小歪的博客</title>
+	<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1">
+	<link rel="shortcut icon" href="/favicon.ico">	
+	<link rel="stylesheet" href="/css/bootstrap.min.css">
+	<link rel="stylesheet" href="/css/style.css">
+    <script async src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+<link rel="stylesheet" href="/css/prism.css" type="text/css"></head>
+
+    <body>
+        <div class="root">
+            <div class='topnavs container fixed-690'>
+    <nav class="navbar navbar-expand-lg navbar-light">
+        <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent" aria-controls="navbarSupportedContent"
+            aria-expanded="false" aria-label="Toggle navigation">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse" id="navbarSupportedContent">
+            <ul class="navbar-nav mr-auto">
+                
+                    <li class="nav-item">
+                        <a class="nav-link" href="/">
+                            首页
+                        </a>
+                    </li>
+                    
+                    <li class="nav-item">
+                        <a class="nav-link" href="/categories">
+                            分类
+                        </a>
+                    </li>
+                    
+                    <li class="nav-item">
+                        <a class="nav-link" href="/archives">
+                            归档
+                        </a>
+                    </li>
+                    
+            </ul>
+        </div>
+    </nav>
+</div>
+                <section class="container mainbody fixed-690">
+                    <div class="postcards">
+    
+        <div class="card postcard">
+    <div class="card-body">
+        <h3 class="postcard-title">
+            <a href="/2019/04/07/golang-beachmark-details/"> 「译」更详细的 Go 性能测试 </a>
+        </h3>
+        
+        <div class="postcard-body">
+            <div class="excerpt"><p><a href="https://medium.com/@egonelbre/benchmarking-with-details-1cf3e61d459d" target="_blank" rel="noopener">原文连接</a></p>
+<p>我一直在优化我的 go 代码并且一直优化我的性能测试方案。</p></div>
+            <div class="read-more">
+                <a href="/2019/04/07/golang-beachmark-details/"> 查看全文 </a>
+            </div>
+        </div>
+        
+        <footer class="postcard-footer">
+            <span> z正小歪 </span> <span class="bull">·</span>
+            <span> 2019-04-07 </span>
+        </footer>
+    </div>
+</div>
+
+            
+        <div class="card postcard">
+    <div class="card-body">
+        <h3 class="postcard-title">
+            <a href="/2019/04/07/golang-namespace-usage/"> Go 语言中 Namespace 用法 </a>
+        </h3>
+        
+        <div class="postcard-body">
+            <div class="excerpt"><p>总所周知 Docker 最早诞生于 Linux 平台，利用的是 Linux LXC 技术作为基础。Docker 作为一种 “轻量级虚拟机” 跑在通用操作系统中，那么势必就要对容器进行隔离，保证在宿主机内的独立性。</p></div>
+            <div class="read-more">
+                <a href="/2019/04/07/golang-namespace-usage/"> 查看全文 </a>
+            </div>
+        </div>
+        
+        <footer class="postcard-footer">
+            <span> z正小歪 </span> <span class="bull">·</span>
+            <span> 2019-04-07 </span>
+        </footer>
+    </div>
+</div>
+
+            
+        <div class="card postcard">
+    <div class="card-body">
+        <h3 class="postcard-title">
+            <a href="/2019/03/31/http-propagation-context/"> 「译」Go Context 在 HTTP 传播 </a>
+        </h3>
+        
+        <div class="postcard-body">
+            <div class="excerpt"><p>Go 1.7 引入了一个内置的 context 类型，在系统中可以使用 Context 来传递元数据，例如不同函数或者不同线程甚至进程的传递 Request ID。</p>
+<p>Go 将 Context 包引入标准库以统一 context 的使用。在此之前每个框架或者库都有自己的 context 。它们之间还无法兼容，导致了碎片化，最终在各处 context 的传播上就有不少的麻烦。</p></div>
+            <div class="read-more">
+                <a href="/2019/03/31/http-propagation-context/"> 查看全文 </a>
+            </div>
+        </div>
+        
+        <footer class="postcard-footer">
+            <span> z正小歪 </span> <span class="bull">·</span>
+            <span> 2019-03-31 </span>
+        </footer>
+    </div>
+</div>
+
+            
+        <div class="card postcard">
+    <div class="card-body">
+        <h3 class="postcard-title">
+            <a href="/2019/03/31/2pc/"> 两阶段提交协议 </a>
+        </h3>
+        
+        <div class="postcard-body">
+            <div class="excerpt"><p><a href="https://en.wikipedia.org/wiki/Two-phase_commit_protocol" target="_blank" rel="noopener">两阶段提交协议</a></p>
+<p>在分布式系统中每个节点都可以知道自己的操作是成功还是失败，但是无法知道其他节点的状态。为了保证一个事务的 ACID 特性，一个节点发生失败就要在所有节点上执行 rollback 操作。需要引入一个 <strong>协调者</strong> 来维护各个 <strong>参与者</strong> 的状态，以保证最终一致。</p></div>
+            <div class="read-more">
+                <a href="/2019/03/31/2pc/"> 查看全文 </a>
+            </div>
+        </div>
+        
+        <footer class="postcard-footer">
+            <span> z正小歪 </span> <span class="bull">·</span>
+            <span> 2019-03-31 </span>
+        </footer>
+    </div>
+</div>
+
+            
+        <div class="card postcard">
+    <div class="card-body">
+        <h3 class="postcard-title">
+            <a href="/2019/03/25/migrating-projects-from-dep-to-go-modules/"> 「译」把项目从 Dep 迁移到 Go Modules </a>
+        </h3>
+        
+        <div class="postcard-body">
+            <div class="excerpt"><p><a href="http://elliot.land/post/migrating-projects-from-dep-to-go-modules" target="_blank" rel="noopener">原文地址</a></p>
+<p>Go Modules 是 Go 管理的未来方向。已经在 Go 1.11 中可以试用，将会是 Go 1.13 中的默认行为。</p>
+<p>我不会在这篇文章中描述包管理工具的工作流程。我会主要讨论的是如何把现有的项目中 dep 迁移的 Go Module。</p></div>
+            <div class="read-more">
+                <a href="/2019/03/25/migrating-projects-from-dep-to-go-modules/"> 查看全文 </a>
+            </div>
+        </div>
+        
+        <footer class="postcard-footer">
+            <span> z正小歪 </span> <span class="bull">·</span>
+            <span> 2019-03-25 </span>
+        </footer>
+    </div>
+</div>
+
+            
+        <div class="card postcard">
+    <div class="card-body">
+        <h3 class="postcard-title">
+            <a href="/2019/03/25/tree-datastruct-in-rmdbs/"> 使用 RMDBS 存储树结构数据 </a>
+        </h3>
+        
+        <div class="postcard-body">
+            <div class="excerpt"><p>在关系型数据库中存储树形结构是比较麻烦的事情，因为数据库都是基于行存储的结构，要满足树形数据结构的添加、删除、查询、修改是一件比较棘手的事情。</p></div>
+            <div class="read-more">
+                <a href="/2019/03/25/tree-datastruct-in-rmdbs/"> 查看全文 </a>
+            </div>
+        </div>
+        
+        <footer class="postcard-footer">
+            <span> z正小歪 </span> <span class="bull">·</span>
+            <span> 2019-03-25 </span>
+        </footer>
+    </div>
+</div>
+
+            
+        <div class="card postcard">
+    <div class="card-body">
+        <h3 class="postcard-title">
+            <a href="/2018/06/30/recursive/"> 递归 </a>
+        </h3>
+        
+        <div class="postcard-body">
+            <div class="excerpt"><p>递归（recursion）是数学中处理问题的一种常用方法，在计算机科学中指的是一种通过重复将问题分解为同类的子问题而解决问题的方法。</p>
+<p>换句话说，在处理分治问题上采用递归是一种很简单的方法，其强大描述能力，可以把无限过程表达在有限语句中。</p></div>
+            <div class="read-more">
+                <a href="/2018/06/30/recursive/"> 查看全文 </a>
+            </div>
+        </div>
+        
+        <footer class="postcard-footer">
+            <span> z正小歪 </span> <span class="bull">·</span>
+            <span> 2018-06-30 </span>
+        </footer>
+    </div>
+</div>
+
+            
+        <div class="card postcard">
+    <div class="card-body">
+        <h3 class="postcard-title">
+            <a href="/2018/04/02/pass-operation-expression/"> Python 如何传递运算表达式 </a>
+        </h3>
+        
+        <div class="postcard-body">
+            <div class="excerpt"><p>首先要说明的一下，所描述的是 Python 中的 <strong>运算表达式</strong> 的部分，不是 Python 表达式的部分。</p>
+<p>关于什么是 Python 中的运算表达式，可以参考 Python 文档 <a href="https://docs.python.org/3/library/operator.html#mapping-operators-to-functions" target="_blank" rel="noopener">10.3.1. Mapping Operators to Functions</a> 部分，所需要传递的就是这部分运算表达式。</p></div>
+            <div class="read-more">
+                <a href="/2018/04/02/pass-operation-expression/"> 查看全文 </a>
+            </div>
+        </div>
+        
+        <footer class="postcard-footer">
+            <span> z正小歪 </span> <span class="bull">·</span>
+            <span> 2018-04-02 </span>
+        </footer>
+    </div>
+</div>
+
+            
+        <div class="card postcard">
+    <div class="card-body">
+        <h3 class="postcard-title">
+            <a href="/2017/11/11/python-json-encode/"> Python 优雅地 dumps 非标准类型 </a>
+        </h3>
+        
+        <div class="postcard-body">
+            <div class="excerpt"><p>在 Python 很经常做的一件事就是 Python 数据类型和 JSON 数据类型的转换。</p>
+<p>但是存在一个明显的问题，JSON 作为一种数据交换格式有固定的数据类型，但是 Python 作为编程语言除了内置的数据类型以为还能编写自定义的数据类型。</p></div>
+            <div class="read-more">
+                <a href="/2017/11/11/python-json-encode/"> 查看全文 </a>
+            </div>
+        </div>
+        
+        <footer class="postcard-footer">
+            <span> z正小歪 </span> <span class="bull">·</span>
+            <span> 2017-11-11 </span>
+        </footer>
+    </div>
+</div>
+
+            
+        <div class="card postcard">
+    <div class="card-body">
+        <h3 class="postcard-title">
+            <a href="/2017/06/17/5-ways-to-make-Django-Admin-safer/"> 「译」5 种方法构建安全的 Django Admin </a>
+        </h3>
+        
+        <div class="postcard-body">
+            <div class="excerpt"><p><a href="https://hackernoon.com/5-ways-to-make-django-admin-safer-eb7753698ac8" target="_blank" rel="noopener">原文地址</a></p>
+<p>拥有越大权限，往往也就责任也越大。Django Admin 在拥有修改权限的同时应该要更加注意安全。</p>
+<p>本文提供了 5 种方法来保护 Django Admin 避免来自认为的错误或者攻击者的攻击。</p></div>
+            <div class="read-more">
+                <a href="/2017/06/17/5-ways-to-make-Django-Admin-safer/"> 查看全文 </a>
+            </div>
+        </div>
+        
+        <footer class="postcard-footer">
+            <span> z正小歪 </span> <span class="bull">·</span>
+            <span> 2017-06-17 </span>
+        </footer>
+    </div>
+</div>
+
+            
+
+</div>
+
+
+
+
+<div class="paging">
+    <a href="/" class="btn btn-secondary" role="button" aria-disabled="true">上一页</a>
+    <a href="/page/3/" class="btn btn-secondary" role="button" aria-disabled="true">下一页</a>
+</div>
+
+                </section>
+                <footer class="container fixed-690 footer">
+    <div>
+        <span>Power by <a href="https://hexo.io">Hexo</a></span>
+    </div>
+    <div>
+        <span>Theme <a href="https://github.com/zhengxiaowai/hexo-theme-lessless">lessless</a></span>
+    </div>
+        
+            
+<div>
+    <span id="hexiangyutest_container_site_pv">
+    PV: <span id="busuanzi_value_site_pv"></span>
+    </span>
+    <span id="busuanzi_container_site_uv">
+    UV: <span id="busuanzi_value_site_uv"></span>
+    </span>
+</div>
+
+        
+        
+            <div>
+    <span><a href="https://beian.miit.gov.cn/#/Integrated/index" target="_blank">闽ICP备17000267号-1</a></span>
+</div>
+        
+</footer>
+        </div>
+        
+<script src="/js/jquery-3.2.1.slim.min.js"></script>
+<script src="/js/popper.min.js"></script>
+<script src="/js/bootstrap.min.js"></script>
+
+
+    </body>
+</html>

@@ -1,0 +1,236 @@
+<html>
+    <!DOCTYPE html>
+<html lang="zh">
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<meta http-equiv="X-UA-Compatible" content="ie=edge">
+
+	
+
+	<title>使用 RMDBS 存储树结构数据 | 正小歪的博客</title>
+	<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1">
+	<link rel="shortcut icon" href="/favicon.ico">	
+	<link rel="stylesheet" href="/css/bootstrap.min.css">
+	<link rel="stylesheet" href="/css/style.css">
+    <script async src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+<link rel="stylesheet" href="/css/prism.css" type="text/css"></head>
+
+    <body>
+        <div class="root">
+            <div class='topnavs container fixed-690'>
+    <nav class="navbar navbar-expand-lg navbar-light">
+        <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent" aria-controls="navbarSupportedContent"
+            aria-expanded="false" aria-label="Toggle navigation">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse" id="navbarSupportedContent">
+            <ul class="navbar-nav mr-auto">
+                
+                    <li class="nav-item">
+                        <a class="nav-link" href="/">
+                            首页
+                        </a>
+                    </li>
+                    
+                    <li class="nav-item">
+                        <a class="nav-link" href="/categories">
+                            分类
+                        </a>
+                    </li>
+                    
+                    <li class="nav-item">
+                        <a class="nav-link" href="/archives">
+                            归档
+                        </a>
+                    </li>
+                    
+            </ul>
+        </div>
+    </nav>
+</div>
+                <section class="container mainbody fixed-690">
+                    <div class="post">
+    <div class="post-title">
+        <h1>
+            使用 RMDBS 存储树结构数据 
+        </h1>
+
+        
+        <div class="post-title-views">
+            <span id="busuanzi_container_page_pv">
+                本文总阅读量 <span id="busuanzi_value_page_pv"></span> 次
+            </span>
+        </div>
+        
+    </div>
+    <div class="post-content markdown">
+        <p>在关系型数据库中存储树形结构是比较麻烦的事情，因为数据库都是基于行存储的结构，要满足树形数据结构的添加、删除、查询、修改是一件比较棘手的事情。</p>
+<a id="more"></a>
+<p>已经有一些解决方案可以解决：</p>
+<p><img src="http://www.ituring.com.cn/figures/2012/SQL%20Antipatterns/06.d3z.05.jpg" alt="img"></p>
+<p>这篇文章介绍一下，使用「闭包表」来处理树形结构存储。</p>
+<p>选择「闭包表」主要是基于查询、插入、删除、移动都比较简单，更要的是都可以使用一条 SQL 就能处理完成。</p>
+<pre class=" language-sql"><code class="language-sql"><span class="token keyword">CREATE</span> <span class="token keyword">TABLE</span> Comments <span class="token punctuation">(</span>
+  comment_id   <span class="token keyword">SERIAL</span> <span class="token keyword">PRIMARY</span> <span class="token keyword">KEY</span><span class="token punctuation">,</span>
+  <span class="token keyword">comment</span>      <span class="token keyword">TEXT</span> <span class="token operator">NOT</span> <span class="token boolean">NULL</span>
+<span class="token punctuation">)</span><span class="token punctuation">;</span>
+</code></pre>
+<p>树形结构典型就是评论和部门成员关系，以评论为例，我们同时又要支持完整增删改查的功能，大致结构如下：<br><img src="https://static.zhengxiaowai.cc/2019-03-24-135302.jpg" alt=""></p>
+<p>为了满足这种复杂的关系，需要有另外一个表来存储这种结构。</p>
+<pre class=" language-sql"><code class="language-sql"><span class="token keyword">CREATE</span> <span class="token keyword">TABLE</span> TreePaths <span class="token punctuation">(</span>
+  ancestor    <span class="token keyword">BIGINT</span>  <span class="token operator">NOT</span> <span class="token boolean">NULL</span><span class="token punctuation">,</span>
+  descendant  <span class="token keyword">BIGINT</span>  <span class="token operator">NOT</span> <span class="token boolean">NULL</span><span class="token punctuation">,</span>
+  <span class="token keyword">PRIMARY</span> <span class="token keyword">KEY</span><span class="token punctuation">(</span>ancestor<span class="token punctuation">,</span> descendant<span class="token punctuation">)</span><span class="token punctuation">,</span>
+  <span class="token keyword">FOREIGN</span> <span class="token keyword">KEY</span> <span class="token punctuation">(</span>ancestor<span class="token punctuation">)</span> <span class="token keyword">REFERENCES</span> Comments<span class="token punctuation">(</span>comment_id<span class="token punctuation">)</span><span class="token punctuation">,</span>
+  <span class="token keyword">FOREIGN</span> <span class="token keyword">KEY</span> <span class="token punctuation">(</span>descendant<span class="token punctuation">)</span> <span class="token keyword">REFERENCES</span> Comments<span class="token punctuation">(</span>comment_id<span class="token punctuation">)</span>
+<span class="token punctuation">)</span><span class="token punctuation">;</span>
+</code></pre>
+<p>ancestor 作为每个评论节点的祖先，descendant 作为每个评论节点的后代。</p>
+<blockquote>
+<p>这里的祖先和后代都是泛指所有祖先和后代，而不是特指直接的祖先和后代</p>
+</blockquote>
+<p>接着构造一批数据插入 Comments 和 Tree Paths 中</p>
+<pre class=" language-sql"><code class="language-sql"><span class="token keyword">insert</span> <span class="token keyword">into</span> comments<span class="token punctuation">(</span>comment_id<span class="token punctuation">,</span> <span class="token keyword">comment</span><span class="token punctuation">)</span> <span class="token keyword">values</span> <span class="token punctuation">(</span><span class="token number">1</span><span class="token punctuation">,</span> <span class="token string">'这个 Bug 的成因 是什么'</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+<span class="token keyword">insert</span> <span class="token keyword">into</span> comments<span class="token punctuation">(</span>comment_id<span class="token punctuation">,</span> <span class="token keyword">comment</span><span class="token punctuation">)</span> <span class="token keyword">values</span> <span class="token punctuation">(</span><span class="token number">2</span><span class="token punctuation">,</span> <span class="token string">'我觉得是一个空指针'</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+<span class="token keyword">insert</span> <span class="token keyword">into</span> comments<span class="token punctuation">(</span>comment_id<span class="token punctuation">,</span> <span class="token keyword">comment</span><span class="token punctuation">)</span> <span class="token keyword">values</span> <span class="token punctuation">(</span><span class="token number">3</span><span class="token punctuation">,</span> <span class="token string">'不，我查过了'</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+<span class="token keyword">insert</span> <span class="token keyword">into</span> comments<span class="token punctuation">(</span>comment_id<span class="token punctuation">,</span> <span class="token keyword">comment</span><span class="token punctuation">)</span> <span class="token keyword">values</span> <span class="token punctuation">(</span><span class="token number">4</span><span class="token punctuation">,</span> <span class="token string">'我们需要查无效输入'</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+<span class="token keyword">insert</span> <span class="token keyword">into</span> comments<span class="token punctuation">(</span>comment_id<span class="token punctuation">,</span> <span class="token keyword">comment</span><span class="token punctuation">)</span> <span class="token keyword">values</span> <span class="token punctuation">(</span><span class="token number">5</span><span class="token punctuation">,</span> <span class="token string">'是的，那是个问题'</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+<span class="token keyword">insert</span> <span class="token keyword">into</span> comments<span class="token punctuation">(</span>comment_id<span class="token punctuation">,</span> <span class="token keyword">comment</span><span class="token punctuation">)</span> <span class="token keyword">values</span> <span class="token punctuation">(</span><span class="token number">6</span><span class="token punctuation">,</span> <span class="token string">'好，查一下吧'</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+<span class="token keyword">insert</span> <span class="token keyword">into</span> comments<span class="token punctuation">(</span>comment_id<span class="token punctuation">,</span> <span class="token keyword">comment</span><span class="token punctuation">)</span> <span class="token keyword">values</span> <span class="token punctuation">(</span><span class="token number">7</span><span class="token punctuation">,</span> <span class="token string">'解决了'</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+
+<span class="token keyword">insert</span> <span class="token keyword">into</span> treepaths<span class="token punctuation">(</span>ancestor<span class="token punctuation">,</span> descendant<span class="token punctuation">)</span> <span class="token keyword">values</span> <span class="token punctuation">(</span><span class="token number">1</span><span class="token punctuation">,</span> <span class="token number">1</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+<span class="token keyword">insert</span> <span class="token keyword">into</span> treepaths<span class="token punctuation">(</span>ancestor<span class="token punctuation">,</span> descendant<span class="token punctuation">)</span> <span class="token keyword">values</span> <span class="token punctuation">(</span><span class="token number">1</span><span class="token punctuation">,</span> <span class="token number">2</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+<span class="token keyword">insert</span> <span class="token keyword">into</span> treepaths<span class="token punctuation">(</span>ancestor<span class="token punctuation">,</span> descendant<span class="token punctuation">)</span> <span class="token keyword">values</span> <span class="token punctuation">(</span><span class="token number">1</span><span class="token punctuation">,</span> <span class="token number">3</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+<span class="token keyword">insert</span> <span class="token keyword">into</span> treepaths<span class="token punctuation">(</span>ancestor<span class="token punctuation">,</span> descendant<span class="token punctuation">)</span> <span class="token keyword">values</span> <span class="token punctuation">(</span><span class="token number">1</span><span class="token punctuation">,</span> <span class="token number">4</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+<span class="token keyword">insert</span> <span class="token keyword">into</span> treepaths<span class="token punctuation">(</span>ancestor<span class="token punctuation">,</span> descendant<span class="token punctuation">)</span> <span class="token keyword">values</span> <span class="token punctuation">(</span><span class="token number">1</span><span class="token punctuation">,</span> <span class="token number">5</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+<span class="token keyword">insert</span> <span class="token keyword">into</span> treepaths<span class="token punctuation">(</span>ancestor<span class="token punctuation">,</span> descendant<span class="token punctuation">)</span> <span class="token keyword">values</span> <span class="token punctuation">(</span><span class="token number">1</span><span class="token punctuation">,</span> <span class="token number">6</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+<span class="token keyword">insert</span> <span class="token keyword">into</span> treepaths<span class="token punctuation">(</span>ancestor<span class="token punctuation">,</span> descendant<span class="token punctuation">)</span> <span class="token keyword">values</span> <span class="token punctuation">(</span><span class="token number">1</span><span class="token punctuation">,</span> <span class="token number">7</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+<span class="token keyword">insert</span> <span class="token keyword">into</span> treepaths<span class="token punctuation">(</span>ancestor<span class="token punctuation">,</span> descendant<span class="token punctuation">)</span> <span class="token keyword">values</span> <span class="token punctuation">(</span><span class="token number">2</span><span class="token punctuation">,</span> <span class="token number">2</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+<span class="token keyword">insert</span> <span class="token keyword">into</span> treepaths<span class="token punctuation">(</span>ancestor<span class="token punctuation">,</span> descendant<span class="token punctuation">)</span> <span class="token keyword">values</span> <span class="token punctuation">(</span><span class="token number">2</span><span class="token punctuation">,</span> <span class="token number">3</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+<span class="token keyword">insert</span> <span class="token keyword">into</span> treepaths<span class="token punctuation">(</span>ancestor<span class="token punctuation">,</span> descendant<span class="token punctuation">)</span> <span class="token keyword">values</span> <span class="token punctuation">(</span><span class="token number">3</span><span class="token punctuation">,</span> <span class="token number">3</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+<span class="token keyword">insert</span> <span class="token keyword">into</span> treepaths<span class="token punctuation">(</span>ancestor<span class="token punctuation">,</span> descendant<span class="token punctuation">)</span> <span class="token keyword">values</span> <span class="token punctuation">(</span><span class="token number">4</span><span class="token punctuation">,</span> <span class="token number">4</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+<span class="token keyword">insert</span> <span class="token keyword">into</span> treepaths<span class="token punctuation">(</span>ancestor<span class="token punctuation">,</span> descendant<span class="token punctuation">)</span> <span class="token keyword">values</span> <span class="token punctuation">(</span><span class="token number">4</span><span class="token punctuation">,</span> <span class="token number">5</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+<span class="token keyword">insert</span> <span class="token keyword">into</span> treepaths<span class="token punctuation">(</span>ancestor<span class="token punctuation">,</span> descendant<span class="token punctuation">)</span> <span class="token keyword">values</span> <span class="token punctuation">(</span><span class="token number">4</span><span class="token punctuation">,</span> <span class="token number">6</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+<span class="token keyword">insert</span> <span class="token keyword">into</span> treepaths<span class="token punctuation">(</span>ancestor<span class="token punctuation">,</span> descendant<span class="token punctuation">)</span> <span class="token keyword">values</span> <span class="token punctuation">(</span><span class="token number">4</span><span class="token punctuation">,</span> <span class="token number">7</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+<span class="token keyword">insert</span> <span class="token keyword">into</span> treepaths<span class="token punctuation">(</span>ancestor<span class="token punctuation">,</span> descendant<span class="token punctuation">)</span> <span class="token keyword">values</span> <span class="token punctuation">(</span><span class="token number">5</span><span class="token punctuation">,</span> <span class="token number">5</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+<span class="token keyword">insert</span> <span class="token keyword">into</span> treepaths<span class="token punctuation">(</span>ancestor<span class="token punctuation">,</span> descendant<span class="token punctuation">)</span> <span class="token keyword">values</span> <span class="token punctuation">(</span><span class="token number">6</span><span class="token punctuation">,</span> <span class="token number">6</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+<span class="token keyword">insert</span> <span class="token keyword">into</span> treepaths<span class="token punctuation">(</span>ancestor<span class="token punctuation">,</span> descendant<span class="token punctuation">)</span> <span class="token keyword">values</span> <span class="token punctuation">(</span><span class="token number">6</span><span class="token punctuation">,</span> <span class="token number">7</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+<span class="token keyword">insert</span> <span class="token keyword">into</span> treepaths<span class="token punctuation">(</span>ancestor<span class="token punctuation">,</span> descendant<span class="token punctuation">)</span> <span class="token keyword">values</span> <span class="token punctuation">(</span><span class="token number">7</span><span class="token punctuation">,</span> <span class="token number">7</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+</code></pre>
+<p>这里需要解释一下 treepaths 存储关系的逻辑：</p>
+<ol>
+<li>每个节点和自己建立一个关系，也就是 ancestor 和 descendant 都是自己</li>
+<li>每个节点和自己祖先建立关系，也就是 ancestor 指向所有祖先节点</li>
+<li>每个节点和自己后代建立关系，也就是 descendant 指向所有的后代节点</li>
+</ol>
+<p>以上关系建立完毕之后，就能以树形关系查询 comments 表中的数据，比如要查询 <code>comment_id = 4</code> 所有的子节点：</p>
+<pre class=" language-sql"><code class="language-sql"><span class="token keyword">SELECT</span> <span class="token number">c</span><span class="token punctuation">.</span><span class="token operator">*</span> 
+    <span class="token keyword">FROM</span> Comments <span class="token keyword">AS</span> <span class="token number">c</span> 
+    <span class="token keyword">JOIN</span> TreePaths <span class="token keyword">AS</span> t <span class="token keyword">ON</span> <span class="token number">c</span><span class="token punctuation">.</span>comment_id <span class="token operator">=</span> t<span class="token punctuation">.</span>descendant 
+    <span class="token keyword">WHERE</span> t<span class="token punctuation">.</span>ancestor <span class="token operator">=</span> <span class="token number">4</span><span class="token punctuation">;</span>
+</code></pre>
+<p><img src="https://static.zhengxiaowai.cc/2019-03-24-151711.png" alt=""></p>
+<p>或者要查询 <code>comment_id = 4</code> 所有的父节点：</p>
+<pre class=" language-sql"><code class="language-sql"><span class="token keyword">SELECT</span> <span class="token number">c</span><span class="token punctuation">.</span><span class="token operator">*</span>
+    <span class="token keyword">FROM</span> Comments <span class="token keyword">AS</span> <span class="token number">c</span>
+      <span class="token keyword">JOIN</span> TreePaths <span class="token keyword">AS</span> t <span class="token keyword">ON</span> <span class="token number">c</span><span class="token punctuation">.</span>comment_id <span class="token operator">=</span> t<span class="token punctuation">.</span>ancestor
+    <span class="token keyword">WHERE</span> t<span class="token punctuation">.</span>descendant <span class="token operator">=</span> <span class="token number">4</span><span class="token punctuation">;</span>
+</code></pre>
+<p><img src="https://static.zhengxiaowai.cc/2019-03-24-151815.png" alt=""></p>
+<p>假如要在 <code>comment_id= 5</code> 后插入一个新的节点，先要插入关联到自己的关系，然后从 TreePaths 找出中 descendant 为 5 节点。意思就是找出 <code>comment_id = 5</code> 的祖先和新节点在 TreePaths 关联上.</p>
+<pre class=" language-sql"><code class="language-sql"><span class="token keyword">insert</span> <span class="token keyword">into</span> comments<span class="token punctuation">(</span>comment_id<span class="token punctuation">,</span> <span class="token keyword">comment</span><span class="token punctuation">)</span> <span class="token keyword">values</span> <span class="token punctuation">(</span><span class="token number">8</span><span class="token punctuation">,</span> <span class="token string">'对的是这个问题，我已经修复了'</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+<span class="token keyword">INSERT</span> <span class="token keyword">INTO</span> TreePaths <span class="token punctuation">(</span>ancestor<span class="token punctuation">,</span> descendant<span class="token punctuation">)</span>
+    <span class="token keyword">SELECT</span> t<span class="token punctuation">.</span>ancestor<span class="token punctuation">,</span> <span class="token number">8</span> <span class="token keyword">FROM</span> TreePaths <span class="token keyword">AS</span> t <span class="token keyword">WHERE</span> t<span class="token punctuation">.</span>descendant <span class="token operator">=</span> <span class="token number">5</span>
+     <span class="token keyword">UNION</span> <span class="token keyword">ALL</span> <span class="token keyword">SELECT</span> <span class="token number">8</span><span class="token punctuation">,</span> <span class="token number">8</span><span class="token punctuation">;</span>
+</code></pre>
+<p><img src="https://static.zhengxiaowai.cc/2019-03-24-152932.png" alt=""></p>
+<p>如果要删除 <code>comment_id = 7</code> 这个节点，只需要在 TreePaths 删除 descendant = 7 的记录即可，这时候不用我们维护节点和节点之间的关系，所以很方便</p>
+<pre class=" language-sql"><code class="language-sql"><span class="token keyword">DELETE</span> <span class="token keyword">FROM</span> TreePaths <span class="token keyword">WHERE</span> descendant <span class="token operator">=</span> <span class="token number">7</span><span class="token punctuation">;</span>
+</code></pre>
+<p>假如要删除 <code>comment_id = 4</code> 这颗完整的树，只需要找出这个 root 节点所有的后代删除即可。</p>
+<pre class=" language-sql"><code class="language-sql"><span class="token keyword">DELETE</span> <span class="token keyword">FROM</span> TreePaths
+    <span class="token keyword">WHERE</span> descendant <span class="token operator">IN</span> <span class="token punctuation">(</span><span class="token keyword">SELECT</span> descendant
+                         <span class="token keyword">FROM</span> TreePaths
+                         <span class="token keyword">WHERE</span> ancestor <span class="token operator">=</span> <span class="token number">4</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+</code></pre>
+<p>如果是移动一个节点，只需要删除然后再添加即可，这时候自身的引用可以不用删除。</p>
+<p>比较复杂的是移动一棵树，要先找到这棵树的根节点，然后移除所有子节点和他们祖先的关系，比如把 comment_id = 6 移动到 commint_id = 3 下。</p>
+<p>首先把在 TreePaths 把所有关系移除</p>
+<pre class=" language-sql"><code class="language-sql"><span class="token keyword">DELETE</span> <span class="token keyword">FROM</span> TreePaths
+<span class="token keyword">WHERE</span> descendant <span class="token operator">IN</span> <span class="token punctuation">(</span><span class="token keyword">SELECT</span> descendant
+                     <span class="token keyword">FROM</span> TreePaths
+                     <span class="token keyword">WHERE</span> ancestor <span class="token operator">=</span> <span class="token number">6</span><span class="token punctuation">)</span>
+  <span class="token operator">AND</span> ancestor <span class="token operator">IN</span> <span class="token punctuation">(</span><span class="token keyword">SELECT</span> ancestor
+                   <span class="token keyword">FROM</span> TreePaths
+                   <span class="token keyword">WHERE</span> descendant <span class="token operator">=</span> <span class="token number">6</span> <span class="token operator">AND</span> ancestor <span class="token operator">!=</span> descendant<span class="token punctuation">)</span><span class="token punctuation">;</span>
+</code></pre>
+<p>然后在 <code>commint_id = 3</code> 插入新关系，同时所有子节点要和 <code>commint_id = 3</code> 的祖先建立关系</p>
+<pre class=" language-sql"><code class="language-sql"><span class="token keyword">INSERT</span> <span class="token keyword">INTO</span> TreePaths <span class="token punctuation">(</span>ancestor<span class="token punctuation">,</span> descendant<span class="token punctuation">)</span>
+  <span class="token keyword">SELECT</span> supertree<span class="token punctuation">.</span>ancestor<span class="token punctuation">,</span> subtree<span class="token punctuation">.</span>descendant
+  <span class="token keyword">FROM</span> TreePaths <span class="token keyword">AS</span> supertree
+    <span class="token keyword">CROSS</span> <span class="token keyword">JOIN</span> TreePaths <span class="token keyword">AS</span> subtree
+  <span class="token keyword">WHERE</span> supertree<span class="token punctuation">.</span>descendant <span class="token operator">=</span> <span class="token number">3</span>
+    <span class="token operator">AND</span> subtree<span class="token punctuation">.</span>ancestor <span class="token operator">=</span> <span class="token number">6</span><span class="token punctuation">;</span>
+</code></pre>
+<p>使用一开始查询的 SQL，可以看出移动过去了</p>
+<p><img src="https://static.zhengxiaowai.cc/2019-03-24-153505.png" alt=""></p>
+ 
+    </div>
+    <div class="post-foot">
+        <div id="disqus_thread"></div>
+    </div>
+</div>
+
+
+                </section>
+                <footer class="container fixed-690 footer">
+    <div>
+        <span>Power by <a href="https://hexo.io">Hexo</a></span>
+    </div>
+    <div>
+        <span>Theme <a href="https://github.com/zhengxiaowai/hexo-theme-lessless">lessless</a></span>
+    </div>
+        
+            
+<div>
+    <span id="hexiangyutest_container_site_pv">
+    PV: <span id="busuanzi_value_site_pv"></span>
+    </span>
+    <span id="busuanzi_container_site_uv">
+    UV: <span id="busuanzi_value_site_uv"></span>
+    </span>
+</div>
+
+        
+        
+            <div>
+    <span><a href="https://beian.miit.gov.cn/#/Integrated/index" target="_blank">闽ICP备17000267号-1</a></span>
+</div>
+        
+</footer>
+        </div>
+        
+<script src="/js/jquery-3.2.1.slim.min.js"></script>
+<script src="/js/popper.min.js"></script>
+<script src="/js/bootstrap.min.js"></script>
+
+
+    
+<script type="text/javascript">
+    var disqus_config = function () {
+        this.page.url = 'http://hexiangyu.me/2019/03/25/tree-datastruct-in-rmdbs/';
+        this.page.identifier = '2019/03/25/tree-datastruct-in-rmdbs/';
+        this.page.title = '使用 RMDBS 存储树结构数据';
+    };
+    var d = document, s = d.createElement('script');
+    s.src = '//hexiangyus.disqus.com/embed.js';
+    s.setAttribute('data-timestamp', '' + +new Date());
+    (d.head || d.body).appendChild(s);
+</script>
+
+
+    </body>
+</html>

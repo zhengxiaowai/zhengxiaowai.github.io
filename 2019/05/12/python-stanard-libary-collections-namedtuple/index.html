@@ -1,0 +1,353 @@
+<html>
+    <!DOCTYPE html>
+<html lang="zh">
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<meta http-equiv="X-UA-Compatible" content="ie=edge">
+
+	
+
+	<title>Python 标准库源码分析 namedtuple | 正小歪的博客</title>
+	<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1">
+	<link rel="shortcut icon" href="/favicon.ico">	
+	<link rel="stylesheet" href="/css/bootstrap.min.css">
+	<link rel="stylesheet" href="/css/style.css">
+    <script async src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+<link rel="stylesheet" href="/css/prism.css" type="text/css"></head>
+
+    <body>
+        <div class="root">
+            <div class='topnavs container fixed-690'>
+    <nav class="navbar navbar-expand-lg navbar-light">
+        <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent" aria-controls="navbarSupportedContent"
+            aria-expanded="false" aria-label="Toggle navigation">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse" id="navbarSupportedContent">
+            <ul class="navbar-nav mr-auto">
+                
+                    <li class="nav-item">
+                        <a class="nav-link" href="/">
+                            首页
+                        </a>
+                    </li>
+                    
+                    <li class="nav-item">
+                        <a class="nav-link" href="/categories">
+                            分类
+                        </a>
+                    </li>
+                    
+                    <li class="nav-item">
+                        <a class="nav-link" href="/archives">
+                            归档
+                        </a>
+                    </li>
+                    
+            </ul>
+        </div>
+    </nav>
+</div>
+                <section class="container mainbody fixed-690">
+                    <div class="post">
+    <div class="post-title">
+        <h1>
+            Python 标准库源码分析 namedtuple 
+        </h1>
+
+        
+        <div class="post-title-views">
+            <span id="busuanzi_container_page_pv">
+                本文总阅读量 <span id="busuanzi_value_page_pv"></span> 次
+            </span>
+        </div>
+        
+    </div>
+    <div class="post-content markdown">
+        <p><code>namedtuple</code> 是一个简化 <code>tuple</code> 操作的工厂函数，对于普通元组我们在访问上只能通过游标的访问，在表现力上有时候比不上对象。</p>
+<p>命名的元组实例没有每个实例的字典，因此它们是轻量级的，并且不需要比常规元组更多的内存。</p>
+<p>假如想计算两个点之间的距离根据定义：</p>
+<a id="more"></a>
+<p><img src="https://static.zhengxiaowai.cc/2019-05-12-135932.png" alt=""></p>
+<p>需要两个点的 x、y 坐标，我们可以直接使用元组表示 p1 和 p2 点</p>
+<pre class=" language-python"><code class="language-python"><span class="token operator">>></span><span class="token operator">></span> <span class="token keyword">import</span> math
+<span class="token operator">>></span><span class="token operator">></span> 
+<span class="token operator">>></span><span class="token operator">></span> p1<span class="token punctuation">,</span> p2 <span class="token operator">=</span> <span class="token punctuation">(</span><span class="token number">1</span><span class="token punctuation">,</span> <span class="token number">2</span><span class="token punctuation">)</span><span class="token punctuation">,</span> <span class="token punctuation">(</span><span class="token number">2</span><span class="token punctuation">,</span> <span class="token number">3</span><span class="token punctuation">)</span>
+<span class="token operator">>></span><span class="token operator">></span> s <span class="token operator">=</span> math<span class="token punctuation">.</span>sqrt<span class="token punctuation">(</span><span class="token punctuation">(</span>p1<span class="token punctuation">[</span><span class="token number">0</span><span class="token punctuation">]</span> <span class="token operator">-</span> p2<span class="token punctuation">[</span><span class="token number">0</span><span class="token punctuation">]</span><span class="token punctuation">)</span><span class="token operator">**</span><span class="token number">2</span> <span class="token operator">+</span> <span class="token punctuation">(</span>p1<span class="token punctuation">[</span><span class="token number">1</span><span class="token punctuation">]</span> <span class="token operator">-</span> p2<span class="token punctuation">[</span><span class="token number">1</span><span class="token punctuation">]</span><span class="token punctuation">)</span><span class="token operator">**</span><span class="token number">2</span><span class="token punctuation">)</span>
+<span class="token operator">>></span><span class="token operator">></span> 
+<span class="token operator">>></span><span class="token operator">></span> <span class="token keyword">print</span><span class="token punctuation">(</span>s<span class="token punctuation">)</span>
+<span class="token number">1.4142135623730951</span>
+<span class="token operator">>></span><span class="token operator">></span>
+</code></pre>
+<p>对于 p1 点的 x 坐标使用 p1[0] 表示，对阅读上有一定的困扰，如果可以使用 <code>p1.x</code> 就语义清晰了。</p>
+<p>这个场景就是 <code>namedtuple</code> 的典型应用，让字段具有名字，使用 <code>namedtuple</code> 重写上面例子</p>
+<pre class=" language-python"><code class="language-python"><span class="token operator">>></span><span class="token operator">></span> <span class="token keyword">import</span> collections
+<span class="token operator">>></span><span class="token operator">></span> <span class="token keyword">import</span> math
+<span class="token operator">>></span><span class="token operator">></span> 
+<span class="token operator">>></span><span class="token operator">></span> Point <span class="token operator">=</span> collections<span class="token punctuation">.</span>namedtuple<span class="token punctuation">(</span><span class="token string">'Point'</span><span class="token punctuation">,</span> <span class="token punctuation">[</span><span class="token string">'x'</span><span class="token punctuation">,</span> <span class="token string">'y'</span><span class="token punctuation">]</span><span class="token punctuation">)</span>
+<span class="token operator">>></span><span class="token operator">></span> p1<span class="token punctuation">,</span> p2 <span class="token operator">=</span> Point<span class="token punctuation">(</span><span class="token number">1</span><span class="token punctuation">,</span> <span class="token number">2</span><span class="token punctuation">)</span><span class="token punctuation">,</span> Point<span class="token punctuation">(</span><span class="token number">2</span><span class="token punctuation">,</span> <span class="token number">3</span><span class="token punctuation">)</span>
+<span class="token operator">>></span><span class="token operator">></span> 
+<span class="token operator">>></span><span class="token operator">></span> s <span class="token operator">=</span> math<span class="token punctuation">.</span>sqrt<span class="token punctuation">(</span><span class="token punctuation">(</span>p1<span class="token punctuation">.</span>x <span class="token operator">-</span> p2<span class="token punctuation">.</span>x<span class="token punctuation">)</span><span class="token operator">**</span><span class="token number">2</span> <span class="token operator">+</span> <span class="token punctuation">(</span>p1<span class="token punctuation">.</span>y <span class="token operator">-</span> p2<span class="token punctuation">.</span>y<span class="token punctuation">)</span><span class="token operator">**</span><span class="token number">2</span><span class="token punctuation">)</span>
+<span class="token operator">>></span><span class="token operator">></span> 
+<span class="token operator">>></span><span class="token operator">></span> <span class="token keyword">print</span><span class="token punctuation">(</span>s<span class="token punctuation">)</span>
+<span class="token number">1.4142135623730951</span>
+<span class="token operator">>></span><span class="token operator">></span>
+</code></pre>
+<p>好奇宝宝肯定就会想知道 <code>namedtuple</code> 是如何让字段具有名字的，先看看函数的签名</p>
+<pre class=" language-python"><code class="language-python">namedtuple<span class="token punctuation">(</span>typename<span class="token punctuation">,</span> field_names<span class="token punctuation">,</span> <span class="token operator">*</span><span class="token punctuation">,</span> rename<span class="token operator">=</span><span class="token boolean">False</span><span class="token punctuation">,</span> defaults<span class="token operator">=</span>None<span class="token punctuation">,</span>module<span class="token operator">=</span>None<span class="token punctuation">)</span>
+</code></pre>
+<p>第一个和第二参数前面已经使用过了，<code>typename</code> 就是新命名元组的名字，我们最经常的就是模仿的类，所以会使用类的定义风格。<code>field_names</code> 参数用于定义字段的名字，除了上面使用 <code>[&#39;x&#39;, &#39;y&#39;]</code> 还可以使用 <code>&quot;x y&quot;</code> 或者 <code>&quot;x, y&quot;</code>，定义方法选择自己喜欢的就好。</p>
+<p><code>rename</code> 参数默认是 <code>False</code>，顾名思义就是重命名字段名字，假如我们使用了非法的变量名（比如关键字等）会被重命名成别的名字。</p>
+<blockquote>
+<p>[!DANGER]</p>
+<p>这种改变定义的行为是最好不要做，除非你能保证任何人知道这个行为。</p>
+</blockquote>
+<p><code>defaults</code> 参数可以是 <code>None</code> 或者一个可迭代的值，根据具有默认值的字段必须在没有初始值的后面，所以<code>defaults</code> 提供的默认值都是最右匹配。</p>
+<pre class=" language-python"><code class="language-python"><span class="token operator">>></span><span class="token operator">></span> <span class="token keyword">from</span> collections <span class="token keyword">import</span> namedtuple
+<span class="token operator">>></span><span class="token operator">></span> 
+<span class="token operator">>></span><span class="token operator">></span> Point <span class="token operator">=</span> namedtuple<span class="token punctuation">(</span><span class="token string">'Point'</span><span class="token punctuation">,</span> <span class="token string">"x y z"</span><span class="token punctuation">,</span> defaults<span class="token operator">=</span><span class="token punctuation">[</span><span class="token number">2</span><span class="token punctuation">,</span> <span class="token number">3</span><span class="token punctuation">]</span><span class="token punctuation">)</span>
+<span class="token operator">>></span><span class="token operator">></span> p1 <span class="token operator">=</span> Point<span class="token punctuation">(</span><span class="token number">1</span><span class="token punctuation">)</span>
+<span class="token operator">>></span><span class="token operator">></span> 
+<span class="token operator">>></span><span class="token operator">></span> <span class="token keyword">print</span><span class="token punctuation">(</span>p1<span class="token punctuation">)</span>
+Point<span class="token punctuation">(</span>x<span class="token operator">=</span><span class="token number">1</span><span class="token punctuation">,</span> y<span class="token operator">=</span><span class="token number">2</span><span class="token punctuation">,</span> z<span class="token operator">=</span><span class="token number">3</span><span class="token punctuation">)</span>
+<span class="token operator">>></span><span class="token operator">></span>
+</code></pre>
+<p>如果定义了 <code>module</code>，则将命名元组的 <code>__module__</code>属性设置为该值。</p>
+<pre class=" language-python"><code class="language-python"><span class="token punctuation">.</span><span class="token punctuation">.</span><span class="token punctuation">.</span>
+    <span class="token keyword">if</span> isinstance<span class="token punctuation">(</span>field_names<span class="token punctuation">,</span> str<span class="token punctuation">)</span><span class="token punctuation">:</span>
+        field_names <span class="token operator">=</span> field_names<span class="token punctuation">.</span>replace<span class="token punctuation">(</span><span class="token string">','</span><span class="token punctuation">,</span> <span class="token string">' '</span><span class="token punctuation">)</span><span class="token punctuation">.</span>split<span class="token punctuation">(</span><span class="token punctuation">)</span>
+    field_names <span class="token operator">=</span> list<span class="token punctuation">(</span>map<span class="token punctuation">(</span>str<span class="token punctuation">,</span> field_names<span class="token punctuation">)</span><span class="token punctuation">)</span>
+    typename <span class="token operator">=</span> _sys<span class="token punctuation">.</span>intern<span class="token punctuation">(</span>str<span class="token punctuation">(</span>typename<span class="token punctuation">)</span><span class="token punctuation">)</span>
+<span class="token punctuation">.</span><span class="token punctuation">.</span><span class="token punctuation">.</span>
+</code></pre>
+<p>进入函数的第一步先对两个基本的参数 <code>typename</code> 和 <code>field_names</code> 进行处理。</p>
+<p>如果 <code>field_names</code> 是一个字符串就 replace 把 <code>,</code> 转化成空格，再 split 成标准的 list。 <code>list(map(str, field_names))</code> 保证了 <code>field_names</code> 的每个值都是 str 类型。<br><code>_sys.intern</code> 把 typename 注册到全局中，可以加快对字符串的寻找。</p>
+<pre class=" language-python"><code class="language-python"><span class="token punctuation">.</span><span class="token punctuation">.</span><span class="token punctuation">.</span>
+    <span class="token keyword">if</span> rename<span class="token punctuation">:</span>
+        seen <span class="token operator">=</span> set<span class="token punctuation">(</span><span class="token punctuation">)</span>
+        <span class="token keyword">for</span> index<span class="token punctuation">,</span> name <span class="token keyword">in</span> enumerate<span class="token punctuation">(</span>field_names<span class="token punctuation">)</span><span class="token punctuation">:</span>
+            <span class="token keyword">if</span> <span class="token punctuation">(</span><span class="token operator">not</span> name<span class="token punctuation">.</span>isidentifier<span class="token punctuation">(</span><span class="token punctuation">)</span>
+                <span class="token operator">or</span> _iskeyword<span class="token punctuation">(</span>name<span class="token punctuation">)</span>
+                <span class="token operator">or</span> name<span class="token punctuation">.</span>startswith<span class="token punctuation">(</span><span class="token string">'_'</span><span class="token punctuation">)</span>
+                <span class="token operator">or</span> name <span class="token keyword">in</span> seen<span class="token punctuation">)</span><span class="token punctuation">:</span>
+                field_names<span class="token punctuation">[</span>index<span class="token punctuation">]</span> <span class="token operator">=</span> f<span class="token string">'_{index}'</span>
+            seen<span class="token punctuation">.</span>add<span class="token punctuation">(</span>name<span class="token punctuation">)</span>
+<span class="token punctuation">.</span><span class="token punctuation">.</span><span class="token punctuation">.</span>
+</code></pre>
+<p>对于设置了 <code>rename=True</code> 会对不合法的 field_name 重新命名，从代码中可以看出重新命名的规则是：如果不合法，判断是不是 <strong>关键字</strong>、是不是以 <strong>下划线</strong> 开头，是不是 <strong>已经存在</strong>，如果符合其中一项就会对用 <code>_{当前的 index}</code>变量重新命名。</p>
+<pre class=" language-python"><code class="language-python"><span class="token punctuation">.</span><span class="token punctuation">.</span><span class="token punctuation">.</span>
+    <span class="token keyword">for</span> name <span class="token keyword">in</span> <span class="token punctuation">[</span>typename<span class="token punctuation">]</span> <span class="token operator">+</span> field_names<span class="token punctuation">:</span>
+        <span class="token keyword">if</span> type<span class="token punctuation">(</span>name<span class="token punctuation">)</span> <span class="token keyword">is</span> <span class="token operator">not</span> str<span class="token punctuation">:</span>
+            <span class="token keyword">raise</span> TypeError<span class="token punctuation">(</span><span class="token string">'Type names and field names must be strings'</span><span class="token punctuation">)</span>
+        <span class="token keyword">if</span> <span class="token operator">not</span> name<span class="token punctuation">.</span>isidentifier<span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">:</span>
+            <span class="token keyword">raise</span> ValueError<span class="token punctuation">(</span><span class="token string">'Type names and field names must be valid '</span>
+                             f<span class="token string">'identifiers: {name!r}'</span><span class="token punctuation">)</span>
+        <span class="token keyword">if</span> _iskeyword<span class="token punctuation">(</span>name<span class="token punctuation">)</span><span class="token punctuation">:</span>
+            <span class="token keyword">raise</span> ValueError<span class="token punctuation">(</span><span class="token string">'Type names and field names cannot be a '</span>
+                             f<span class="token string">'keyword: {name!r}'</span><span class="token punctuation">)</span>
+
+    seen <span class="token operator">=</span> set<span class="token punctuation">(</span><span class="token punctuation">)</span>
+    <span class="token keyword">for</span> name <span class="token keyword">in</span> field_names<span class="token punctuation">:</span>
+        <span class="token keyword">if</span> name<span class="token punctuation">.</span>startswith<span class="token punctuation">(</span><span class="token string">'_'</span><span class="token punctuation">)</span> <span class="token operator">and</span> <span class="token operator">not</span> rename<span class="token punctuation">:</span>
+            <span class="token keyword">raise</span> ValueError<span class="token punctuation">(</span><span class="token string">'Field names cannot start with an underscore: '</span>
+                             f<span class="token string">'{name!r}'</span><span class="token punctuation">)</span>
+        <span class="token keyword">if</span> name <span class="token keyword">in</span> seen<span class="token punctuation">:</span>
+            <span class="token keyword">raise</span> ValueError<span class="token punctuation">(</span>f<span class="token string">'Encountered duplicate field name: {name!r}'</span><span class="token punctuation">)</span>
+        seen<span class="token punctuation">.</span>add<span class="token punctuation">(</span>name<span class="token punctuation">)</span>
+<span class="token punctuation">.</span><span class="token punctuation">.</span><span class="token punctuation">.</span>
+</code></pre>
+<p>接下来对输入的 typename 和 field_names 经检查了一下参数，仍是使用上面的三个规则，确保 typename 和 field_names 中的元素是合法的字符串。</p>
+<pre class=" language-python"><code class="language-python"><span class="token punctuation">.</span><span class="token punctuation">.</span><span class="token punctuation">.</span>
+    field_defaults <span class="token operator">=</span> <span class="token punctuation">{</span><span class="token punctuation">}</span>
+    <span class="token keyword">if</span> defaults <span class="token keyword">is</span> <span class="token operator">not</span> None<span class="token punctuation">:</span>
+        defaults <span class="token operator">=</span> tuple<span class="token punctuation">(</span>defaults<span class="token punctuation">)</span>
+        <span class="token keyword">if</span> len<span class="token punctuation">(</span>defaults<span class="token punctuation">)</span> <span class="token operator">></span> len<span class="token punctuation">(</span>field_names<span class="token punctuation">)</span><span class="token punctuation">:</span>
+            <span class="token keyword">raise</span> TypeError<span class="token punctuation">(</span><span class="token string">'Got more default values than field names'</span><span class="token punctuation">)</span>
+        field_defaults <span class="token operator">=</span> dict<span class="token punctuation">(</span>reversed<span class="token punctuation">(</span>list<span class="token punctuation">(</span>zip<span class="token punctuation">(</span>reversed<span class="token punctuation">(</span>field_names<span class="token punctuation">)</span><span class="token punctuation">,</span>
+                                                reversed<span class="token punctuation">(</span>defaults<span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">)</span>
+<span class="token punctuation">.</span><span class="token punctuation">.</span><span class="token punctuation">.</span>
+</code></pre>
+<p>如果设置了 defaults 参数，要最右匹配到 field_names。先使用了 <code>zip</code> 函数，把 <code>reversed</code> 后的 field_names 和 defaults 组合成元组的 list</p>
+<pre class=" language-python"><code class="language-python"><span class="token operator">>></span><span class="token operator">></span> field_names <span class="token operator">=</span> <span class="token punctuation">[</span><span class="token string">'x'</span><span class="token punctuation">,</span> <span class="token string">'y'</span><span class="token punctuation">,</span> <span class="token string">'z'</span><span class="token punctuation">]</span>
+<span class="token operator">>></span><span class="token operator">></span> defaults <span class="token operator">=</span> <span class="token punctuation">[</span><span class="token number">2</span><span class="token punctuation">,</span> <span class="token number">3</span><span class="token punctuation">]</span>
+<span class="token operator">>></span><span class="token operator">></span> 
+<span class="token operator">>></span><span class="token operator">></span> <span class="token keyword">print</span><span class="token punctuation">(</span>list<span class="token punctuation">(</span>zip<span class="token punctuation">(</span>reversed<span class="token punctuation">(</span>field_names<span class="token punctuation">)</span><span class="token punctuation">,</span> reversed<span class="token punctuation">(</span>defaults<span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">)</span>
+<span class="token punctuation">[</span><span class="token punctuation">(</span><span class="token string">'z'</span><span class="token punctuation">,</span> <span class="token number">3</span><span class="token punctuation">)</span><span class="token punctuation">,</span> <span class="token punctuation">(</span><span class="token string">'y'</span><span class="token punctuation">,</span> <span class="token number">2</span><span class="token punctuation">)</span><span class="token punctuation">]</span>
+<span class="token operator">>></span><span class="token operator">></span>
+</code></pre>
+<p>最后在使用 <code>dict(reversed(...))</code> 转化成 dict 类型。</p>
+<pre class=" language-python"><code class="language-python"><span class="token punctuation">.</span><span class="token punctuation">.</span><span class="token punctuation">.</span>
+    <span class="token comment" spellcheck="true"># Variables used in the methods and docstrings</span>
+    field_names <span class="token operator">=</span> tuple<span class="token punctuation">(</span>map<span class="token punctuation">(</span>_sys<span class="token punctuation">.</span>intern<span class="token punctuation">,</span> field_names<span class="token punctuation">)</span><span class="token punctuation">)</span>
+    num_fields <span class="token operator">=</span> len<span class="token punctuation">(</span>field_names<span class="token punctuation">)</span>
+    arg_list <span class="token operator">=</span> repr<span class="token punctuation">(</span>field_names<span class="token punctuation">)</span><span class="token punctuation">.</span>replace<span class="token punctuation">(</span><span class="token string">"'"</span><span class="token punctuation">,</span> <span class="token string">""</span><span class="token punctuation">)</span><span class="token punctuation">[</span><span class="token number">1</span><span class="token punctuation">:</span><span class="token operator">-</span><span class="token number">1</span><span class="token punctuation">]</span>
+    repr_fmt <span class="token operator">=</span> <span class="token string">'('</span> <span class="token operator">+</span> <span class="token string">', '</span><span class="token punctuation">.</span>join<span class="token punctuation">(</span>f<span class="token string">'{name}=%r'</span> <span class="token keyword">for</span> name <span class="token keyword">in</span> field_names<span class="token punctuation">)</span> <span class="token operator">+</span> <span class="token string">')'</span>
+    tuple_new <span class="token operator">=</span> tuple<span class="token punctuation">.</span>__new__
+    _dict<span class="token punctuation">,</span> _tuple<span class="token punctuation">,</span> _len<span class="token punctuation">,</span> _map<span class="token punctuation">,</span> _zip <span class="token operator">=</span> dict<span class="token punctuation">,</span> tuple<span class="token punctuation">,</span> len<span class="token punctuation">,</span> map<span class="token punctuation">,</span> zip
+
+    <span class="token comment" spellcheck="true"># Create all the named tuple methods to be added to the class namespace</span>
+
+    s <span class="token operator">=</span> f<span class="token string">'def __new__(_cls, {arg_list}): return _tuple_new(_cls, ({arg_list}))'</span>
+    namespace <span class="token operator">=</span> <span class="token punctuation">{</span><span class="token string">'_tuple_new'</span><span class="token punctuation">:</span> tuple_new<span class="token punctuation">,</span> <span class="token string">'__name__'</span><span class="token punctuation">:</span> f<span class="token string">'namedtuple_{typename}'</span><span class="token punctuation">}</span>
+    <span class="token comment" spellcheck="true"># Note: exec() has the side-effect of interning the field names</span>
+    <span class="token keyword">exec</span><span class="token punctuation">(</span>s<span class="token punctuation">,</span> namespace<span class="token punctuation">)</span>
+    __new__ <span class="token operator">=</span> namespace<span class="token punctuation">[</span><span class="token string">'__new__'</span><span class="token punctuation">]</span>
+    __new__<span class="token punctuation">.</span>__doc__ <span class="token operator">=</span> f<span class="token string">'Create new instance of {typename}({arg_list})'</span>
+    <span class="token keyword">if</span> defaults <span class="token keyword">is</span> <span class="token operator">not</span> None<span class="token punctuation">:</span>
+        __new__<span class="token punctuation">.</span>__defaults__ <span class="token operator">=</span> defaults
+<span class="token punctuation">.</span><span class="token punctuation">.</span><span class="token punctuation">.</span>
+</code></pre>
+<p>这部分动态设置参数的过程，重点关注 <code>exec(s, namespace)</code> ，s 是 <code>__new__</code> 方法的定义，其中的 <code>arg_list</code> 是我们设置的属性名字会转换成 <code>x, y, x</code> 这种形式，填充的 s 中。namespace 则是 exec 过程中可使用的变量，这里传入了 <code>tuple_new = tuple.__new__</code> 用于创建一个新的 tuple。</p>
+<pre class=" language-python"><code class="language-python"><span class="token punctuation">.</span><span class="token punctuation">.</span><span class="token punctuation">.</span>
+    @classmethod
+    <span class="token keyword">def</span> <span class="token function">_make</span><span class="token punctuation">(</span>cls<span class="token punctuation">,</span> iterable<span class="token punctuation">)</span><span class="token punctuation">:</span>
+        result <span class="token operator">=</span> tuple_new<span class="token punctuation">(</span>cls<span class="token punctuation">,</span> iterable<span class="token punctuation">)</span>
+        <span class="token keyword">if</span> _len<span class="token punctuation">(</span>result<span class="token punctuation">)</span> <span class="token operator">!=</span> num_fields<span class="token punctuation">:</span>
+            <span class="token keyword">raise</span> TypeError<span class="token punctuation">(</span>f<span class="token string">'Expected {num_fields} arguments, got {len(result)}'</span><span class="token punctuation">)</span>
+        <span class="token keyword">return</span> result
+
+    _make<span class="token punctuation">.</span>__func__<span class="token punctuation">.</span>__doc__ <span class="token operator">=</span> <span class="token punctuation">(</span>f<span class="token string">'Make a new {typename} object from a sequence '</span>
+                              <span class="token string">'or iterable'</span><span class="token punctuation">)</span>
+
+    <span class="token keyword">def</span> <span class="token function">_replace</span><span class="token punctuation">(</span>_self<span class="token punctuation">,</span> <span class="token operator">**</span>kwds<span class="token punctuation">)</span><span class="token punctuation">:</span>
+        result <span class="token operator">=</span> _self<span class="token punctuation">.</span>_make<span class="token punctuation">(</span>_map<span class="token punctuation">(</span>kwds<span class="token punctuation">.</span>pop<span class="token punctuation">,</span> field_names<span class="token punctuation">,</span> _self<span class="token punctuation">)</span><span class="token punctuation">)</span>
+        <span class="token keyword">if</span> kwds<span class="token punctuation">:</span>
+            <span class="token keyword">raise</span> ValueError<span class="token punctuation">(</span>f<span class="token string">'Got unexpected field names: {list(kwds)!r}'</span><span class="token punctuation">)</span>
+        <span class="token keyword">return</span> result
+
+    _replace<span class="token punctuation">.</span>__doc__ <span class="token operator">=</span> <span class="token punctuation">(</span>f<span class="token string">'Return a new {typename} object replacing specified '</span>
+                        <span class="token string">'fields with new values'</span><span class="token punctuation">)</span>
+
+    <span class="token keyword">def</span> <span class="token function">__repr__</span><span class="token punctuation">(</span>self<span class="token punctuation">)</span><span class="token punctuation">:</span>
+        <span class="token string">'Return a nicely formatted representation string'</span>
+        <span class="token keyword">return</span> self<span class="token punctuation">.</span>__class__<span class="token punctuation">.</span>__name__ <span class="token operator">+</span> repr_fmt <span class="token operator">%</span> self
+
+    <span class="token keyword">def</span> <span class="token function">_asdict</span><span class="token punctuation">(</span>self<span class="token punctuation">)</span><span class="token punctuation">:</span>
+        <span class="token string">'Return a new dict which maps field names to their values.'</span>
+        <span class="token keyword">return</span> _dict<span class="token punctuation">(</span>_zip<span class="token punctuation">(</span>self<span class="token punctuation">.</span>_fields<span class="token punctuation">,</span> self<span class="token punctuation">)</span><span class="token punctuation">)</span>
+
+    <span class="token keyword">def</span> <span class="token function">__getnewargs__</span><span class="token punctuation">(</span>self<span class="token punctuation">)</span><span class="token punctuation">:</span>
+        <span class="token string">'Return self as a plain tuple.  Used by copy and pickle.'</span>
+        <span class="token keyword">return</span> _tuple<span class="token punctuation">(</span>self<span class="token punctuation">)</span>
+
+    <span class="token comment" spellcheck="true"># Modify function metadata to help with introspection and debugging</span>
+    <span class="token keyword">for</span> method <span class="token keyword">in</span> <span class="token punctuation">(</span>__new__<span class="token punctuation">,</span> _make<span class="token punctuation">.</span>__func__<span class="token punctuation">,</span> _replace<span class="token punctuation">,</span>
+                   __repr__<span class="token punctuation">,</span> _asdict<span class="token punctuation">,</span> __getnewargs__<span class="token punctuation">)</span><span class="token punctuation">:</span>
+        method<span class="token punctuation">.</span>__qualname__ <span class="token operator">=</span> f<span class="token string">'{typename}.{method.__name__}'</span>
+<span class="token punctuation">.</span><span class="token punctuation">.</span><span class="token punctuation">.</span>
+</code></pre>
+<p>接着定义了一些列的方法，这些方法最后都是用于生成 namedtuple 后所拥有的方法，根据简单的注释可以很容易知道他们的用途</p>
+<pre class=" language-python"><code class="language-python"><span class="token punctuation">.</span><span class="token punctuation">.</span><span class="token punctuation">.</span>
+    <span class="token comment" spellcheck="true"># Build-up the class namespace dictionary</span>
+    <span class="token comment" spellcheck="true"># and use type() to build the result class</span>
+    class_namespace <span class="token operator">=</span> <span class="token punctuation">{</span>
+        <span class="token string">'__doc__'</span><span class="token punctuation">:</span> f<span class="token string">'{typename}({arg_list})'</span><span class="token punctuation">,</span>
+        <span class="token string">'__slots__'</span><span class="token punctuation">:</span> <span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">,</span>
+        <span class="token string">'_fields'</span><span class="token punctuation">:</span> field_names<span class="token punctuation">,</span>
+        <span class="token string">'_field_defaults'</span><span class="token punctuation">:</span> field_defaults<span class="token punctuation">,</span>
+        <span class="token comment" spellcheck="true"># alternate spelling for backward compatiblity</span>
+        <span class="token string">'_fields_defaults'</span><span class="token punctuation">:</span> field_defaults<span class="token punctuation">,</span>
+        <span class="token string">'__new__'</span><span class="token punctuation">:</span> __new__<span class="token punctuation">,</span>
+        <span class="token string">'_make'</span><span class="token punctuation">:</span> _make<span class="token punctuation">,</span>
+        <span class="token string">'_replace'</span><span class="token punctuation">:</span> _replace<span class="token punctuation">,</span>
+        <span class="token string">'__repr__'</span><span class="token punctuation">:</span> __repr__<span class="token punctuation">,</span>
+        <span class="token string">'_asdict'</span><span class="token punctuation">:</span> _asdict<span class="token punctuation">,</span>
+        <span class="token string">'__getnewargs__'</span><span class="token punctuation">:</span> __getnewargs__<span class="token punctuation">,</span>
+    <span class="token punctuation">}</span>
+
+    <span class="token comment" spellcheck="true"># _tuplegetter = lambda index, doc: property(_itemgetter(index), doc=doc)</span>
+    <span class="token keyword">for</span> index<span class="token punctuation">,</span> name <span class="token keyword">in</span> enumerate<span class="token punctuation">(</span>field_names<span class="token punctuation">)</span><span class="token punctuation">:</span>
+        doc <span class="token operator">=</span> _sys<span class="token punctuation">.</span>intern<span class="token punctuation">(</span>f<span class="token string">'Alias for field number {index}'</span><span class="token punctuation">)</span>
+        class_namespace<span class="token punctuation">[</span>name<span class="token punctuation">]</span> <span class="token operator">=</span> _tuplegetter<span class="token punctuation">(</span>index<span class="token punctuation">,</span> doc<span class="token punctuation">)</span>
+
+    result <span class="token operator">=</span> type<span class="token punctuation">(</span>typename<span class="token punctuation">,</span> <span class="token punctuation">(</span>tuple<span class="token punctuation">,</span><span class="token punctuation">)</span><span class="token punctuation">,</span> class_namespace<span class="token punctuation">)</span>
+<span class="token punctuation">.</span><span class="token punctuation">.</span><span class="token punctuation">.</span>
+</code></pre>
+<p>定义 <code>class_namespace</code> 传入上面定义好一系列方法，最后使用 <code>type</code> 创建出一个新的 class。</p>
+<blockquote>
+<p>[!NOTE]</p>
+<p>Python 所有的东西都是 type 这个函数创建出来的，包括 type 本身，更多 type 相关信息参考<br><a href="https://docs.python.org/3/library/functions.html#type" target="_blank" rel="noopener">https://docs.python.org/3/library/functions.html#type</a></p>
+</blockquote>
+<pre class=" language-python"><code class="language-python"> <span class="token punctuation">.</span><span class="token punctuation">.</span><span class="token punctuation">.</span>
+    <span class="token comment" spellcheck="true"># For pickling to work, the __module__ variable needs to be set to the frame</span>
+    <span class="token comment" spellcheck="true"># where the named tuple is created.  Bypass this step in environments where</span>
+    <span class="token comment" spellcheck="true"># sys._getframe is not defined (Jython for example) or sys._getframe is not</span>
+    <span class="token comment" spellcheck="true"># defined for arguments greater than 0 (IronPython), or where the user has</span>
+    <span class="token comment" spellcheck="true"># specified a particular module.</span>
+    <span class="token keyword">if</span> module <span class="token keyword">is</span> None<span class="token punctuation">:</span>
+        <span class="token keyword">try</span><span class="token punctuation">:</span>
+            module <span class="token operator">=</span> _sys<span class="token punctuation">.</span>_getframe<span class="token punctuation">(</span><span class="token number">1</span><span class="token punctuation">)</span><span class="token punctuation">.</span>f_globals<span class="token punctuation">.</span>get<span class="token punctuation">(</span><span class="token string">'__name__'</span><span class="token punctuation">,</span> <span class="token string">'__main__'</span><span class="token punctuation">)</span>
+        <span class="token keyword">except</span> <span class="token punctuation">(</span>AttributeError<span class="token punctuation">,</span> ValueError<span class="token punctuation">)</span><span class="token punctuation">:</span>
+            <span class="token keyword">pass</span>
+    <span class="token keyword">if</span> module <span class="token keyword">is</span> <span class="token operator">not</span> None<span class="token punctuation">:</span>
+        result<span class="token punctuation">.</span>__module__ <span class="token operator">=</span> module
+
+    <span class="token keyword">return</span> result
+ <span class="token punctuation">.</span><span class="token punctuation">.</span><span class="token punctuation">.</span>
+</code></pre>
+<p>最后需要把 module 属性设置回 result 的 <code>__module__</code> 中，这些信息会在 pickle 会被用到。</p>
+<p>总结一下，namedtuple 创建过程大体分成三个部分：</p>
+<ol>
+<li>提取参数、定义 tuple 所需的方法</li>
+<li>根据参数名字动态构建 <code>__new__</code> 函数，和最后生成的 tuple 的属性可以对应上</li>
+<li>填充 class_namespace，用 <code>type</code> 函数创建一个 tuple 对象</li>
+</ol>
+<p>其实在不久之前，namedtuple 还是直接使用字符串模板生成，现在这种实现方法更优雅了。</p>
+ 
+    </div>
+    <div class="post-foot">
+        <div id="disqus_thread"></div>
+    </div>
+</div>
+
+
+                </section>
+                <footer class="container fixed-690 footer">
+    <div>
+        <span>Power by <a href="https://hexo.io">Hexo</a></span>
+    </div>
+    <div>
+        <span>Theme <a href="https://github.com/zhengxiaowai/hexo-theme-lessless">lessless</a></span>
+    </div>
+        
+            
+<div>
+    <span id="hexiangyutest_container_site_pv">
+    PV: <span id="busuanzi_value_site_pv"></span>
+    </span>
+    <span id="busuanzi_container_site_uv">
+    UV: <span id="busuanzi_value_site_uv"></span>
+    </span>
+</div>
+
+        
+        
+            <div>
+    <span><a href="https://beian.miit.gov.cn/#/Integrated/index" target="_blank">闽ICP备17000267号-1</a></span>
+</div>
+        
+</footer>
+        </div>
+        
+<script src="/js/jquery-3.2.1.slim.min.js"></script>
+<script src="/js/popper.min.js"></script>
+<script src="/js/bootstrap.min.js"></script>
+
+
+    
+<script type="text/javascript">
+    var disqus_config = function () {
+        this.page.url = 'http://hexiangyu.me/2019/05/12/python-stanard-libary-collections-namedtuple/';
+        this.page.identifier = '2019/05/12/python-stanard-libary-collections-namedtuple/';
+        this.page.title = 'Python 标准库源码分析 namedtuple';
+    };
+    var d = document, s = d.createElement('script');
+    s.src = '//hexiangyus.disqus.com/embed.js';
+    s.setAttribute('data-timestamp', '' + +new Date());
+    (d.head || d.body).appendChild(s);
+</script>
+
+
+    </body>
+</html>

@@ -1,0 +1,234 @@
+<html>
+    <!DOCTYPE html>
+<html lang="zh">
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<meta http-equiv="X-UA-Compatible" content="ie=edge">
+
+	
+
+	<title>「译」在 Golang 中实现枚举类型 | 正小歪的博客</title>
+	<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1">
+	<link rel="shortcut icon" href="/favicon.ico">	
+	<link rel="stylesheet" href="/css/bootstrap.min.css">
+	<link rel="stylesheet" href="/css/style.css">
+    <script async src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+<link rel="stylesheet" href="/css/prism.css" type="text/css"></head>
+
+    <body>
+        <div class="root">
+            <div class='topnavs container fixed-690'>
+    <nav class="navbar navbar-expand-lg navbar-light">
+        <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent" aria-controls="navbarSupportedContent"
+            aria-expanded="false" aria-label="Toggle navigation">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse" id="navbarSupportedContent">
+            <ul class="navbar-nav mr-auto">
+                
+                    <li class="nav-item">
+                        <a class="nav-link" href="/">
+                            首页
+                        </a>
+                    </li>
+                    
+                    <li class="nav-item">
+                        <a class="nav-link" href="/categories">
+                            分类
+                        </a>
+                    </li>
+                    
+                    <li class="nav-item">
+                        <a class="nav-link" href="/archives">
+                            归档
+                        </a>
+                    </li>
+                    
+            </ul>
+        </div>
+    </nav>
+</div>
+                <section class="container mainbody fixed-690">
+                    <div class="post">
+    <div class="post-title">
+        <h1>
+            「译」在 Golang 中实现枚举类型 
+        </h1>
+
+        
+        <div class="post-title-views">
+            <span id="busuanzi_container_page_pv">
+                本文总阅读量 <span id="busuanzi_value_page_pv"></span> 次
+            </span>
+        </div>
+        
+    </div>
+    <div class="post-content markdown">
+        <p><a href="https://stein.wtf/posts/2019-04-16/enums/" target="_blank" rel="noopener">原文地址</a><br>在这篇文章中，我们将介绍使用 go generate 和 abstract 语法树遍历生成强大的枚举类型。</p>
+<p>这篇文章描述用于生成的 CLI，<a href="https://github.com/steinfletcher/gonum" target="_blank" rel="noopener">完全的原代码</a> 可以在 Github 上找到。</p>
+<a id="more"></a>
+<h2 id="Go-中惯用法"><a href="#Go-中惯用法" class="headerlink" title="Go 中惯用法"></a>Go 中惯用法</h2><p>Go 语言实际上没有对枚举类型提供完成的支持。定义枚举类型的其中一种方法就是把一类相关变量定义成一种类型。Iota 可以用于定义连续的递增的整数常量。我们可以像这样定义一个 Color 类型。</p>
+<p><a href="https://play.golang.org/p/1Zib29yiuFy" target="_blank" rel="noopener">https://play.golang.org/p/1Zib29yiuFy</a></p>
+<pre class=" language-go"><code class="language-go"><span class="token keyword">package</span> main
+
+<span class="token keyword">import</span> <span class="token string">"fmt"</span>
+
+<span class="token keyword">type</span> Color <span class="token builtin">int</span>
+
+<span class="token keyword">const</span> <span class="token punctuation">(</span>
+    Red Color <span class="token operator">=</span> <span class="token boolean">iota</span> <span class="token comment" spellcheck="true">// 0</span>
+    Blue             <span class="token comment" spellcheck="true">// 1</span>
+<span class="token punctuation">)</span>
+
+<span class="token keyword">func</span> <span class="token function">main</span><span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token punctuation">{</span>
+    <span class="token keyword">var</span> b1 Color <span class="token operator">=</span> Red
+    b1 <span class="token operator">=</span> Red
+    fmt<span class="token punctuation">.</span><span class="token function">Println</span><span class="token punctuation">(</span>b1<span class="token punctuation">)</span> <span class="token comment" spellcheck="true">// prints 0</span>
+
+    <span class="token keyword">var</span> b2 Color <span class="token operator">=</span> <span class="token number">1</span>
+    fmt<span class="token punctuation">.</span><span class="token function">Println</span><span class="token punctuation">(</span>b2 <span class="token operator">==</span> Blue<span class="token punctuation">)</span> <span class="token comment" spellcheck="true">// prints true</span>
+
+    <span class="token keyword">var</span> b3 Color
+    b3 <span class="token operator">=</span> <span class="token number">42</span>
+    fmt<span class="token punctuation">.</span><span class="token function">Println</span><span class="token punctuation">(</span>b3<span class="token punctuation">)</span>  <span class="token comment" spellcheck="true">// prints 42</span>
+<span class="token punctuation">}</span>
+</code></pre>
+<p>这种写法在 Go 代码中很常见，虽然这种方法很常用，但是有一些缺点。因为任何整数都可以给 Color 赋值，所以无法进行使用静态检查。</p>
+<ul>
+<li>缺乏序列化——虽然这个不经常使用(开发者想要序列化这个整数，用于传参或者记录到数据库)</li>
+<li>缺乏可读性的值——我们需要将 const 值转化成代码中显示的值</li>
+</ul>
+<p>了解一种语言的习惯用法以及何时该打破这种习惯很重要。习惯用法往往会限制我们的 “视野”，这有时候恰恰是缺乏创造力的原因。</p>
+<h2 id="设计枚举类型"><a href="#设计枚举类型" class="headerlink" title="设计枚举类型"></a>设计枚举类型</h2><p>简洁是 Go 语言最重要的特性之一，其他语言的开发者可以很快上手。从另一方面看，可能会产生约束，比如缺乏泛型机制导致许多重复的代码。为了克服这些缺点，社区已经使用代码生成作为定义更强大和灵活类型的机制。</p>
+<p>我们就使用这种方法来定义枚举类型，这种方法是使用生成的枚举作为 struct。我们还可以添加方法到 struct 中，struct 还支持 tag，这对于定义显示值和描述很有用。</p>
+<pre class=" language-go"><code class="language-go"><span class="token keyword">type</span> ColorEnum <span class="token keyword">struct</span> <span class="token punctuation">{</span>
+    Red  <span class="token builtin">string</span> <span class="token string">`enum:"RED"`</span>
+    Blue <span class="token builtin">string</span> <span class="token string">`enum:"BLUE"`</span>
+<span class="token punctuation">}</span>
+</code></pre>
+<p>现在我们需要做的是给每个字段生成结构的实例。</p>
+<pre class=" language-go"><code class="language-go"><span class="token keyword">var</span> Red  <span class="token operator">=</span> Color<span class="token punctuation">{</span>name<span class="token punctuation">:</span> <span class="token string">"RED"</span><span class="token punctuation">}</span>
+<span class="token keyword">var</span> Blue <span class="token operator">=</span> Color<span class="token punctuation">{</span>name<span class="token punctuation">:</span> <span class="token string">"BLUE"</span><span class="token punctuation">}</span>
+</code></pre>
+<p>添加方法到 Color struct 支持 JSON 编码/解码，我们实现 Marshaler 的 interface 支持 JSON 的编码。</p>
+<pre class=" language-go"><code class="language-go"><span class="token keyword">func</span> <span class="token punctuation">(</span>c Color<span class="token punctuation">)</span> <span class="token function">MarshalJSON</span><span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token punctuation">(</span><span class="token punctuation">[</span><span class="token punctuation">]</span><span class="token builtin">byte</span><span class="token punctuation">,</span> <span class="token builtin">error</span><span class="token punctuation">)</span> <span class="token punctuation">{</span>
+    <span class="token keyword">return</span> json<span class="token punctuation">.</span><span class="token function">Marshal</span><span class="token punctuation">(</span>c<span class="token punctuation">.</span>name<span class="token punctuation">)</span>
+<span class="token punctuation">}</span>
+</code></pre>
+<p>在这个类型序列化时候将会调用我们的自定义实现。同样我们可以实现 Unmarshaler 的 interface，这将让我们可以在代码中使用类型——这允许我们直接在 API 的数据传输对象上定义枚举。</p>
+<pre class=" language-go"><code class="language-go"><span class="token keyword">func</span> <span class="token punctuation">(</span>c <span class="token operator">*</span>Color<span class="token punctuation">)</span> <span class="token function">UnmarshalJSON</span><span class="token punctuation">(</span>b <span class="token punctuation">[</span><span class="token punctuation">]</span><span class="token builtin">byte</span><span class="token punctuation">)</span> <span class="token builtin">error</span> <span class="token punctuation">{</span>
+    <span class="token keyword">return</span> json<span class="token punctuation">.</span><span class="token function">Unmarshal</span><span class="token punctuation">(</span>b<span class="token punctuation">,</span> c<span class="token punctuation">.</span>name<span class="token punctuation">)</span>
+<span class="token punctuation">}</span>
+</code></pre>
+<p>我们还可以定义一些辅助的方法来生成显示的值。</p>
+<pre class=" language-go"><code class="language-go"><span class="token comment" spellcheck="true">// ColorNames returns the displays values of all enum instances as a slice</span>
+<span class="token keyword">func</span> <span class="token function">ColorNames</span><span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token punctuation">[</span><span class="token punctuation">]</span><span class="token builtin">string</span> <span class="token punctuation">{</span> <span class="token operator">...</span> <span class="token punctuation">}</span>
+</code></pre>
+<p>我们也希望从字符串生成枚举实例，所以添加还需要添加这个方法。</p>
+<pre class=" language-go"><code class="language-go"><span class="token comment" spellcheck="true">// NewColor generates a new Color from the given display value (name)</span>
+<span class="token keyword">func</span> <span class="token function">NewColor</span><span class="token punctuation">(</span>value <span class="token builtin">string</span><span class="token punctuation">)</span> <span class="token punctuation">(</span>Color<span class="token punctuation">,</span> <span class="token builtin">error</span><span class="token punctuation">)</span> <span class="token punctuation">{</span> <span class="token operator">...</span> <span class="token punctuation">}</span>
+</code></pre>
+<p>这些行为都是可扩展的，你可以添加其他方法来返回名字，通过显示 Error() string 来支持错误，并且通过 String() string 来支持 Stringer。</p>
+<h2 id="生成代码"><a href="#生成代码" class="headerlink" title="生成代码"></a>生成代码</h2><h3 id="遍历抽象语法树"><a href="#遍历抽象语法树" class="headerlink" title="遍历抽象语法树"></a>遍历抽象语法树</h3><p>在渲染模板之前，我们需要在源码中解析出 ColorEnum 类型。两种常用的方法是使用 <code>reflet</code> 包和 <code>ast</code> 包。我们需要扫描包级别的 struct。<code>ast</code> 包具有生成抽象语法树的能力——一种可表示 Go 源码的可遍历数据结构。我们可以遍历语法树并且匹配提供的类型，然后可以解析类型和定义的 struct tag，并用在构建模型已生成模板。我们先加载一个 go 包。</p>
+<pre class=" language-go"><code class="language-go">cfg <span class="token operator">:=</span> <span class="token operator">&amp;</span>packages<span class="token punctuation">.</span>Config<span class="token punctuation">{</span>
+    Mode<span class="token punctuation">:</span>  packages<span class="token punctuation">.</span>LoadSyntax<span class="token punctuation">,</span>
+    Tests<span class="token punctuation">:</span> <span class="token boolean">false</span><span class="token punctuation">,</span>
+<span class="token punctuation">}</span>
+pkgs<span class="token punctuation">,</span> err <span class="token operator">:=</span> packages<span class="token punctuation">.</span><span class="token function">Load</span><span class="token punctuation">(</span>cfg<span class="token punctuation">,</span> patterns<span class="token operator">...</span><span class="token punctuation">)</span>
+</code></pre>
+<p><code>pkgs</code> 变量中包含每个文件的语法树。使用 <code>ast.Inspect</code> 方法来遍历 AST。它需要为每个遇到的节点调用一个函数，我们以此遍历每个文件并且处理该文件的语法树。</p>
+<pre class=" language-go"><code class="language-go"><span class="token keyword">for</span> <span class="token boolean">_</span><span class="token punctuation">,</span> file <span class="token operator">:=</span> <span class="token keyword">range</span> pkg<span class="token punctuation">.</span>files <span class="token punctuation">{</span>
+<span class="token operator">...</span>
+    ast<span class="token punctuation">.</span><span class="token function">Inspect</span><span class="token punctuation">(</span>file<span class="token punctuation">.</span>file<span class="token punctuation">,</span> <span class="token keyword">func</span><span class="token punctuation">(</span>node ast<span class="token punctuation">.</span>Node<span class="token punctuation">)</span> <span class="token builtin">bool</span> <span class="token punctuation">{</span>
+        <span class="token comment" spellcheck="true">// ...handle node, check if it's something we are interested in</span>
+    <span class="token punctuation">}</span><span class="token punctuation">)</span>
+<span class="token punctuation">}</span>
+</code></pre>
+<p>使用者应该定义这个函数，然后按照感兴趣的 token 类型进行过滤。你可以通过节点上的此检查来过滤。</p>
+<pre class=" language-go"><code class="language-go">node<span class="token punctuation">.</span>Tok <span class="token operator">==</span> token<span class="token punctuation">.</span>STRUCT <span class="token punctuation">{</span> <span class="token operator">...</span> <span class="token punctuation">}</span>
+</code></pre>
+<p>在我们的例子中，通过定义了 “enmu:” 标签的 struct 进行过滤。我们只是处理了源码中每个标记，并根据遇到的数据类型进行模型（自定义 Go struct）的构建。</p>
+<h3 id="生成源代码"><a href="#生成源代码" class="headerlink" title="生成源代码"></a>生成源代码</h3><p>有许多生成代码的方法。<code>Stringer</code> 工具使用 <code>fmt</code> 包标准输出。虽然这很容易实现，但是随着代码的生成的扩张，这将会变得难以操作和调试。更合理的方式是使用 <code>text/template</code> 包，并且使用 Go 强大的模板库。它允许从模板中分离生成模型的逻辑，从而可以关注点分离和让代码易于推理。生成的类型定义可能如下所示：</p>
+<pre class=" language-go"><code class="language-go"><span class="token comment" spellcheck="true">// {{.NewType}} is the enum that instances should be created from</span>
+<span class="token keyword">type</span> <span class="token punctuation">{</span><span class="token punctuation">{</span><span class="token punctuation">.</span>NewType<span class="token punctuation">}</span><span class="token punctuation">}</span> <span class="token keyword">struct</span> <span class="token punctuation">{</span>
+    name  <span class="token builtin">string</span>
+<span class="token punctuation">}</span>
+
+<span class="token comment" spellcheck="true">// Enum instances</span>
+<span class="token punctuation">{</span><span class="token punctuation">{</span><span class="token operator">-</span> <span class="token keyword">range</span> $e <span class="token operator">:=</span> <span class="token punctuation">.</span>Fields<span class="token punctuation">}</span><span class="token punctuation">}</span>
+<span class="token keyword">var</span> <span class="token punctuation">{</span><span class="token punctuation">{</span><span class="token punctuation">.</span>Value<span class="token punctuation">}</span><span class="token punctuation">}</span> <span class="token operator">=</span> <span class="token punctuation">{</span><span class="token punctuation">{</span>$<span class="token punctuation">.</span>NewType<span class="token punctuation">}</span><span class="token punctuation">}</span><span class="token punctuation">{</span>name<span class="token punctuation">:</span> <span class="token string">"{{.Key}}"</span><span class="token punctuation">}</span>
+<span class="token punctuation">{</span><span class="token punctuation">{</span><span class="token operator">-</span> end<span class="token punctuation">}</span><span class="token punctuation">}</span>
+
+<span class="token operator">...</span> code to generate methods
+</code></pre>
+<p>然后我们可以使从模型中渲染出源码</p>
+<pre class=" language-go"><code class="language-go">t<span class="token punctuation">,</span> err <span class="token operator">:=</span> template<span class="token punctuation">.</span><span class="token function">New</span><span class="token punctuation">(</span>tmpl<span class="token punctuation">)</span><span class="token punctuation">.</span><span class="token function">Parse</span><span class="token punctuation">(</span>tmpl<span class="token punctuation">)</span>
+<span class="token keyword">if</span> err <span class="token operator">!=</span> <span class="token boolean">nil</span> <span class="token punctuation">{</span>
+    log<span class="token punctuation">.</span><span class="token function">Fatal</span><span class="token punctuation">(</span><span class="token string">"instance template parse error: "</span><span class="token punctuation">,</span> err<span class="token punctuation">)</span>
+<span class="token punctuation">}</span>
+
+err <span class="token operator">=</span> t<span class="token punctuation">.</span><span class="token function">Execute</span><span class="token punctuation">(</span>buf<span class="token punctuation">,</span> model<span class="token punctuation">)</span>
+</code></pre>
+<p>当我们在制作模板时候不要担心格式化的问题。<code>format</code> 包中有一个方法，它将源码作为参数并且返回格式化的 Go 代码，所以应该应该 Go 帮你处理这个问题。</p>
+<pre class=" language-go"><code class="language-go"><span class="token keyword">func</span> <span class="token function">Source</span><span class="token punctuation">(</span>src <span class="token punctuation">[</span><span class="token punctuation">]</span><span class="token builtin">byte</span><span class="token punctuation">)</span> <span class="token punctuation">(</span><span class="token punctuation">[</span><span class="token punctuation">]</span><span class="token builtin">byte</span><span class="token punctuation">,</span> <span class="token builtin">error</span><span class="token punctuation">)</span> <span class="token punctuation">{</span> <span class="token operator">...</span> <span class="token punctuation">}</span>
+</code></pre>
+<h2 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h2><p>在这篇中文，我们研究了一种通过解析 Go 源码来生成枚举类型的方法。此方法可以作为模板来构建所需要的源码和作为其他代码的生成器。我们使用 Go 的 <code>text/template</code> 库可以维护的方式呈现源码。</p>
+<p>可以在 Github 阅读 <a href="https://github.com/steinfletcher/gonum" target="_blank" rel="noopener">完整的代码</a>。</p>
+ 
+    </div>
+    <div class="post-foot">
+        <div id="disqus_thread"></div>
+    </div>
+</div>
+
+
+                </section>
+                <footer class="container fixed-690 footer">
+    <div>
+        <span>Power by <a href="https://hexo.io">Hexo</a></span>
+    </div>
+    <div>
+        <span>Theme <a href="https://github.com/zhengxiaowai/hexo-theme-lessless">lessless</a></span>
+    </div>
+        
+            
+<div>
+    <span id="hexiangyutest_container_site_pv">
+    PV: <span id="busuanzi_value_site_pv"></span>
+    </span>
+    <span id="busuanzi_container_site_uv">
+    UV: <span id="busuanzi_value_site_uv"></span>
+    </span>
+</div>
+
+        
+        
+            <div>
+    <span><a href="https://beian.miit.gov.cn/#/Integrated/index" target="_blank">闽ICP备17000267号-1</a></span>
+</div>
+        
+</footer>
+        </div>
+        
+<script src="/js/jquery-3.2.1.slim.min.js"></script>
+<script src="/js/popper.min.js"></script>
+<script src="/js/bootstrap.min.js"></script>
+
+
+    
+<script type="text/javascript">
+    var disqus_config = function () {
+        this.page.url = 'http://hexiangyu.me/2019/04/28/golang-enmu/';
+        this.page.identifier = '2019/04/28/golang-enmu/';
+        this.page.title = '「译」在 Golang 中实现枚举类型';
+    };
+    var d = document, s = d.createElement('script');
+    s.src = '//hexiangyus.disqus.com/embed.js';
+    s.setAttribute('data-timestamp', '' + +new Date());
+    (d.head || d.body).appendChild(s);
+</script>
+
+
+    </body>
+</html>

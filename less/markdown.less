@@ -1,0 +1,112 @@
+@commonMargin: 0 0 1rem 0;
+@lineHeight: 2rem;
+
+.markdown {
+    font-size: 16px;
+    line-height: @lineHeight;
+
+    h1, h2, h3, h4, h5, h6 {
+        margin-top: 24px;
+        margin-bottom: 16px;
+        font-weight: 600;
+    }
+
+    h1 {
+        font-size: 2rem;
+        padding-bottom: 0.3em;
+        border-bottom: 1px solid #eee;
+    }
+
+    h2 {
+        font-size: 1.75rem;
+        margin: 45px 0 .8rem;
+        padding-bottom: 0.3em;
+        border-bottom: 1px solid #eee;
+    }
+
+    h3 {
+        font-size: 1.5rem;
+        margin: 30px 0 .8rem;
+    }
+
+    h4 {
+        font-size: 1.25rem;
+        margin: 15px 0 .8rem;
+    }
+
+    h5 {
+        font-size: 1rem;
+    }
+
+    h6 {
+        font-size: 1rem;
+    }
+
+    pre {
+        font-family: Roboto Mono,Monaco,courier,monospace !important;
+        background: #f8f8f8 !important;
+        font-size: 0.9rem;
+        padding: 1.3rem 1rem !important;
+        margin: @commonMargin !important;
+    }
+
+    p {
+        margin: @commonMargin;
+    }
+
+    img {
+        max-width: 100%;
+        // width: 100%;
+        margin: auto;
+        display: block;
+    }
+
+    blockquote {
+        background-color: #f8f8f8;
+        border-left: 5px solid #ddd;
+        padding: 0.5rem 1rem;
+        &>:first-child {
+            margin-top: 0;
+        }
+        &>:last-child {
+            margin-bottom: 0;
+        }
+    }
+
+    ul {
+        margin: 1rem 0;
+        padding-left: 40px;
+        li {
+            word-wrap: break-word;
+        }
+    }
+
+    a {
+        color: #4078c0;
+        text-decoration: none;
+        &:hover {
+            text-decoration: underline;
+        }
+    }
+
+    table {
+        border: 1px solid #e8e8e8;
+        width: 100%;
+        border-spacing: 0;
+        border-collapse: collapse;
+        thead {
+            font-weight: bold;
+        }
+
+        tr {
+            background-color: #fff;
+            border-top: 1px solid #c6cbd1;
+        }
+
+        td, th {
+            padding: 6px 13px;
+            border: 1px solid #dfe2e5;
+            text-align: center !important;
+        }
+    }
+}

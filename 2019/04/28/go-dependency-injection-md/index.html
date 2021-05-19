@@ -1,0 +1,218 @@
+<html>
+    <!DOCTYPE html>
+<html lang="zh">
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<meta http-equiv="X-UA-Compatible" content="ie=edge">
+
+	
+
+	<title>「译」Golang 使用高阶函数实现依赖注入 | 正小歪的博客</title>
+	<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1">
+	<link rel="shortcut icon" href="/favicon.ico">	
+	<link rel="stylesheet" href="/css/bootstrap.min.css">
+	<link rel="stylesheet" href="/css/style.css">
+    <script async src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+<link rel="stylesheet" href="/css/prism.css" type="text/css"></head>
+
+    <body>
+        <div class="root">
+            <div class='topnavs container fixed-690'>
+    <nav class="navbar navbar-expand-lg navbar-light">
+        <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent" aria-controls="navbarSupportedContent"
+            aria-expanded="false" aria-label="Toggle navigation">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse" id="navbarSupportedContent">
+            <ul class="navbar-nav mr-auto">
+                
+                    <li class="nav-item">
+                        <a class="nav-link" href="/">
+                            首页
+                        </a>
+                    </li>
+                    
+                    <li class="nav-item">
+                        <a class="nav-link" href="/categories">
+                            分类
+                        </a>
+                    </li>
+                    
+                    <li class="nav-item">
+                        <a class="nav-link" href="/archives">
+                            归档
+                        </a>
+                    </li>
+                    
+            </ul>
+        </div>
+    </nav>
+</div>
+                <section class="container mainbody fixed-690">
+                    <div class="post">
+    <div class="post-title">
+        <h1>
+            「译」Golang 使用高阶函数实现依赖注入 
+        </h1>
+
+        
+        <div class="post-title-views">
+            <span id="busuanzi_container_page_pv">
+                本文总阅读量 <span id="busuanzi_value_page_pv"></span> 次
+            </span>
+        </div>
+        
+    </div>
+    <div class="post-content markdown">
+        <blockquote>
+<p><a href="https://stein.wtf/posts/2019-03-12/inject/" target="_blank" rel="noopener">原文地址</a></p>
+</blockquote>
+<p>你可以在 github.com/steinfletcher/func-dependency-injection-go 找到完整的代码。这个例子包含了一个完整的 REST 的 HTTP 服务器。</p>
+<a id="more"></a>
+<h2 id="简介"><a href="#简介" class="headerlink" title="简介"></a>简介</h2><p>在这篇文章中介绍了一种在 go 的实现依赖注入的方法 —— 使用高阶函数和闭包</p>
+<p>下面是一个返回用户 profile 的接口。</p>
+<pre class=" language-go"><code class="language-go"><span class="token keyword">func</span> <span class="token function">GetUserProfile</span><span class="token punctuation">(</span>id <span class="token builtin">string</span><span class="token punctuation">)</span> UserProfile <span class="token punctuation">{</span>
+    rows<span class="token punctuation">,</span> err <span class="token operator">:=</span> db<span class="token punctuation">.</span><span class="token function">Query</span><span class="token punctuation">(</span><span class="token string">"SELECT ..."</span><span class="token punctuation">)</span>
+    <span class="token operator">...</span>
+    <span class="token keyword">return</span> profileText
+<span class="token punctuation">}</span>
+</code></pre>
+<p>我们希望将处理用户数据的代码和访问数据库的代码分开。在这个例子中我们希望对业务逻辑代码进行单元测试，同时为访问数据库提供 mock。让我们把这些问题分开，以满足单一原则。</p>
+<pre class=" language-go"><code class="language-go"><span class="token comment" spellcheck="true">// domain layer function containing any business logic or mapping code</span>
+<span class="token keyword">func</span> <span class="token function">GetUserProfile</span><span class="token punctuation">(</span>id <span class="token builtin">string</span><span class="token punctuation">)</span> User <span class="token punctuation">{</span>
+    <span class="token operator">...</span>
+<span class="token punctuation">}</span>
+
+<span class="token comment" spellcheck="true">// database access layer function</span>
+<span class="token keyword">func</span> <span class="token function">SelectUserByID</span><span class="token punctuation">(</span>id <span class="token builtin">string</span><span class="token punctuation">)</span> UserProfile <span class="token punctuation">{</span>
+    <span class="token operator">...</span>
+<span class="token punctuation">}</span>
+</code></pre>
+<p>我们可以复用 <code>SelectUserByID</code> 函数在其他接口中。为了要对 <code>GetUserProfile</code> 进行单元测试和 mock 访问数据库，我们需要一种把 <code>SelectUserByID</code> 注入到 <code>GetUserProfile</code> 中的方法。一种方法利用 <code>go</code> 中对函数定义的类型别名实现。</p>
+<h2 id="Type-aliases"><a href="#Type-aliases" class="headerlink" title="Type aliases"></a>Type aliases</h2><p>使 <code>GetUserProfile</code> 依赖于一种抽象意味着我们可以在测试中注入 mock 的数据库访问。在 <code>go</code> 中实现这种操作的两中方法是 interface 机制或者 type alias。type alias 比较简单，不需要生成 struct，我们将这两个函数定义成另一种类型。</p>
+<pre class=" language-go"><code class="language-go"><span class="token keyword">type</span> SelectUserByID <span class="token keyword">func</span><span class="token punctuation">(</span>id <span class="token builtin">string</span><span class="token punctuation">)</span> User
+
+<span class="token keyword">type</span> GetUserProfile <span class="token keyword">func</span><span class="token punctuation">(</span>id <span class="token builtin">string</span><span class="token punctuation">)</span> UserProfile
+
+<span class="token keyword">func</span> <span class="token function">NewGetUserProfile</span><span class="token punctuation">(</span>selectUser SelectUserByID<span class="token punctuation">)</span> GetUserProfile <span class="token punctuation">{</span>
+    <span class="token keyword">return</span> <span class="token keyword">func</span><span class="token punctuation">(</span>id <span class="token builtin">string</span><span class="token punctuation">)</span> <span class="token builtin">string</span> <span class="token punctuation">{</span>
+        user <span class="token operator">:=</span> <span class="token function">selectUser</span><span class="token punctuation">(</span>id<span class="token punctuation">)</span>
+        <span class="token keyword">return</span> user<span class="token punctuation">.</span>ProfileText
+    <span class="token punctuation">}</span>
+<span class="token punctuation">}</span>
+
+<span class="token keyword">func</span> <span class="token function">selectUser</span><span class="token punctuation">(</span>id <span class="token builtin">string</span><span class="token punctuation">)</span> User <span class="token punctuation">{</span>
+    <span class="token operator">...</span>
+    <span class="token keyword">return</span> User<span class="token punctuation">{</span>ProfileText<span class="token punctuation">:</span> userRow<span class="token punctuation">.</span>ProfileText<span class="token punctuation">}</span>
+<span class="token punctuation">}</span>
+</code></pre>
+<p><code>SelectUserByID</code> 是一个函数通过参数 user ID 返回 User 结构。我们不需要定义它的实现。<code>NewGetUserProfile</code> 是一个工厂方法依赖于参数 <code>selectUser</code>，然后返回一个可调用的函数。这种模式使用了闭包，让内部的函数可以从外部的函数中获取依赖项。闭包可以捕获上下文中变量和常量，这被称为对那些变量或者常量的 <code>closing over</code>。</p>
+<p>然后我们可以像这样使用这些函数</p>
+<pre class=" language-go"><code class="language-go"><span class="token comment" spellcheck="true">// wire dependencies somewhere in the application</span>
+getUser <span class="token operator">:=</span> <span class="token function">NewGetUserProfile</span><span class="token punctuation">(</span>selectUser<span class="token punctuation">)</span>
+
+user <span class="token operator">:=</span> <span class="token function">getUser</span><span class="token punctuation">(</span><span class="token string">"1234"</span><span class="token punctuation">)</span>
+</code></pre>
+<h2 id="另一种观点"><a href="#另一种观点" class="headerlink" title="另一种观点"></a>另一种观点</h2><p>如果你熟悉像 Java 这样的语言，在创建累的时候将依赖类注入构造函数，然后在调用方法的时候调用依赖的方法。这些方法不存在功能上的差别 —— 你认为这是一个拥有单个抽象方法的函数 type alias，在 Java 中在构造函数中注入依赖。</p>
+<pre class=" language-java"><code class="language-java"><span class="token keyword">interface</span> <span class="token class-name">DB</span> <span class="token punctuation">{</span>
+    User <span class="token function">SelectUser</span><span class="token punctuation">(</span>String id<span class="token punctuation">)</span>
+<span class="token punctuation">}</span>
+
+<span class="token keyword">public</span> <span class="token keyword">class</span> <span class="token class-name">UserService</span> <span class="token punctuation">{</span>
+    <span class="token keyword">private</span> <span class="token keyword">final</span> DB db<span class="token punctuation">;</span>
+
+    <span class="token keyword">public</span> <span class="token function">UserService</span><span class="token punctuation">(</span>DB db<span class="token punctuation">)</span> <span class="token punctuation">{</span> <span class="token comment" spellcheck="true">// inject dependency into constructor</span>
+        <span class="token keyword">this</span><span class="token punctuation">.</span>DB <span class="token operator">=</span> db<span class="token punctuation">;</span>
+    <span class="token punctuation">}</span>
+
+    <span class="token keyword">public</span> UserProfile <span class="token function">getUserProfile</span><span class="token punctuation">(</span>String id<span class="token punctuation">)</span> <span class="token punctuation">{</span> <span class="token comment" spellcheck="true">// access method</span>
+        User user <span class="token operator">=</span> <span class="token keyword">this</span><span class="token punctuation">.</span>DB<span class="token punctuation">.</span><span class="token function">SelectUser</span><span class="token punctuation">(</span>id<span class="token punctuation">)</span><span class="token punctuation">;</span>
+        <span class="token punctuation">.</span><span class="token punctuation">.</span><span class="token punctuation">.</span>
+        <span class="token keyword">return</span> userProfile<span class="token punctuation">;</span>
+    <span class="token punctuation">}</span>
+<span class="token punctuation">}</span>
+</code></pre>
+<p>在 <code>go</code> 使用高阶函数等价的是</p>
+<pre class=" language-go"><code class="language-go"><span class="token keyword">type</span> SelectUser <span class="token keyword">func</span><span class="token punctuation">(</span>id <span class="token builtin">string</span><span class="token punctuation">)</span> User
+
+<span class="token keyword">type</span> GetUserProfile <span class="token keyword">func</span><span class="token punctuation">(</span>id <span class="token builtin">string</span><span class="token punctuation">)</span> UserProfile
+
+<span class="token keyword">func</span> <span class="token function">NewGetUserProfile</span><span class="token punctuation">(</span>selectUser SelectUser<span class="token punctuation">)</span> <span class="token punctuation">{</span> <span class="token comment" spellcheck="true">// factory method to inject dependency</span>
+    <span class="token keyword">return</span> <span class="token keyword">func</span><span class="token punctuation">(</span>id <span class="token builtin">string</span><span class="token punctuation">)</span> UserProfile <span class="token punctuation">{</span> <span class="token comment" spellcheck="true">// access method</span>
+        user <span class="token operator">:=</span> <span class="token function">selectUser</span><span class="token punctuation">(</span>id<span class="token punctuation">)</span>
+        <span class="token operator">...</span>
+        <span class="token keyword">return</span> userProfile        
+    <span class="token punctuation">}</span> 
+<span class="token punctuation">}</span>
+</code></pre>
+<h2 id="测试"><a href="#测试" class="headerlink" title="测试"></a>测试</h2><p>我们现在可以对接口进行单元测试，为数据库访问提供 mock。</p>
+<pre class=" language-go"><code class="language-go"><span class="token keyword">func</span> <span class="token function">TestGetUserProfile</span><span class="token punctuation">(</span>t <span class="token operator">*</span>testing<span class="token punctuation">.</span>T<span class="token punctuation">)</span> <span class="token punctuation">{</span>
+    selectUserMock <span class="token operator">:=</span> <span class="token keyword">func</span><span class="token punctuation">(</span>id <span class="token builtin">string</span><span class="token punctuation">)</span> User <span class="token punctuation">{</span>
+        <span class="token keyword">return</span> User<span class="token punctuation">{</span>name<span class="token punctuation">:</span> <span class="token string">"jan"</span><span class="token punctuation">}</span>
+    <span class="token punctuation">}</span>
+    getUser <span class="token operator">:=</span> <span class="token function">NewGetUserProfile</span><span class="token punctuation">(</span>selectUserMock<span class="token punctuation">)</span>
+
+    user <span class="token operator">:=</span> <span class="token function">getUser</span><span class="token punctuation">(</span><span class="token string">"12345"</span><span class="token punctuation">)</span>
+
+    assert<span class="token punctuation">.</span><span class="token function">Equal</span><span class="token punctuation">(</span>t<span class="token punctuation">,</span> UserProfile<span class="token punctuation">{</span>ID<span class="token punctuation">:</span> <span class="token string">"12345"</span><span class="token punctuation">,</span> Name<span class="token punctuation">:</span> <span class="token string">"jan"</span><span class="token punctuation">}</span><span class="token punctuation">,</span> user<span class="token punctuation">)</span>
+<span class="token punctuation">}</span>
+</code></pre>
+<p>你可以在 <a href="https://github.com/steinfletcher/func-dependency-injection-go" target="_blank" rel="noopener">https://github.com/steinfletcher/func-dependency-injection-go</a> 上找到更全面的代码示例。该示例包含一个 REST 的 http 服务器。</p>
+ 
+    </div>
+    <div class="post-foot">
+        <div id="disqus_thread"></div>
+    </div>
+</div>
+
+
+                </section>
+                <footer class="container fixed-690 footer">
+    <div>
+        <span>Power by <a href="https://hexo.io">Hexo</a></span>
+    </div>
+    <div>
+        <span>Theme <a href="https://github.com/zhengxiaowai/hexo-theme-lessless">lessless</a></span>
+    </div>
+        
+            
+<div>
+    <span id="hexiangyutest_container_site_pv">
+    PV: <span id="busuanzi_value_site_pv"></span>
+    </span>
+    <span id="busuanzi_container_site_uv">
+    UV: <span id="busuanzi_value_site_uv"></span>
+    </span>
+</div>
+
+        
+        
+            <div>
+    <span><a href="https://beian.miit.gov.cn/#/Integrated/index" target="_blank">闽ICP备17000267号-1</a></span>
+</div>
+        
+</footer>
+        </div>
+        
+<script src="/js/jquery-3.2.1.slim.min.js"></script>
+<script src="/js/popper.min.js"></script>
+<script src="/js/bootstrap.min.js"></script>
+
+
+    
+<script type="text/javascript">
+    var disqus_config = function () {
+        this.page.url = 'http://hexiangyu.me/2019/04/28/go-dependency-injection-md/';
+        this.page.identifier = '2019/04/28/go-dependency-injection-md/';
+        this.page.title = '「译」Golang 使用高阶函数实现依赖注入';
+    };
+    var d = document, s = d.createElement('script');
+    s.src = '//hexiangyus.disqus.com/embed.js';
+    s.setAttribute('data-timestamp', '' + +new Date());
+    (d.head || d.body).appendChild(s);
+</script>
+
+
+    </body>
+</html>

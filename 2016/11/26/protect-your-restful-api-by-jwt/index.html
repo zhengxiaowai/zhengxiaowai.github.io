@@ -1,0 +1,451 @@
+<html>
+    <!DOCTYPE html>
+<html lang="zh">
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<meta http-equiv="X-UA-Compatible" content="ie=edge">
+
+	
+
+	<title>使用 JWT 让你的 RESTful API 更安全 | 正小歪的博客</title>
+	<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1">
+	<link rel="shortcut icon" href="/favicon.ico">	
+	<link rel="stylesheet" href="/css/bootstrap.min.css">
+	<link rel="stylesheet" href="/css/style.css">
+    <script async src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+<link rel="stylesheet" href="/css/prism.css" type="text/css"></head>
+
+    <body>
+        <div class="root">
+            <div class='topnavs container fixed-690'>
+    <nav class="navbar navbar-expand-lg navbar-light">
+        <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent" aria-controls="navbarSupportedContent"
+            aria-expanded="false" aria-label="Toggle navigation">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse" id="navbarSupportedContent">
+            <ul class="navbar-nav mr-auto">
+                
+                    <li class="nav-item">
+                        <a class="nav-link" href="/">
+                            首页
+                        </a>
+                    </li>
+                    
+                    <li class="nav-item">
+                        <a class="nav-link" href="/categories">
+                            分类
+                        </a>
+                    </li>
+                    
+                    <li class="nav-item">
+                        <a class="nav-link" href="/archives">
+                            归档
+                        </a>
+                    </li>
+                    
+            </ul>
+        </div>
+    </nav>
+</div>
+                <section class="container mainbody fixed-690">
+                    <div class="post">
+    <div class="post-title">
+        <h1>
+            使用 JWT 让你的 RESTful API 更安全 
+        </h1>
+
+        
+        <div class="post-title-views">
+            <span id="busuanzi_container_page_pv">
+                本文总阅读量 <span id="busuanzi_value_page_pv"></span> 次
+            </span>
+        </div>
+        
+    </div>
+    <div class="post-content markdown">
+        <p>传统的 cookie-session 机制可以保证的接口安全，在没有通过认证的情况下会跳转至登入界面或者调用失败。</p>
+<p>在如今 RESTful 化的 API 接口下，cookie-session 已经不能很好发挥其余热保护好你的 API 。</p>
+<p>更多的形式下采用的基于 Token 的验证机制，JWT 本质的也是一种 Token，但是其中又有些许不同。</p>
+<a id="more"></a>
+<h2 id="什么是-JWT-？"><a href="#什么是-JWT-？" class="headerlink" title="什么是 JWT ？"></a>什么是 JWT ？</h2><p>JWT 及时 JSON Web Token，它是基于 <a href="https://tools.ietf.org/html/rfc7519" target="_blank" rel="noopener">RFC 7519</a> 所定义的一种在各个系统中传递<strong><em>紧凑</em></strong>和<strong><em>自包含</em></strong>的 JSON 数据形式。</p>
+<ul>
+<li><strong><em>紧凑（Compact）</em></strong> ：由于传送的数据小，JWT 可以通过GET、POST 和 放在 HTTP 的 header 中，同时也是因为小也能传送的更快。</li>
+<li><strong><em>自包含（self-contained）</em></strong> :  Payload 中能够包含用户的信息，避免数据库的查询。</li>
+</ul>
+<p>JSON Web Token 由三部分组成使用 <code>.</code> 分割开：</p>
+<ul>
+<li>Header</li>
+<li>Payload</li>
+<li>Signature</li>
+</ul>
+<p>一个 JWT 形式上类似于下面的样子：</p>
+<pre><code>xxxxx.yyyy.zzzz
+</code></pre><h3 id="Header"><a href="#Header" class="headerlink" title="Header"></a>Header</h3><p>Header 一般由两个部分组成：</p>
+<ul>
+<li>alg</li>
+<li>typ</li>
+</ul>
+<p>alg 是是所使用的 hash 算法例如 HMAC SHA256 或 RSA，typ 是 Token 的类型自然就是 JWT。</p>
+<pre class=" language-json"><code class="language-json"><span class="token punctuation">{</span>
+  <span class="token property">"alg"</span><span class="token operator">:</span> <span class="token string">"HS256"</span><span class="token punctuation">,</span>
+  <span class="token property">"typ"</span><span class="token operator">:</span> <span class="token string">"JWT"</span>
+<span class="token punctuation">}</span>
+</code></pre>
+<p>然后使用 Base64Url 编码成第一部分。</p>
+<pre class=" language-jwt"><code class="language-jwt">eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.<second part>.<third part>
+</code></pre>
+<h3 id="Payload"><a href="#Payload" class="headerlink" title="Payload"></a>Payload</h3><p>这一部分是 JWT 主要的信息存储部分，其中包含了许多种的声明（claims）。</p>
+<p>Claims 的实体一般包含用户和一些元数据，这些 claims 分成三种类型：<em>reserved</em>, <em>public</em>, 和 <em>private</em> claims。</p>
+<ul>
+<li><p><strong><em>（保留声明）reserved claims</em></strong>  ：预定义的 <a href="http://www.iana.org/assignments/jwt/jwt.xhtml" target="_blank" rel="noopener">一些声明</a>，并不是强制的但是推荐，它们包括 <strong>iss</strong> (issuer), <strong>exp</strong> (expiration time), <strong>sub</strong> (subject),<strong>aud</strong> (audience) 等。</p>
+<blockquote>
+<p>这里都使用三个字母的原因是保证 JWT 的紧凑</p>
+</blockquote>
+</li>
+<li><p><strong><em>（公有声明）public claims</em></strong> : 这个部分可以随便定义，但是要注意和 <a href="http://www.iana.org/assignments/jwt/jwt.xhtml" target="_blank" rel="noopener">IANA JSON Web Token</a> 冲突。</p>
+</li>
+<li><p><strong><em>（私有声明）private claims</em></strong> : 这个部分是共享被认定信息中自定义部分。</p>
+</li>
+</ul>
+<p>一个 Pyload 可以是这样子的：</p>
+<pre class=" language-json"><code class="language-json"><span class="token punctuation">{</span>
+  <span class="token property">"sub"</span><span class="token operator">:</span> <span class="token string">"1234567890"</span><span class="token punctuation">,</span>
+  <span class="token property">"name"</span><span class="token operator">:</span> <span class="token string">"John Doe"</span><span class="token punctuation">,</span>
+  <span class="token property">"admin"</span><span class="token operator">:</span> <span class="token boolean">true</span>
+<span class="token punctuation">}</span>
+</code></pre>
+<p>这部分同样使用 Base64Url 编码成第二部分。</p>
+<pre class=" language-jwt"><code class="language-jwt">eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiYWRtaW4iOnRydWV9.<third part>
+</code></pre>
+<h3 id="Signature"><a href="#Signature" class="headerlink" title="Signature"></a>Signature</h3><p>在创建该部分时候你应该已经有了 编码后的 Header 和 Payload 还需要一个一个秘钥，这个加密的算法应该 Header 中指定。</p>
+<p>一个使用  HMAC SHA256 的例子如下:</p>
+<pre class=" language-jet"><code class="language-jet">HMACSHA256(
+  base64UrlEncode(header) + "." +
+  base64UrlEncode(payload),
+  secret)
+</code></pre>
+<p>这个 signature 是用来验证发送者的 JWT 的同时也能确保在期间不被篡改。</p>
+<p>所以，做后你的一个完整的 JWT 应该是如下形式：</p>
+<pre class=" language-jwt"><code class="language-jwt">eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiYWRtaW4iOnRydWV9.TJVA95OrM7E2cBab30RMHrHDcEfxjoYZgeFONFh7HgQ
+</code></pre>
+<blockquote>
+<p>注意被 <code>.</code> 分割开的三个部分</p>
+</blockquote>
+<h2 id="JSON-Web-Token-的工作流程"><a href="#JSON-Web-Token-的工作流程" class="headerlink" title="JSON Web Token 的工作流程"></a>JSON Web Token 的工作流程</h2><p>在用户使用证书或者账号密码登入的时候一个 JSON Web Token 将会返回，同时可以把这个 JWT 存储在local storage、或者 cookie 中，用来替代传统的在服务器端创建一个 session 返回一个 cookie。</p>
+<p><img src="https://static.zhengxiaowai.cc/ipic/2017-01-21-165643.jpg" alt=""><br>当用户想要使用受保护的路由时候，应该要在请求得时候带上 JWT ，一般的是在 header 的 <strong>Authorization</strong> 使用 <strong>Bearer</strong> 的形式，一个包含的 JWT 的请求头的 Authorization 如下：</p>
+<pre><code>Authorization: Bearer &lt;token&gt;
+</code></pre><p>这是一中无状态的认证机制，用户的状态从来不会存在服务端，在访问受保护的路由时候回校验 HTTP header 中 Authorization 的  JWT，同时 JWT 是会带上一些必要的信息，不需要多次的查询数据库。</p>
+<p>这种无状态的操作可以充分的使用数据的 APIs，甚至是在下游服务上使用，这些 APIs 和哪服务器没有关系，因此，由于没有 cookie 的存在，所以在不存在跨域（CORS, Cross-Origin Resource Sharing）的问题。</p>
+<h2 id="在-Flask-和-Express-中使用-JSON-Web-Token"><a href="#在-Flask-和-Express-中使用-JSON-Web-Token" class="headerlink" title="在 Flask 和 Express 中使用 JSON Web Token"></a>在 Flask 和 Express 中使用 JSON Web Token</h2><p>JWT 在各个 Web 框架中都有 JWT 的包可以直接使用，下面使用 Flask 和 Express 作为例子演示。</p>
+<ul>
+<li><a href="https://pythonhosted.org/Flask-JWT/" target="_blank" rel="noopener">Flask-JWT</a></li>
+<li>​</li>
+</ul>
+<p>下面会使用 <a href="https://github.com/jkbrzt/httpie" target="_blank" rel="noopener">httpie</a> 作为演示工具：</p>
+<pre class=" language-shell"><code class="language-shell">HTTPie: HTTP client, a user-friendly cURL replacement.
+
+- Download a URL to a file:
+    http -d example.org
+
+- Send form-encoded data:
+    http -f example.org name='bob' profile-picture@'bob.png'
+
+- Send JSON object:
+    http example.org name='bob'
+
+- Specify an HTTP method:
+    http HEAD example.org
+
+- Include an extra header:
+    http example.org X-MyHeader:123
+
+- Pass a user name and password for server authentication:
+    http -a username:password example.org
+
+- Specify raw request body via stdin:
+    cat data.txt | http PUT example.org
+</code></pre>
+<h3 id="Flask-中使用-JSON-Web-Token"><a href="#Flask-中使用-JSON-Web-Token" class="headerlink" title="Flask 中使用 JSON Web Token"></a>Flask 中使用 JSON Web Token</h3><p>这里的演示是 <code>Flask-JWT</code> 的 Quickstart内容。</p>
+<p>安装必要的软件包：</p>
+<pre class=" language-shell"><code class="language-shell">pip install flask
+pip install Flask-JWT
+</code></pre>
+<p>一个简单的 DEMO：</p>
+<pre class=" language-python"><code class="language-python"><span class="token keyword">from</span> flask <span class="token keyword">import</span> Flask
+<span class="token keyword">from</span> flask_jwt <span class="token keyword">import</span> JWT<span class="token punctuation">,</span> jwt_required<span class="token punctuation">,</span> current_identity
+<span class="token keyword">from</span> werkzeug<span class="token punctuation">.</span>security <span class="token keyword">import</span> safe_str_cmp
+
+<span class="token keyword">class</span> <span class="token class-name">User</span><span class="token punctuation">(</span>object<span class="token punctuation">)</span><span class="token punctuation">:</span>
+    <span class="token keyword">def</span> <span class="token function">__init__</span><span class="token punctuation">(</span>self<span class="token punctuation">,</span> id<span class="token punctuation">,</span> username<span class="token punctuation">,</span> password<span class="token punctuation">)</span><span class="token punctuation">:</span>
+        self<span class="token punctuation">.</span>id <span class="token operator">=</span> id
+        self<span class="token punctuation">.</span>username <span class="token operator">=</span> username
+        self<span class="token punctuation">.</span>password <span class="token operator">=</span> password
+
+    <span class="token keyword">def</span> <span class="token function">__str__</span><span class="token punctuation">(</span>self<span class="token punctuation">)</span><span class="token punctuation">:</span>
+        <span class="token keyword">return</span> <span class="token string">"User(id='%s')"</span> <span class="token operator">%</span> self<span class="token punctuation">.</span>id
+
+users <span class="token operator">=</span> <span class="token punctuation">[</span>
+    User<span class="token punctuation">(</span><span class="token number">1</span><span class="token punctuation">,</span> <span class="token string">'user1'</span><span class="token punctuation">,</span> <span class="token string">'abcxyz'</span><span class="token punctuation">)</span><span class="token punctuation">,</span>
+    User<span class="token punctuation">(</span><span class="token number">2</span><span class="token punctuation">,</span> <span class="token string">'user2'</span><span class="token punctuation">,</span> <span class="token string">'abcxyz'</span><span class="token punctuation">)</span><span class="token punctuation">,</span>
+<span class="token punctuation">]</span>
+
+username_table <span class="token operator">=</span> <span class="token punctuation">{</span>u<span class="token punctuation">.</span>username<span class="token punctuation">:</span> u <span class="token keyword">for</span> u <span class="token keyword">in</span> users<span class="token punctuation">}</span>
+userid_table <span class="token operator">=</span> <span class="token punctuation">{</span>u<span class="token punctuation">.</span>id<span class="token punctuation">:</span> u <span class="token keyword">for</span> u <span class="token keyword">in</span> users<span class="token punctuation">}</span>
+
+<span class="token keyword">def</span> <span class="token function">authenticate</span><span class="token punctuation">(</span>username<span class="token punctuation">,</span> password<span class="token punctuation">)</span><span class="token punctuation">:</span>
+    user <span class="token operator">=</span> username_table<span class="token punctuation">.</span>get<span class="token punctuation">(</span>username<span class="token punctuation">,</span> None<span class="token punctuation">)</span>
+    <span class="token keyword">if</span> user <span class="token operator">and</span> safe_str_cmp<span class="token punctuation">(</span>user<span class="token punctuation">.</span>password<span class="token punctuation">.</span>encode<span class="token punctuation">(</span><span class="token string">'utf-8'</span><span class="token punctuation">)</span><span class="token punctuation">,</span> password<span class="token punctuation">.</span>encode<span class="token punctuation">(</span><span class="token string">'utf-8'</span><span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">:</span>
+        <span class="token keyword">return</span> user
+
+<span class="token keyword">def</span> <span class="token function">identity</span><span class="token punctuation">(</span>payload<span class="token punctuation">)</span><span class="token punctuation">:</span>
+    user_id <span class="token operator">=</span> payload<span class="token punctuation">[</span><span class="token string">'identity'</span><span class="token punctuation">]</span>
+    <span class="token keyword">return</span> userid_table<span class="token punctuation">.</span>get<span class="token punctuation">(</span>user_id<span class="token punctuation">,</span> None<span class="token punctuation">)</span>
+
+app <span class="token operator">=</span> Flask<span class="token punctuation">(</span>__name__<span class="token punctuation">)</span>
+app<span class="token punctuation">.</span>debug <span class="token operator">=</span> <span class="token boolean">True</span>
+app<span class="token punctuation">.</span>config<span class="token punctuation">[</span><span class="token string">'SECRET_KEY'</span><span class="token punctuation">]</span> <span class="token operator">=</span> <span class="token string">'super-secret'</span>
+
+jwt <span class="token operator">=</span> JWT<span class="token punctuation">(</span>app<span class="token punctuation">,</span> authenticate<span class="token punctuation">,</span> identity<span class="token punctuation">)</span>
+
+@app<span class="token punctuation">.</span>route<span class="token punctuation">(</span><span class="token string">'/protected'</span><span class="token punctuation">)</span>
+@jwt_required<span class="token punctuation">(</span><span class="token punctuation">)</span>
+<span class="token keyword">def</span> <span class="token function">protected</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">:</span>
+    <span class="token keyword">return</span> <span class="token string">'%s'</span> <span class="token operator">%</span> current_identity
+
+<span class="token keyword">if</span> __name__ <span class="token operator">==</span> <span class="token string">'__main__'</span><span class="token punctuation">:</span>
+    app<span class="token punctuation">.</span>run<span class="token punctuation">(</span><span class="token punctuation">)</span>
+</code></pre>
+<p>首先需要获取用户的 JWT：</p>
+<pre class=" language-shell"><code class="language-shell">% http POST http://127.0.0.1:5000/auth username='user1' password='abcxyz'             ~
+HTTP/1.0 200 OK
+Content-Length: 193
+Content-Type: application/json
+Date: Sun, 21 Aug 2016 03:48:41 GMT
+Server: Werkzeug/0.11.10 Python/2.7.10
+
+{
+    "access_token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZGVudGl0eSI6MSwiaWF0IjoxNDcxNzUxMzIxLCJuYmYiOjE0NzE3NTEzMjEsImV4cCI6MTQ3MTc1MTYyMX0.S0825N6IliQb65QoJfUXb3IGq-j9OVJpHBh-bcUz_gc"
+}
+</code></pre>
+<p>使用 <code>@jwt_required()</code> 装饰器来保护你的 API</p>
+<pre class=" language-python"><code class="language-python">@app<span class="token punctuation">.</span>route<span class="token punctuation">(</span><span class="token string">'/protected'</span><span class="token punctuation">)</span>
+@jwt_required<span class="token punctuation">(</span><span class="token punctuation">)</span>
+<span class="token keyword">def</span> <span class="token function">protected</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">:</span>
+    <span class="token keyword">return</span> <span class="token string">'%s'</span> <span class="token operator">%</span> current_identity
+</code></pre>
+<p>这时候你需要在 HTTP 的 header 中使用 <code>Authorization: JWT &lt;token&gt;</code> 才能获取数据</p>
+<pre class=" language-shell"><code class="language-shell">% http http://127.0.0.1:5000/protected Authorization:"JWT eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZGVudGl0eSI6MSwiaWF0IjoxNDcxNzUxMzIxLCJuYmYiOjE0NzE3NTEzMjEsImV4cCI6MTQ3MTc1MTYyMX0.S0825N6IliQb65QoJfUXb3IGq-j9OVJpHBh-bcUz_gc"
+HTTP/1.0 200 OK
+Content-Length: 12
+Content-Type: text/html; charset=utf-8
+Date: Sun, 21 Aug 2016 03:51:20 GMT
+Server: Werkzeug/0.11.10 Python/2.7.10
+
+User(id='1')
+</code></pre>
+<p>不带 JWT 的时候会返回如下信息：</p>
+<pre class=" language-shell"><code class="language-shell">% http http://127.0.0.1:5000/protected                                                ~
+HTTP/1.0 401 UNAUTHORIZED
+Content-Length: 125
+Content-Type: application/json
+Date: Sun, 21 Aug 2016 03:49:51 GMT
+Server: Werkzeug/0.11.10 Python/2.7.10
+WWW-Authenticate: JWT realm="Login Required"
+
+{
+    "description": "Request does not contain an access token",
+    "error": "Authorization Required",
+    "status_code": 401
+}
+</code></pre>
+<h3 id="Express-中使用-JSON-Web-Token"><a href="#Express-中使用-JSON-Web-Token" class="headerlink" title="Express 中使用 JSON Web Token"></a>Express 中使用 JSON Web Token</h3><p>Auth0 提供了 express-jwt 这个包，在 express 可以很容易的集成。</p>
+<pre class=" language-shell"><code class="language-shell">npm install express --save
+npm install express-jwt --save
+npm install body-parser --save
+npm install jsonwebtoken --save
+npm install shortid --save
+</code></pre>
+<p>本例子中只是最简单的使用方法，更多使用方法参看 <a href="https://github.com/auth0/express-jwt" target="_blank" rel="noopener">express-jwt</a></p>
+<pre class=" language-javascript"><code class="language-javascript"><span class="token keyword">var</span> express <span class="token operator">=</span> <span class="token function">require</span><span class="token punctuation">(</span><span class="token string">'express'</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+<span class="token keyword">var</span> expressJwt <span class="token operator">=</span> <span class="token function">require</span><span class="token punctuation">(</span><span class="token string">'express-jwt'</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+<span class="token keyword">var</span> bodyParser <span class="token operator">=</span> <span class="token function">require</span><span class="token punctuation">(</span><span class="token string">'body-parser'</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+<span class="token keyword">var</span> jwt <span class="token operator">=</span> <span class="token function">require</span><span class="token punctuation">(</span><span class="token string">'jsonwebtoken'</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+<span class="token keyword">var</span> shortid <span class="token operator">=</span> <span class="token function">require</span><span class="token punctuation">(</span><span class="token string">'shortid'</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+<span class="token keyword">var</span> app <span class="token operator">=</span> <span class="token function">express</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+app<span class="token punctuation">.</span><span class="token function">use</span><span class="token punctuation">(</span>bodyParser<span class="token punctuation">.</span><span class="token function">json</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+app<span class="token punctuation">.</span><span class="token function">use</span><span class="token punctuation">(</span><span class="token function">expressJwt</span><span class="token punctuation">(</span><span class="token punctuation">{</span>secret<span class="token punctuation">:</span> <span class="token string">'secret'</span><span class="token punctuation">}</span><span class="token punctuation">)</span><span class="token punctuation">.</span><span class="token function">unless</span><span class="token punctuation">(</span><span class="token punctuation">{</span>path<span class="token punctuation">:</span> <span class="token punctuation">[</span><span class="token string">'/login'</span><span class="token punctuation">]</span><span class="token punctuation">}</span><span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+app<span class="token punctuation">.</span><span class="token function">use</span><span class="token punctuation">(</span><span class="token keyword">function</span> <span class="token punctuation">(</span>err<span class="token punctuation">,</span> req<span class="token punctuation">,</span> res<span class="token punctuation">,</span> next<span class="token punctuation">)</span> <span class="token punctuation">{</span>
+  <span class="token keyword">if</span> <span class="token punctuation">(</span>err<span class="token punctuation">.</span>name <span class="token operator">===</span> <span class="token string">'UnauthorizedError'</span><span class="token punctuation">)</span> <span class="token punctuation">{</span>
+    res<span class="token punctuation">.</span><span class="token function">status</span><span class="token punctuation">(</span><span class="token number">401</span><span class="token punctuation">)</span><span class="token punctuation">.</span><span class="token function">send</span><span class="token punctuation">(</span><span class="token string">'invalid token'</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+  <span class="token punctuation">}</span>
+<span class="token punctuation">}</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+
+app<span class="token punctuation">.</span><span class="token function">post</span><span class="token punctuation">(</span><span class="token string">'/login'</span><span class="token punctuation">,</span> <span class="token keyword">function</span><span class="token punctuation">(</span>req<span class="token punctuation">,</span> res<span class="token punctuation">)</span> <span class="token punctuation">{</span>
+  <span class="token keyword">var</span> username <span class="token operator">=</span> req<span class="token punctuation">.</span>body<span class="token punctuation">.</span>username<span class="token punctuation">;</span>
+  <span class="token keyword">var</span> password <span class="token operator">=</span> req<span class="token punctuation">.</span>body<span class="token punctuation">.</span>password<span class="token punctuation">;</span>
+
+  <span class="token keyword">if</span> <span class="token punctuation">(</span><span class="token operator">!</span>username<span class="token punctuation">)</span> <span class="token punctuation">{</span>
+    <span class="token keyword">return</span> res<span class="token punctuation">.</span><span class="token function">status</span><span class="token punctuation">(</span><span class="token number">400</span><span class="token punctuation">)</span><span class="token punctuation">.</span><span class="token function">send</span><span class="token punctuation">(</span><span class="token string">'username require'</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+  <span class="token punctuation">}</span>
+  <span class="token keyword">if</span> <span class="token punctuation">(</span><span class="token operator">!</span>password<span class="token punctuation">)</span> <span class="token punctuation">{</span>
+    <span class="token keyword">return</span> res<span class="token punctuation">.</span><span class="token function">status</span><span class="token punctuation">(</span><span class="token number">400</span><span class="token punctuation">)</span><span class="token punctuation">.</span><span class="token function">send</span><span class="token punctuation">(</span><span class="token string">'password require'</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+  <span class="token punctuation">}</span>
+
+  <span class="token keyword">if</span> <span class="token punctuation">(</span>username <span class="token operator">!=</span> <span class="token string">'admin'</span> <span class="token operator">&amp;&amp;</span> password <span class="token operator">!=</span> <span class="token string">'password'</span><span class="token punctuation">)</span> <span class="token punctuation">{</span>
+    <span class="token keyword">return</span> res<span class="token punctuation">.</span><span class="token function">status</span><span class="token punctuation">(</span><span class="token number">401</span><span class="token punctuation">)</span><span class="token punctuation">.</span><span class="token function">send</span><span class="token punctuation">(</span><span class="token string">'invaild password'</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+  <span class="token punctuation">}</span>
+
+  <span class="token keyword">var</span> authToken <span class="token operator">=</span> jwt<span class="token punctuation">.</span><span class="token function">sign</span><span class="token punctuation">(</span><span class="token punctuation">{</span>username<span class="token punctuation">:</span> username<span class="token punctuation">}</span><span class="token punctuation">,</span> <span class="token string">'secret'</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+  res<span class="token punctuation">.</span><span class="token function">status</span><span class="token punctuation">(</span><span class="token number">200</span><span class="token punctuation">)</span><span class="token punctuation">.</span><span class="token function">json</span><span class="token punctuation">(</span><span class="token punctuation">{</span>token<span class="token punctuation">:</span> authToken<span class="token punctuation">}</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+<span class="token punctuation">}</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+app<span class="token punctuation">.</span><span class="token function">post</span><span class="token punctuation">(</span><span class="token string">'/user'</span><span class="token punctuation">,</span> <span class="token keyword">function</span><span class="token punctuation">(</span>req<span class="token punctuation">,</span> res<span class="token punctuation">)</span> <span class="token punctuation">{</span>
+  <span class="token keyword">var</span> username <span class="token operator">=</span> req<span class="token punctuation">.</span>body<span class="token punctuation">.</span>username<span class="token punctuation">;</span>
+  <span class="token keyword">var</span> password <span class="token operator">=</span> req<span class="token punctuation">.</span>body<span class="token punctuation">.</span>password<span class="token punctuation">;</span>
+  <span class="token keyword">var</span> country <span class="token operator">=</span> req<span class="token punctuation">.</span>body<span class="token punctuation">.</span>country<span class="token punctuation">;</span>
+  <span class="token keyword">var</span> age <span class="token operator">=</span> req<span class="token punctuation">.</span>body<span class="token punctuation">.</span>age<span class="token punctuation">;</span>
+
+  <span class="token keyword">if</span> <span class="token punctuation">(</span><span class="token operator">!</span>username<span class="token punctuation">)</span> <span class="token punctuation">{</span>
+    <span class="token keyword">return</span> res<span class="token punctuation">.</span><span class="token function">status</span><span class="token punctuation">(</span><span class="token number">400</span><span class="token punctuation">)</span><span class="token punctuation">.</span><span class="token function">send</span><span class="token punctuation">(</span><span class="token string">'username require'</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+  <span class="token punctuation">}</span>
+  <span class="token keyword">if</span> <span class="token punctuation">(</span><span class="token operator">!</span>password<span class="token punctuation">)</span> <span class="token punctuation">{</span>
+    <span class="token keyword">return</span> res<span class="token punctuation">.</span><span class="token function">status</span><span class="token punctuation">(</span><span class="token number">400</span><span class="token punctuation">)</span><span class="token punctuation">.</span><span class="token function">send</span><span class="token punctuation">(</span><span class="token string">'password require'</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+  <span class="token punctuation">}</span>
+  <span class="token keyword">if</span> <span class="token punctuation">(</span><span class="token operator">!</span>country<span class="token punctuation">)</span> <span class="token punctuation">{</span>
+    <span class="token keyword">return</span> res<span class="token punctuation">.</span><span class="token function">status</span><span class="token punctuation">(</span><span class="token number">400</span><span class="token punctuation">)</span><span class="token punctuation">.</span><span class="token function">send</span><span class="token punctuation">(</span><span class="token string">'countryrequire'</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+  <span class="token punctuation">}</span>
+  <span class="token keyword">if</span> <span class="token punctuation">(</span><span class="token operator">!</span>age<span class="token punctuation">)</span> <span class="token punctuation">{</span>
+    <span class="token keyword">return</span> res<span class="token punctuation">.</span><span class="token function">status</span><span class="token punctuation">(</span><span class="token number">400</span><span class="token punctuation">)</span><span class="token punctuation">.</span><span class="token function">send</span><span class="token punctuation">(</span><span class="token string">'age require'</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+  <span class="token punctuation">}</span>
+
+  res<span class="token punctuation">.</span><span class="token function">status</span><span class="token punctuation">(</span><span class="token number">200</span><span class="token punctuation">)</span><span class="token punctuation">.</span><span class="token function">json</span><span class="token punctuation">(</span><span class="token punctuation">{</span>
+    id<span class="token punctuation">:</span> shortid<span class="token punctuation">.</span><span class="token function">generate</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">,</span>
+    username<span class="token punctuation">:</span> username<span class="token punctuation">,</span>
+    country<span class="token punctuation">:</span> country<span class="token punctuation">,</span>
+    age<span class="token punctuation">:</span> age
+  <span class="token punctuation">}</span><span class="token punctuation">)</span>
+<span class="token punctuation">}</span><span class="token punctuation">)</span>
+
+app<span class="token punctuation">.</span><span class="token function">listen</span><span class="token punctuation">(</span><span class="token number">3000</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+</code></pre>
+<p> <code>express-jwt</code> 作为 express 的一个中间件，需要设置 <code>secret</code> 作为秘钥，unless 可以排除某个接口。</p>
+<p>默认的情况下，解析 JWT 失败会抛出异常，可以通过以下设置来处理该异常。</p>
+<pre class=" language-javascript"><code class="language-javascript">app<span class="token punctuation">.</span><span class="token function">use</span><span class="token punctuation">(</span><span class="token function">expressJwt</span><span class="token punctuation">(</span><span class="token punctuation">{</span>secret<span class="token punctuation">:</span> <span class="token string">'secret'</span><span class="token punctuation">}</span><span class="token punctuation">)</span><span class="token punctuation">.</span><span class="token function">unless</span><span class="token punctuation">(</span><span class="token punctuation">{</span>path<span class="token punctuation">:</span> <span class="token punctuation">[</span><span class="token string">'/login'</span><span class="token punctuation">]</span><span class="token punctuation">}</span><span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+app<span class="token punctuation">.</span><span class="token function">use</span><span class="token punctuation">(</span><span class="token keyword">function</span> <span class="token punctuation">(</span>err<span class="token punctuation">,</span> req<span class="token punctuation">,</span> res<span class="token punctuation">,</span> next<span class="token punctuation">)</span> <span class="token punctuation">{</span>
+  <span class="token keyword">if</span> <span class="token punctuation">(</span>err<span class="token punctuation">.</span>name <span class="token operator">===</span> <span class="token string">'UnauthorizedError'</span><span class="token punctuation">)</span> <span class="token punctuation">{</span>
+    res<span class="token punctuation">.</span><span class="token function">status</span><span class="token punctuation">(</span><span class="token number">401</span><span class="token punctuation">)</span><span class="token punctuation">.</span><span class="token function">send</span><span class="token punctuation">(</span><span class="token string">'invalid token'</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+  <span class="token punctuation">}</span>
+<span class="token punctuation">}</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+</code></pre>
+<p><code>/login</code> 忽略的 JWT 认证，通过这个接口获取某个用户的 JWT</p>
+<pre class=" language-javascript"><code class="language-javascript"><span class="token operator">%</span> http POST http<span class="token punctuation">:</span><span class="token operator">/</span><span class="token operator">/</span>localhost<span class="token punctuation">:</span><span class="token number">3000</span><span class="token operator">/</span>login username<span class="token operator">=</span><span class="token string">'admin'</span> password<span class="token operator">=</span><span class="token string">'password'</span> country<span class="token operator">=</span><span class="token string">'CN'</span> age<span class="token operator">=</span><span class="token number">22</span>  
+HTTP<span class="token operator">/</span><span class="token number">1.1</span> <span class="token number">200</span> OK
+Connection<span class="token punctuation">:</span> keep<span class="token operator">-</span>alive
+Content<span class="token operator">-</span>Length<span class="token punctuation">:</span> <span class="token number">143</span>
+Content<span class="token operator">-</span>Type<span class="token punctuation">:</span> application<span class="token operator">/</span>json<span class="token punctuation">;</span> charset<span class="token operator">=</span>utf<span class="token number">-8</span>
+Date<span class="token punctuation">:</span> Sun<span class="token punctuation">,</span> <span class="token number">21</span> Aug <span class="token number">2016</span> <span class="token number">06</span><span class="token punctuation">:</span><span class="token number">57</span><span class="token punctuation">:</span><span class="token number">42</span> GMT
+ETag<span class="token punctuation">:</span> W<span class="token operator">/</span><span class="token string">"8f-iMzAS1K5StDQgtNnVSvqtQ"</span>
+X<span class="token operator">-</span>Powered<span class="token operator">-</span>By<span class="token punctuation">:</span> Express
+
+<span class="token punctuation">{</span>
+    <span class="token string">"token"</span><span class="token punctuation">:</span> <span class="token string">"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VybmFtZSI6ImFkbWluIiwiaWF0IjoxNDcxNzYyNjYyfQ.o5RFJB4GiR28HzXbSptU6MsPwW1tSXSDIjlzn7erG0M"</span>
+<span class="token punctuation">}</span>
+</code></pre>
+<p>不使用 JWT 的时候</p>
+<pre class=" language-javascript"><code class="language-javascript"><span class="token operator">%</span> http POST http<span class="token punctuation">:</span><span class="token operator">/</span><span class="token operator">/</span>localhost<span class="token punctuation">:</span><span class="token number">3000</span><span class="token operator">/</span>user username<span class="token operator">=</span><span class="token string">'hexiangyu'</span> password<span class="token operator">=</span><span class="token string">'password'</span>       <span class="token operator">~</span>
+HTTP<span class="token operator">/</span><span class="token number">1.1</span> <span class="token number">401</span> Unauthorized
+Connection<span class="token punctuation">:</span> keep<span class="token operator">-</span>alive
+Content<span class="token operator">-</span>Length<span class="token punctuation">:</span> <span class="token number">13</span>
+Content<span class="token operator">-</span>Type<span class="token punctuation">:</span> text<span class="token operator">/</span>html<span class="token punctuation">;</span> charset<span class="token operator">=</span>utf<span class="token number">-8</span>
+Date<span class="token punctuation">:</span> Sun<span class="token punctuation">,</span> <span class="token number">21</span> Aug <span class="token number">2016</span> <span class="token number">07</span><span class="token punctuation">:</span><span class="token number">00</span><span class="token punctuation">:</span><span class="token number">02</span> GMT
+ETag<span class="token punctuation">:</span> W<span class="token operator">/</span><span class="token string">"d-j0viHsPPu6FaNJ6cXoiFeQ"</span>
+X<span class="token operator">-</span>Powered<span class="token operator">-</span>By<span class="token punctuation">:</span> Express
+
+invalid token
+</code></pre>
+<p>使用 JWT 就可以成功调用</p>
+<pre class=" language-javascript"><code class="language-javascript"><span class="token operator">%</span> http POST http<span class="token punctuation">:</span><span class="token operator">/</span><span class="token operator">/</span>localhost<span class="token punctuation">:</span><span class="token number">3000</span><span class="token operator">/</span>user Authorization<span class="token punctuation">:</span><span class="token string">"Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VybmFtZSI6ImFkbWluIiwiaWF0IjoxNDcxNzYyNjYyfQ.o5RFJB4GiR28HzXbSptU6MsPwW1tSXSDIjlzn7erG0M"</span> username<span class="token operator">=</span><span class="token string">'hexiangyu'</span> password<span class="token operator">=</span><span class="token string">'password'</span> country<span class="token operator">=</span><span class="token string">'CN'</span> age<span class="token operator">=</span><span class="token number">22</span>
+HTTP<span class="token operator">/</span><span class="token number">1.1</span> <span class="token number">200</span> OK
+Connection<span class="token punctuation">:</span> keep<span class="token operator">-</span>alive
+Content<span class="token operator">-</span>Length<span class="token punctuation">:</span> <span class="token number">66</span>
+Content<span class="token operator">-</span>Type<span class="token punctuation">:</span> application<span class="token operator">/</span>json<span class="token punctuation">;</span> charset<span class="token operator">=</span>utf<span class="token number">-8</span>
+Date<span class="token punctuation">:</span> Sun<span class="token punctuation">,</span> <span class="token number">21</span> Aug <span class="token number">2016</span> <span class="token number">07</span><span class="token punctuation">:</span><span class="token number">04</span><span class="token punctuation">:</span><span class="token number">34</span> GMT
+ETag<span class="token punctuation">:</span> W<span class="token operator">/</span><span class="token string">"42-YnGYuyDLxpVUexEGEcQj1g"</span>
+X<span class="token operator">-</span>Powered<span class="token operator">-</span>By<span class="token punctuation">:</span> Express
+
+<span class="token punctuation">{</span>
+    <span class="token string">"age"</span><span class="token punctuation">:</span> <span class="token string">"22"</span><span class="token punctuation">,</span>
+    <span class="token string">"country"</span><span class="token punctuation">:</span> <span class="token string">"CN"</span><span class="token punctuation">,</span>
+    <span class="token string">"id"</span><span class="token punctuation">:</span> <span class="token string">"r1sFMCUc"</span><span class="token punctuation">,</span>
+    <span class="token string">"username"</span><span class="token punctuation">:</span> <span class="token string">"hexiangyu"</span>
+<span class="token punctuation">}</span>
+</code></pre>
+<h2 id="Reference"><a href="#Reference" class="headerlink" title="Reference"></a>Reference</h2><ul>
+<li><a href="https://jwt.io/introduction/" target="_blank" rel="noopener">JSON Web Token Introduction</a></li>
+<li><a href="http://www.iana.org/assignments/jwt/jwt.xhtml" target="_blank" rel="noopener">IANA JSON Web Token</a></li>
+<li><a href="https://pythonhosted.org/Flask-JWT/" target="_blank" rel="noopener">Flask-JWT</a></li>
+<li><a href="https://github.com/auth0/express-jwt" target="_blank" rel="noopener">express-jwt</a> </li>
+</ul>
+ 
+    </div>
+    <div class="post-foot">
+        <div id="disqus_thread"></div>
+    </div>
+</div>
+
+
+                </section>
+                <footer class="container fixed-690 footer">
+    <div>
+        <span>Power by <a href="https://hexo.io">Hexo</a></span>
+    </div>
+    <div>
+        <span>Theme <a href="https://github.com/zhengxiaowai/hexo-theme-lessless">lessless</a></span>
+    </div>
+        
+            
+<div>
+    <span id="hexiangyutest_container_site_pv">
+    PV: <span id="busuanzi_value_site_pv"></span>
+    </span>
+    <span id="busuanzi_container_site_uv">
+    UV: <span id="busuanzi_value_site_uv"></span>
+    </span>
+</div>
+
+        
+        
+            <div>
+    <span><a href="https://beian.miit.gov.cn/#/Integrated/index" target="_blank">闽ICP备17000267号-1</a></span>
+</div>
+        
+</footer>
+        </div>
+        
+<script src="/js/jquery-3.2.1.slim.min.js"></script>
+<script src="/js/popper.min.js"></script>
+<script src="/js/bootstrap.min.js"></script>
+
+
+    
+<script type="text/javascript">
+    var disqus_config = function () {
+        this.page.url = 'http://hexiangyu.me/2016/11/26/protect-your-restful-api-by-jwt/';
+        this.page.identifier = '2016/11/26/protect-your-restful-api-by-jwt/';
+        this.page.title = '使用 JWT 让你的 RESTful API 更安全';
+    };
+    var d = document, s = d.createElement('script');
+    s.src = '//hexiangyus.disqus.com/embed.js';
+    s.setAttribute('data-timestamp', '' + +new Date());
+    (d.head || d.body).appendChild(s);
+</script>
+
+
+    </body>
+</html>
