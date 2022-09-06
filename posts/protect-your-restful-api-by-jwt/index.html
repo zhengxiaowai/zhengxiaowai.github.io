@@ -1,0 +1,249 @@
+<!doctype html><html class="not-ready text-sm lg:text-base" style=--bg:#faf6f1 lang=en-us><head><meta charset=utf-8><meta http-equiv=x-ua-compatible content="IE=edge"><meta name=viewport content="width=device-width,initial-scale=1,shrink-to-fit=no"><title>使用 JWT 让你的 RESTful API 更安全 - 正小歪 BLOG</title><meta name=theme-color><meta name=description content="传统的 cookie-session 机制可以保证的接口安全，在没有通过认证的情况下会跳转至登入界面或者调用失败。
+在如今 RESTful 化的 API 接口下，cookie-session 已经不能很好发挥其余热保护好你的 API 。
+更多的形式下采用的基于 Token 的验证机制，JWT 本质的也是一种 Token，但是其中又有些许不同。"><meta name=author content><link rel="preload stylesheet" as=style href=http://hexiangyu.me/main.min.css><script defer src=http://hexiangyu.me/highlight.min.js onload=hljs.initHighlightingOnLoad()></script>
+<link rel=preload as=image href=http://hexiangyu.me/theme.png><link rel=icon href=http://hexiangyu.me/favicon.ico><link rel=apple-touch-icon href=http://hexiangyu.me/apple-touch-icon.png><meta name=generator content="Hugo 0.102.3"><meta property="og:title" content="使用 JWT 让你的 RESTful API 更安全"><meta property="og:description" content="传统的 cookie-session 机制可以保证的接口安全，在没有通过认证的情况下会跳转至登入界面或者调用失败。
+在如今 RESTful 化的 API 接口下，cookie-session 已经不能很好发挥其余热保护好你的 API 。
+更多的形式下采用的基于 Token 的验证机制，JWT 本质的也是一种 Token，但是其中又有些许不同。"><meta property="og:type" content="article"><meta property="og:url" content="http://hexiangyu.me/posts/protect-your-restful-api-by-jwt/"><meta property="article:section" content="posts"><meta property="article:published_time" content="2016-11-26T16:46:42+00:00"><meta property="article:modified_time" content="2016-11-26T16:46:42+00:00"><meta itemprop=name content="使用 JWT 让你的 RESTful API 更安全"><meta itemprop=description content="传统的 cookie-session 机制可以保证的接口安全，在没有通过认证的情况下会跳转至登入界面或者调用失败。
+在如今 RESTful 化的 API 接口下，cookie-session 已经不能很好发挥其余热保护好你的 API 。
+更多的形式下采用的基于 Token 的验证机制，JWT 本质的也是一种 Token，但是其中又有些许不同。"><meta itemprop=datePublished content="2016-11-26T16:46:42+00:00"><meta itemprop=dateModified content="2016-11-26T16:46:42+00:00"><meta itemprop=wordCount content="908"><meta itemprop=keywords content><meta name=twitter:card content="summary"><meta name=twitter:title content="使用 JWT 让你的 RESTful API 更安全"><meta name=twitter:description content="传统的 cookie-session 机制可以保证的接口安全，在没有通过认证的情况下会跳转至登入界面或者调用失败。
+在如今 RESTful 化的 API 接口下，cookie-session 已经不能很好发挥其余热保护好你的 API 。
+更多的形式下采用的基于 Token 的验证机制，JWT 本质的也是一种 Token，但是其中又有些许不同。"></head><body class="text-black duration-200 ease-out dark:text-white"><header class="mx-auto flex h-[5rem] max-w-3xl px-8 lg:justify-center"><div class="relative z-50 mr-auto flex items-center"><a class="-translate-x-[1px] -translate-y-0.5 text-3xl font-bold" href=http://hexiangyu.me/>正小歪 BLOG</a>
+<a class="btn-dark ml-6 h-6 w-6 shrink-0 cursor-pointer [background:url(./theme.png)_left_center/_auto_theme('spacing.6')_no-repeat] [transition:_background-position_0.4s_steps(5)] dark:[background-position:right]"></a></div><a class="btn-menu relative z-50 -mr-8 flex h-[5rem] w-[5rem] shrink-0 cursor-pointer flex-col items-center justify-center gap-2.5 lg:hidden"></a>
+<script>const htmlClass=document.documentElement.classList;setTimeout(()=>{htmlClass.remove("not-ready")},10);const btnMenu=document.querySelector(".btn-menu");btnMenu.addEventListener("click",()=>{htmlClass.toggle("open")});const metaTheme=document.querySelector('meta[name="theme-color"]'),lightBg=`"#faf6f1"`.replace(/"/g,""),setDark=e=>{metaTheme.setAttribute("content",e?"#000":lightBg),htmlClass[e?"add":"remove"]("dark"),localStorage.setItem("dark",e)},darkScheme=window.matchMedia("(prefers-color-scheme: dark)"),darkVal=localStorage.getItem("dark");setDark(darkVal?darkVal==="true":darkScheme.matches),darkScheme.addEventListener("change",e=>{setDark(e.matches)});const btnDark=document.querySelector(".btn-dark");btnDark.addEventListener("click",()=>{setDark(localStorage.getItem("dark")!=="true")})</script><div class="nav-wrapper fixed inset-x-0 top-full z-40 flex h-full select-none flex-col justify-center pb-16 duration-200 dark:bg-black lg:static lg:h-auto lg:flex-row lg:!bg-transparent lg:pb-0 lg:transition-none"></div></header><main class="prose prose-neutral relative mx-auto min-h-[calc(100%-10rem)] max-w-3xl px-8 pt-20 pb-32 dark:prose-invert"><article><header class=mb-20><h1 class="!my-0 pb-2.5">使用 JWT 让你的 RESTful API 更安全</h1><div class="text-sm opacity-60"><time>Nov 26, 2016</time></div></header><section><p>传统的 cookie-session 机制可以保证的接口安全，在没有通过认证的情况下会跳转至登入界面或者调用失败。</p><p>在如今 RESTful 化的 API 接口下，cookie-session 已经不能很好发挥其余热保护好你的 API 。</p><p>更多的形式下采用的基于 Token 的验证机制，JWT 本质的也是一种 Token，但是其中又有些许不同。</p><h2 id=什么是-jwt->什么是 JWT ？</h2><p>JWT 及时 JSON Web Token，它是基于 <a href=https://tools.ietf.org/html/rfc7519>RFC 7519</a> 所定义的一种在各个系统中传递<em><strong>紧凑</strong></em>和<em><strong>自包含</strong></em>的 JSON 数据形式。</p><ul><li><em><strong>紧凑（Compact）</strong></em> ：由于传送的数据小，JWT 可以通过GET、POST 和 放在 HTTP 的 header 中，同时也是因为小也能传送的更快。</li><li><em><strong>自包含（self-contained）</strong></em> : Payload 中能够包含用户的信息，避免数据库的查询。</li></ul><p>JSON Web Token 由三部分组成使用 <code>.</code> 分割开：</p><ul><li>Header</li><li>Payload</li><li>Signature</li></ul><p>一个 JWT 形式上类似于下面的样子：</p><pre tabindex=0><code>xxxxx.yyyy.zzzz
+</code></pre><h3 id=header>Header</h3><p>Header 一般由两个部分组成：</p><ul><li>alg</li><li>typ</li></ul><p>alg 是是所使用的 hash 算法例如 HMAC SHA256 或 RSA，typ 是 Token 的类型自然就是 JWT。</p><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-json data-lang=json><span style=display:flex><span>{
+</span></span><span style=display:flex><span>  <span style=color:#f92672>&#34;alg&#34;</span>: <span style=color:#e6db74>&#34;HS256&#34;</span>,
+</span></span><span style=display:flex><span>  <span style=color:#f92672>&#34;typ&#34;</span>: <span style=color:#e6db74>&#34;JWT&#34;</span>
+</span></span><span style=display:flex><span>}
+</span></span></code></pre></div><p>然后使用 Base64Url 编码成第一部分。</p><pre tabindex=0><code class=language-jwt data-lang=jwt>eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.&lt;second part&gt;.&lt;third part&gt;
+</code></pre><h3 id=payload>Payload</h3><p>这一部分是 JWT 主要的信息存储部分，其中包含了许多种的声明（claims）。</p><p>Claims 的实体一般包含用户和一些元数据，这些 claims 分成三种类型：<em>reserved</em>, <em>public</em>, 和 <em>private</em> claims。</p><ul><li><p><em><strong>（保留声明）reserved claims</strong></em> ：预定义的 <a href=http://www.iana.org/assignments/jwt/jwt.xhtml>一些声明</a>，并不是强制的但是推荐，它们包括 <strong>iss</strong> (issuer), <strong>exp</strong> (expiration time), <strong>sub</strong> (subject),<strong>aud</strong> (audience) 等。</p><blockquote><p>这里都使用三个字母的原因是保证 JWT 的紧凑</p></blockquote></li><li><p><em><strong>（公有声明）public claims</strong></em> : 这个部分可以随便定义，但是要注意和 <a href=http://www.iana.org/assignments/jwt/jwt.xhtml>IANA JSON Web Token</a> 冲突。</p></li><li><p><em><strong>（私有声明）private claims</strong></em> : 这个部分是共享被认定信息中自定义部分。</p></li></ul><p>一个 Pyload 可以是这样子的：</p><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-json data-lang=json><span style=display:flex><span>{
+</span></span><span style=display:flex><span>  <span style=color:#f92672>&#34;sub&#34;</span>: <span style=color:#e6db74>&#34;1234567890&#34;</span>,
+</span></span><span style=display:flex><span>  <span style=color:#f92672>&#34;name&#34;</span>: <span style=color:#e6db74>&#34;John Doe&#34;</span>,
+</span></span><span style=display:flex><span>  <span style=color:#f92672>&#34;admin&#34;</span>: <span style=color:#66d9ef>true</span>
+</span></span><span style=display:flex><span>}
+</span></span></code></pre></div><p>这部分同样使用 Base64Url 编码成第二部分。</p><pre tabindex=0><code class=language-jwt data-lang=jwt>eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiYWRtaW4iOnRydWV9.&lt;third part&gt;
+</code></pre><h3 id=signature>Signature</h3><p>在创建该部分时候你应该已经有了 编码后的 Header 和 Payload 还需要一个一个秘钥，这个加密的算法应该 Header 中指定。</p><p>一个使用 HMAC SHA256 的例子如下:</p><pre tabindex=0><code class=language-jet data-lang=jet>HMACSHA256(
+  base64UrlEncode(header) + &#34;.&#34; +
+  base64UrlEncode(payload),
+  secret)
+</code></pre><p>这个 signature 是用来验证发送者的 JWT 的同时也能确保在期间不被篡改。</p><p>所以，做后你的一个完整的 JWT 应该是如下形式：</p><pre tabindex=0><code class=language-jwt data-lang=jwt>eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiYWRtaW4iOnRydWV9.TJVA95OrM7E2cBab30RMHrHDcEfxjoYZgeFONFh7HgQ
+</code></pre><blockquote><p>注意被 <code>.</code> 分割开的三个部分</p></blockquote><h2 id=json-web-token-的工作流程>JSON Web Token 的工作流程</h2><p>在用户使用证书或者账号密码登入的时候一个 JSON Web Token 将会返回，同时可以把这个 JWT 存储在local storage、或者 cookie 中，用来替代传统的在服务器端创建一个 session 返回一个 cookie。</p><p><img src=https://static.zhengxiaowai.cc/ipic/2017-01-21-165643.jpg alt>
+当用户想要使用受保护的路由时候，应该要在请求得时候带上 JWT ，一般的是在 header 的 <strong>Authorization</strong> 使用 <strong>Bearer</strong> 的形式，一个包含的 JWT 的请求头的 Authorization 如下：</p><pre tabindex=0><code>Authorization: Bearer &lt;token&gt;
+</code></pre><p>这是一中无状态的认证机制，用户的状态从来不会存在服务端，在访问受保护的路由时候回校验 HTTP header 中 Authorization 的 JWT，同时 JWT 是会带上一些必要的信息，不需要多次的查询数据库。</p><p>这种无状态的操作可以充分的使用数据的 APIs，甚至是在下游服务上使用，这些 APIs 和哪服务器没有关系，因此，由于没有 cookie 的存在，所以在不存在跨域（CORS, Cross-Origin Resource Sharing）的问题。</p><h2 id=在-flask-和-express-中使用-json-web-token>在 Flask 和 Express 中使用 JSON Web Token</h2><p>JWT 在各个 Web 框架中都有 JWT 的包可以直接使用，下面使用 Flask 和 Express 作为例子演示。</p><ul><li><a href=https://pythonhosted.org/Flask-JWT/>Flask-JWT</a></li><li>​</li></ul><p>下面会使用 <a href=https://github.com/jkbrzt/httpie>httpie</a> 作为演示工具：</p><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-shell data-lang=shell><span style=display:flex><span>HTTPie: HTTP client, a user-friendly cURL replacement.
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>- Download a URL to a file:
+</span></span><span style=display:flex><span>    http -d example.org
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>- Send form-encoded data:
+</span></span><span style=display:flex><span>    http -f example.org name<span style=color:#f92672>=</span><span style=color:#e6db74>&#39;bob&#39;</span> profile-picture@<span style=color:#e6db74>&#39;bob.png&#39;</span>
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>- Send JSON object:
+</span></span><span style=display:flex><span>    http example.org name<span style=color:#f92672>=</span><span style=color:#e6db74>&#39;bob&#39;</span>
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>- Specify an HTTP method:
+</span></span><span style=display:flex><span>    http HEAD example.org
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>- Include an extra header:
+</span></span><span style=display:flex><span>    http example.org X-MyHeader:123
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>- Pass a user name and password <span style=color:#66d9ef>for</span> server authentication:
+</span></span><span style=display:flex><span>    http -a username:password example.org
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>- Specify raw request body via stdin:
+</span></span><span style=display:flex><span>    cat data.txt | http PUT example.org
+</span></span></code></pre></div><h3 id=flask-中使用-json-web-token>Flask 中使用 JSON Web Token</h3><p>这里的演示是 <code>Flask-JWT</code> 的 Quickstart内容。</p><p>安装必要的软件包：</p><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-shell data-lang=shell><span style=display:flex><span>pip install flask
+</span></span><span style=display:flex><span>pip install Flask-JWT
+</span></span></code></pre></div><p>一个简单的 DEMO：</p><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-python data-lang=python><span style=display:flex><span><span style=color:#f92672>from</span> flask <span style=color:#f92672>import</span> Flask
+</span></span><span style=display:flex><span><span style=color:#f92672>from</span> flask_jwt <span style=color:#f92672>import</span> JWT, jwt_required, current_identity
+</span></span><span style=display:flex><span><span style=color:#f92672>from</span> werkzeug.security <span style=color:#f92672>import</span> safe_str_cmp
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span><span style=color:#66d9ef>class</span> <span style=color:#a6e22e>User</span>(object):
+</span></span><span style=display:flex><span>    <span style=color:#66d9ef>def</span> __init__(self, id, username, password):
+</span></span><span style=display:flex><span>        self<span style=color:#f92672>.</span>id <span style=color:#f92672>=</span> id
+</span></span><span style=display:flex><span>        self<span style=color:#f92672>.</span>username <span style=color:#f92672>=</span> username
+</span></span><span style=display:flex><span>        self<span style=color:#f92672>.</span>password <span style=color:#f92672>=</span> password
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>    <span style=color:#66d9ef>def</span> __str__(self):
+</span></span><span style=display:flex><span>        <span style=color:#66d9ef>return</span> <span style=color:#e6db74>&#34;User(id=&#39;</span><span style=color:#e6db74>%s</span><span style=color:#e6db74>&#39;)&#34;</span> <span style=color:#f92672>%</span> self<span style=color:#f92672>.</span>id
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>users <span style=color:#f92672>=</span> [
+</span></span><span style=display:flex><span>    User(<span style=color:#ae81ff>1</span>, <span style=color:#e6db74>&#39;user1&#39;</span>, <span style=color:#e6db74>&#39;abcxyz&#39;</span>),
+</span></span><span style=display:flex><span>    User(<span style=color:#ae81ff>2</span>, <span style=color:#e6db74>&#39;user2&#39;</span>, <span style=color:#e6db74>&#39;abcxyz&#39;</span>),
+</span></span><span style=display:flex><span>]
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>username_table <span style=color:#f92672>=</span> {u<span style=color:#f92672>.</span>username: u <span style=color:#66d9ef>for</span> u <span style=color:#f92672>in</span> users}
+</span></span><span style=display:flex><span>userid_table <span style=color:#f92672>=</span> {u<span style=color:#f92672>.</span>id: u <span style=color:#66d9ef>for</span> u <span style=color:#f92672>in</span> users}
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span><span style=color:#66d9ef>def</span> <span style=color:#a6e22e>authenticate</span>(username, password):
+</span></span><span style=display:flex><span>    user <span style=color:#f92672>=</span> username_table<span style=color:#f92672>.</span>get(username, <span style=color:#66d9ef>None</span>)
+</span></span><span style=display:flex><span>    <span style=color:#66d9ef>if</span> user <span style=color:#f92672>and</span> safe_str_cmp(user<span style=color:#f92672>.</span>password<span style=color:#f92672>.</span>encode(<span style=color:#e6db74>&#39;utf-8&#39;</span>), password<span style=color:#f92672>.</span>encode(<span style=color:#e6db74>&#39;utf-8&#39;</span>)):
+</span></span><span style=display:flex><span>        <span style=color:#66d9ef>return</span> user
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span><span style=color:#66d9ef>def</span> <span style=color:#a6e22e>identity</span>(payload):
+</span></span><span style=display:flex><span>    user_id <span style=color:#f92672>=</span> payload[<span style=color:#e6db74>&#39;identity&#39;</span>]
+</span></span><span style=display:flex><span>    <span style=color:#66d9ef>return</span> userid_table<span style=color:#f92672>.</span>get(user_id, <span style=color:#66d9ef>None</span>)
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>app <span style=color:#f92672>=</span> Flask(__name__)
+</span></span><span style=display:flex><span>app<span style=color:#f92672>.</span>debug <span style=color:#f92672>=</span> <span style=color:#66d9ef>True</span>
+</span></span><span style=display:flex><span>app<span style=color:#f92672>.</span>config[<span style=color:#e6db74>&#39;SECRET_KEY&#39;</span>] <span style=color:#f92672>=</span> <span style=color:#e6db74>&#39;super-secret&#39;</span>
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>jwt <span style=color:#f92672>=</span> JWT(app, authenticate, identity)
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span><span style=color:#a6e22e>@app</span><span style=color:#f92672>.</span>route(<span style=color:#e6db74>&#39;/protected&#39;</span>)
+</span></span><span style=display:flex><span><span style=color:#a6e22e>@jwt_required</span>()
+</span></span><span style=display:flex><span><span style=color:#66d9ef>def</span> <span style=color:#a6e22e>protected</span>():
+</span></span><span style=display:flex><span>    <span style=color:#66d9ef>return</span> <span style=color:#e6db74>&#39;</span><span style=color:#e6db74>%s</span><span style=color:#e6db74>&#39;</span> <span style=color:#f92672>%</span> current_identity
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span><span style=color:#66d9ef>if</span> __name__ <span style=color:#f92672>==</span> <span style=color:#e6db74>&#39;__main__&#39;</span>:
+</span></span><span style=display:flex><span>    app<span style=color:#f92672>.</span>run()
+</span></span></code></pre></div><p>首先需要获取用户的 JWT：</p><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-shell data-lang=shell><span style=display:flex><span>% http POST http://127.0.0.1:5000/auth username<span style=color:#f92672>=</span><span style=color:#e6db74>&#39;user1&#39;</span> password<span style=color:#f92672>=</span><span style=color:#e6db74>&#39;abcxyz&#39;</span>             ~
+</span></span><span style=display:flex><span>HTTP/1.0 <span style=color:#ae81ff>200</span> OK
+</span></span><span style=display:flex><span>Content-Length: <span style=color:#ae81ff>193</span>
+</span></span><span style=display:flex><span>Content-Type: application/json
+</span></span><span style=display:flex><span>Date: Sun, <span style=color:#ae81ff>21</span> Aug <span style=color:#ae81ff>2016</span> 03:48:41 GMT
+</span></span><span style=display:flex><span>Server: Werkzeug/0.11.10 Python/2.7.10
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span><span style=color:#f92672>{</span>
+</span></span><span style=display:flex><span>    <span style=color:#e6db74>&#34;access_token&#34;</span>: <span style=color:#e6db74>&#34;eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZGVudGl0eSI6MSwiaWF0IjoxNDcxNzUxMzIxLCJuYmYiOjE0NzE3NTEzMjEsImV4cCI6MTQ3MTc1MTYyMX0.S0825N6IliQb65QoJfUXb3IGq-j9OVJpHBh-bcUz_gc&#34;</span>
+</span></span><span style=display:flex><span><span style=color:#f92672>}</span>
+</span></span></code></pre></div><p>使用 <code>@jwt_required()</code> 装饰器来保护你的 API</p><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-python data-lang=python><span style=display:flex><span><span style=color:#a6e22e>@app</span><span style=color:#f92672>.</span>route(<span style=color:#e6db74>&#39;/protected&#39;</span>)
+</span></span><span style=display:flex><span><span style=color:#a6e22e>@jwt_required</span>()
+</span></span><span style=display:flex><span><span style=color:#66d9ef>def</span> <span style=color:#a6e22e>protected</span>():
+</span></span><span style=display:flex><span>    <span style=color:#66d9ef>return</span> <span style=color:#e6db74>&#39;</span><span style=color:#e6db74>%s</span><span style=color:#e6db74>&#39;</span> <span style=color:#f92672>%</span> current_identity
+</span></span></code></pre></div><p>这时候你需要在 HTTP 的 header 中使用 <code>Authorization: JWT &lt;token></code> 才能获取数据</p><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-shell data-lang=shell><span style=display:flex><span>% http http://127.0.0.1:5000/protected Authorization:<span style=color:#e6db74>&#34;JWT eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZGVudGl0eSI6MSwiaWF0IjoxNDcxNzUxMzIxLCJuYmYiOjE0NzE3NTEzMjEsImV4cCI6MTQ3MTc1MTYyMX0.S0825N6IliQb65QoJfUXb3IGq-j9OVJpHBh-bcUz_gc&#34;</span>
+</span></span><span style=display:flex><span>HTTP/1.0 <span style=color:#ae81ff>200</span> OK
+</span></span><span style=display:flex><span>Content-Length: <span style=color:#ae81ff>12</span>
+</span></span><span style=display:flex><span>Content-Type: text/html; charset<span style=color:#f92672>=</span>utf-8
+</span></span><span style=display:flex><span>Date: Sun, <span style=color:#ae81ff>21</span> Aug <span style=color:#ae81ff>2016</span> 03:51:20 GMT
+</span></span><span style=display:flex><span>Server: Werkzeug/0.11.10 Python/2.7.10
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>User<span style=color:#f92672>(</span>id<span style=color:#f92672>=</span><span style=color:#e6db74>&#39;1&#39;</span><span style=color:#f92672>)</span>
+</span></span></code></pre></div><p>不带 JWT 的时候会返回如下信息：</p><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-shell data-lang=shell><span style=display:flex><span>% http http://127.0.0.1:5000/protected                                                ~
+</span></span><span style=display:flex><span>HTTP/1.0 <span style=color:#ae81ff>401</span> UNAUTHORIZED
+</span></span><span style=display:flex><span>Content-Length: <span style=color:#ae81ff>125</span>
+</span></span><span style=display:flex><span>Content-Type: application/json
+</span></span><span style=display:flex><span>Date: Sun, <span style=color:#ae81ff>21</span> Aug <span style=color:#ae81ff>2016</span> 03:49:51 GMT
+</span></span><span style=display:flex><span>Server: Werkzeug/0.11.10 Python/2.7.10
+</span></span><span style=display:flex><span>WWW-Authenticate: JWT realm<span style=color:#f92672>=</span><span style=color:#e6db74>&#34;Login Required&#34;</span>
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span><span style=color:#f92672>{</span>
+</span></span><span style=display:flex><span>    <span style=color:#e6db74>&#34;description&#34;</span>: <span style=color:#e6db74>&#34;Request does not contain an access token&#34;</span>,
+</span></span><span style=display:flex><span>    <span style=color:#e6db74>&#34;error&#34;</span>: <span style=color:#e6db74>&#34;Authorization Required&#34;</span>,
+</span></span><span style=display:flex><span>    <span style=color:#e6db74>&#34;status_code&#34;</span>: <span style=color:#ae81ff>401</span>
+</span></span><span style=display:flex><span><span style=color:#f92672>}</span>
+</span></span></code></pre></div><h3 id=express-中使用-json-web-token>Express 中使用 JSON Web Token</h3><p>Auth0 提供了 express-jwt 这个包，在 express 可以很容易的集成。</p><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-shell data-lang=shell><span style=display:flex><span>npm install express --save
+</span></span><span style=display:flex><span>npm install express-jwt --save
+</span></span><span style=display:flex><span>npm install body-parser --save
+</span></span><span style=display:flex><span>npm install jsonwebtoken --save
+</span></span><span style=display:flex><span>npm install shortid --save
+</span></span></code></pre></div><p>本例子中只是最简单的使用方法，更多使用方法参看 <a href=https://github.com/auth0/express-jwt>express-jwt</a></p><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-javascript data-lang=javascript><span style=display:flex><span><span style=color:#66d9ef>var</span> <span style=color:#a6e22e>express</span> <span style=color:#f92672>=</span> <span style=color:#a6e22e>require</span>(<span style=color:#e6db74>&#39;express&#39;</span>);
+</span></span><span style=display:flex><span><span style=color:#66d9ef>var</span> <span style=color:#a6e22e>expressJwt</span> <span style=color:#f92672>=</span> <span style=color:#a6e22e>require</span>(<span style=color:#e6db74>&#39;express-jwt&#39;</span>);
+</span></span><span style=display:flex><span><span style=color:#66d9ef>var</span> <span style=color:#a6e22e>bodyParser</span> <span style=color:#f92672>=</span> <span style=color:#a6e22e>require</span>(<span style=color:#e6db74>&#39;body-parser&#39;</span>);
+</span></span><span style=display:flex><span><span style=color:#66d9ef>var</span> <span style=color:#a6e22e>jwt</span> <span style=color:#f92672>=</span> <span style=color:#a6e22e>require</span>(<span style=color:#e6db74>&#39;jsonwebtoken&#39;</span>);
+</span></span><span style=display:flex><span><span style=color:#66d9ef>var</span> <span style=color:#a6e22e>shortid</span> <span style=color:#f92672>=</span> <span style=color:#a6e22e>require</span>(<span style=color:#e6db74>&#39;shortid&#39;</span>);
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span><span style=color:#66d9ef>var</span> <span style=color:#a6e22e>app</span> <span style=color:#f92672>=</span> <span style=color:#a6e22e>express</span>();
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span><span style=color:#a6e22e>app</span>.<span style=color:#a6e22e>use</span>(<span style=color:#a6e22e>bodyParser</span>.<span style=color:#a6e22e>json</span>());
+</span></span><span style=display:flex><span><span style=color:#a6e22e>app</span>.<span style=color:#a6e22e>use</span>(<span style=color:#a6e22e>expressJwt</span>({<span style=color:#a6e22e>secret</span><span style=color:#f92672>:</span> <span style=color:#e6db74>&#39;secret&#39;</span>}).<span style=color:#a6e22e>unless</span>({<span style=color:#a6e22e>path</span><span style=color:#f92672>:</span> [<span style=color:#e6db74>&#39;/login&#39;</span>]}));
+</span></span><span style=display:flex><span><span style=color:#a6e22e>app</span>.<span style=color:#a6e22e>use</span>(<span style=color:#66d9ef>function</span> (<span style=color:#a6e22e>err</span>, <span style=color:#a6e22e>req</span>, <span style=color:#a6e22e>res</span>, <span style=color:#a6e22e>next</span>) {
+</span></span><span style=display:flex><span>  <span style=color:#66d9ef>if</span> (<span style=color:#a6e22e>err</span>.<span style=color:#a6e22e>name</span> <span style=color:#f92672>===</span> <span style=color:#e6db74>&#39;UnauthorizedError&#39;</span>) {
+</span></span><span style=display:flex><span>    <span style=color:#a6e22e>res</span>.<span style=color:#a6e22e>status</span>(<span style=color:#ae81ff>401</span>).<span style=color:#a6e22e>send</span>(<span style=color:#e6db74>&#39;invalid token&#39;</span>);
+</span></span><span style=display:flex><span>  }
+</span></span><span style=display:flex><span>});
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span><span style=color:#a6e22e>app</span>.<span style=color:#a6e22e>post</span>(<span style=color:#e6db74>&#39;/login&#39;</span>, <span style=color:#66d9ef>function</span>(<span style=color:#a6e22e>req</span>, <span style=color:#a6e22e>res</span>) {
+</span></span><span style=display:flex><span>  <span style=color:#66d9ef>var</span> <span style=color:#a6e22e>username</span> <span style=color:#f92672>=</span> <span style=color:#a6e22e>req</span>.<span style=color:#a6e22e>body</span>.<span style=color:#a6e22e>username</span>;
+</span></span><span style=display:flex><span>  <span style=color:#66d9ef>var</span> <span style=color:#a6e22e>password</span> <span style=color:#f92672>=</span> <span style=color:#a6e22e>req</span>.<span style=color:#a6e22e>body</span>.<span style=color:#a6e22e>password</span>;
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>  <span style=color:#66d9ef>if</span> (<span style=color:#f92672>!</span><span style=color:#a6e22e>username</span>) {
+</span></span><span style=display:flex><span>    <span style=color:#66d9ef>return</span> <span style=color:#a6e22e>res</span>.<span style=color:#a6e22e>status</span>(<span style=color:#ae81ff>400</span>).<span style=color:#a6e22e>send</span>(<span style=color:#e6db74>&#39;username require&#39;</span>);
+</span></span><span style=display:flex><span>  }
+</span></span><span style=display:flex><span>  <span style=color:#66d9ef>if</span> (<span style=color:#f92672>!</span><span style=color:#a6e22e>password</span>) {
+</span></span><span style=display:flex><span>    <span style=color:#66d9ef>return</span> <span style=color:#a6e22e>res</span>.<span style=color:#a6e22e>status</span>(<span style=color:#ae81ff>400</span>).<span style=color:#a6e22e>send</span>(<span style=color:#e6db74>&#39;password require&#39;</span>);
+</span></span><span style=display:flex><span>  }
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>  <span style=color:#66d9ef>if</span> (<span style=color:#a6e22e>username</span> <span style=color:#f92672>!=</span> <span style=color:#e6db74>&#39;admin&#39;</span> <span style=color:#f92672>&amp;&amp;</span> <span style=color:#a6e22e>password</span> <span style=color:#f92672>!=</span> <span style=color:#e6db74>&#39;password&#39;</span>) {
+</span></span><span style=display:flex><span>    <span style=color:#66d9ef>return</span> <span style=color:#a6e22e>res</span>.<span style=color:#a6e22e>status</span>(<span style=color:#ae81ff>401</span>).<span style=color:#a6e22e>send</span>(<span style=color:#e6db74>&#39;invaild password&#39;</span>);
+</span></span><span style=display:flex><span>  }
+</span></span><span style=display:flex><span>  
+</span></span><span style=display:flex><span>  <span style=color:#66d9ef>var</span> <span style=color:#a6e22e>authToken</span> <span style=color:#f92672>=</span> <span style=color:#a6e22e>jwt</span>.<span style=color:#a6e22e>sign</span>({<span style=color:#a6e22e>username</span><span style=color:#f92672>:</span> <span style=color:#a6e22e>username</span>}, <span style=color:#e6db74>&#39;secret&#39;</span>);
+</span></span><span style=display:flex><span>  <span style=color:#a6e22e>res</span>.<span style=color:#a6e22e>status</span>(<span style=color:#ae81ff>200</span>).<span style=color:#a6e22e>json</span>({<span style=color:#a6e22e>token</span><span style=color:#f92672>:</span> <span style=color:#a6e22e>authToken</span>});
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>});
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span><span style=color:#a6e22e>app</span>.<span style=color:#a6e22e>post</span>(<span style=color:#e6db74>&#39;/user&#39;</span>, <span style=color:#66d9ef>function</span>(<span style=color:#a6e22e>req</span>, <span style=color:#a6e22e>res</span>) {
+</span></span><span style=display:flex><span>  <span style=color:#66d9ef>var</span> <span style=color:#a6e22e>username</span> <span style=color:#f92672>=</span> <span style=color:#a6e22e>req</span>.<span style=color:#a6e22e>body</span>.<span style=color:#a6e22e>username</span>;
+</span></span><span style=display:flex><span>  <span style=color:#66d9ef>var</span> <span style=color:#a6e22e>password</span> <span style=color:#f92672>=</span> <span style=color:#a6e22e>req</span>.<span style=color:#a6e22e>body</span>.<span style=color:#a6e22e>password</span>;
+</span></span><span style=display:flex><span>  <span style=color:#66d9ef>var</span> <span style=color:#a6e22e>country</span> <span style=color:#f92672>=</span> <span style=color:#a6e22e>req</span>.<span style=color:#a6e22e>body</span>.<span style=color:#a6e22e>country</span>;
+</span></span><span style=display:flex><span>  <span style=color:#66d9ef>var</span> <span style=color:#a6e22e>age</span> <span style=color:#f92672>=</span> <span style=color:#a6e22e>req</span>.<span style=color:#a6e22e>body</span>.<span style=color:#a6e22e>age</span>;
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>  <span style=color:#66d9ef>if</span> (<span style=color:#f92672>!</span><span style=color:#a6e22e>username</span>) {
+</span></span><span style=display:flex><span>    <span style=color:#66d9ef>return</span> <span style=color:#a6e22e>res</span>.<span style=color:#a6e22e>status</span>(<span style=color:#ae81ff>400</span>).<span style=color:#a6e22e>send</span>(<span style=color:#e6db74>&#39;username require&#39;</span>);
+</span></span><span style=display:flex><span>  }
+</span></span><span style=display:flex><span>  <span style=color:#66d9ef>if</span> (<span style=color:#f92672>!</span><span style=color:#a6e22e>password</span>) {
+</span></span><span style=display:flex><span>    <span style=color:#66d9ef>return</span> <span style=color:#a6e22e>res</span>.<span style=color:#a6e22e>status</span>(<span style=color:#ae81ff>400</span>).<span style=color:#a6e22e>send</span>(<span style=color:#e6db74>&#39;password require&#39;</span>);
+</span></span><span style=display:flex><span>  }
+</span></span><span style=display:flex><span>  <span style=color:#66d9ef>if</span> (<span style=color:#f92672>!</span><span style=color:#a6e22e>country</span>) {
+</span></span><span style=display:flex><span>    <span style=color:#66d9ef>return</span> <span style=color:#a6e22e>res</span>.<span style=color:#a6e22e>status</span>(<span style=color:#ae81ff>400</span>).<span style=color:#a6e22e>send</span>(<span style=color:#e6db74>&#39;countryrequire&#39;</span>);
+</span></span><span style=display:flex><span>  }
+</span></span><span style=display:flex><span>  <span style=color:#66d9ef>if</span> (<span style=color:#f92672>!</span><span style=color:#a6e22e>age</span>) {
+</span></span><span style=display:flex><span>    <span style=color:#66d9ef>return</span> <span style=color:#a6e22e>res</span>.<span style=color:#a6e22e>status</span>(<span style=color:#ae81ff>400</span>).<span style=color:#a6e22e>send</span>(<span style=color:#e6db74>&#39;age require&#39;</span>);
+</span></span><span style=display:flex><span>  }
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>  <span style=color:#a6e22e>res</span>.<span style=color:#a6e22e>status</span>(<span style=color:#ae81ff>200</span>).<span style=color:#a6e22e>json</span>({
+</span></span><span style=display:flex><span>    <span style=color:#a6e22e>id</span><span style=color:#f92672>:</span> <span style=color:#a6e22e>shortid</span>.<span style=color:#a6e22e>generate</span>(),
+</span></span><span style=display:flex><span>    <span style=color:#a6e22e>username</span><span style=color:#f92672>:</span> <span style=color:#a6e22e>username</span>,
+</span></span><span style=display:flex><span>    <span style=color:#a6e22e>country</span><span style=color:#f92672>:</span> <span style=color:#a6e22e>country</span>,
+</span></span><span style=display:flex><span>    <span style=color:#a6e22e>age</span><span style=color:#f92672>:</span> <span style=color:#a6e22e>age</span>
+</span></span><span style=display:flex><span>  })
+</span></span><span style=display:flex><span>})
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span><span style=color:#a6e22e>app</span>.<span style=color:#a6e22e>listen</span>(<span style=color:#ae81ff>3000</span>);
+</span></span></code></pre></div><p><code>express-jwt</code> 作为 express 的一个中间件，需要设置 <code>secret</code> 作为秘钥，unless 可以排除某个接口。</p><p>默认的情况下，解析 JWT 失败会抛出异常，可以通过以下设置来处理该异常。</p><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-javascript data-lang=javascript><span style=display:flex><span><span style=color:#a6e22e>app</span>.<span style=color:#a6e22e>use</span>(<span style=color:#a6e22e>expressJwt</span>({<span style=color:#a6e22e>secret</span><span style=color:#f92672>:</span> <span style=color:#e6db74>&#39;secret&#39;</span>}).<span style=color:#a6e22e>unless</span>({<span style=color:#a6e22e>path</span><span style=color:#f92672>:</span> [<span style=color:#e6db74>&#39;/login&#39;</span>]}));
+</span></span><span style=display:flex><span><span style=color:#a6e22e>app</span>.<span style=color:#a6e22e>use</span>(<span style=color:#66d9ef>function</span> (<span style=color:#a6e22e>err</span>, <span style=color:#a6e22e>req</span>, <span style=color:#a6e22e>res</span>, <span style=color:#a6e22e>next</span>) {
+</span></span><span style=display:flex><span>  <span style=color:#66d9ef>if</span> (<span style=color:#a6e22e>err</span>.<span style=color:#a6e22e>name</span> <span style=color:#f92672>===</span> <span style=color:#e6db74>&#39;UnauthorizedError&#39;</span>) {
+</span></span><span style=display:flex><span>    <span style=color:#a6e22e>res</span>.<span style=color:#a6e22e>status</span>(<span style=color:#ae81ff>401</span>).<span style=color:#a6e22e>send</span>(<span style=color:#e6db74>&#39;invalid token&#39;</span>);
+</span></span><span style=display:flex><span>  }
+</span></span><span style=display:flex><span>});
+</span></span></code></pre></div><p><code>/login</code> 忽略的 JWT 认证，通过这个接口获取某个用户的 JWT</p><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-javascript data-lang=javascript><span style=display:flex><span><span style=color:#f92672>%</span> <span style=color:#a6e22e>http</span> <span style=color:#a6e22e>POST</span> <span style=color:#a6e22e>http</span><span style=color:#f92672>:</span><span style=color:#75715e>//localhost:3000/login username=&#39;admin&#39; password=&#39;password&#39; country=&#39;CN&#39; age=22  
+</span></span></span><span style=display:flex><span><span style=color:#75715e></span><span style=color:#a6e22e>HTTP</span><span style=color:#f92672>/</span><span style=color:#ae81ff>1.1</span> <span style=color:#ae81ff>200</span> <span style=color:#a6e22e>OK</span>
+</span></span><span style=display:flex><span><span style=color:#a6e22e>Connection</span><span style=color:#f92672>:</span> <span style=color:#a6e22e>keep</span><span style=color:#f92672>-</span><span style=color:#a6e22e>alive</span>
+</span></span><span style=display:flex><span><span style=color:#a6e22e>Content</span><span style=color:#f92672>-</span><span style=color:#a6e22e>Length</span><span style=color:#f92672>:</span> <span style=color:#ae81ff>143</span>
+</span></span><span style=display:flex><span><span style=color:#a6e22e>Content</span><span style=color:#f92672>-</span><span style=color:#a6e22e>Type</span><span style=color:#f92672>:</span> <span style=color:#a6e22e>application</span><span style=color:#f92672>/</span><span style=color:#a6e22e>json</span>; <span style=color:#a6e22e>charset</span><span style=color:#f92672>=</span><span style=color:#a6e22e>utf</span><span style=color:#f92672>-</span><span style=color:#ae81ff>8</span>
+</span></span><span style=display:flex><span>Date<span style=color:#f92672>:</span> <span style=color:#a6e22e>Sun</span>, <span style=color:#ae81ff>21</span> <span style=color:#a6e22e>Aug</span> <span style=color:#ae81ff>2016</span> <span style=color:#ae81ff>06</span><span style=color:#f92672>:</span><span style=color:#ae81ff>57</span><span style=color:#f92672>:</span><span style=color:#ae81ff>42</span> <span style=color:#a6e22e>GMT</span>
+</span></span><span style=display:flex><span><span style=color:#a6e22e>ETag</span><span style=color:#f92672>:</span> <span style=color:#a6e22e>W</span><span style=color:#f92672>/</span><span style=color:#e6db74>&#34;8f-iMzAS1K5StDQgtNnVSvqtQ&#34;</span>
+</span></span><span style=display:flex><span><span style=color:#a6e22e>X</span><span style=color:#f92672>-</span><span style=color:#a6e22e>Powered</span><span style=color:#f92672>-</span><span style=color:#a6e22e>By</span><span style=color:#f92672>:</span> <span style=color:#a6e22e>Express</span>
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>{
+</span></span><span style=display:flex><span>    <span style=color:#e6db74>&#34;token&#34;</span><span style=color:#f92672>:</span> <span style=color:#e6db74>&#34;eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VybmFtZSI6ImFkbWluIiwiaWF0IjoxNDcxNzYyNjYyfQ.o5RFJB4GiR28HzXbSptU6MsPwW1tSXSDIjlzn7erG0M&#34;</span>
+</span></span><span style=display:flex><span>}
+</span></span></code></pre></div><p>不使用 JWT 的时候</p><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-javascript data-lang=javascript><span style=display:flex><span><span style=color:#f92672>%</span> <span style=color:#a6e22e>http</span> <span style=color:#a6e22e>POST</span> <span style=color:#a6e22e>http</span><span style=color:#f92672>:</span><span style=color:#75715e>//localhost:3000/user username=&#39;hexiangyu&#39; password=&#39;password&#39;       ~
+</span></span></span><span style=display:flex><span><span style=color:#75715e></span><span style=color:#a6e22e>HTTP</span><span style=color:#f92672>/</span><span style=color:#ae81ff>1.1</span> <span style=color:#ae81ff>401</span> <span style=color:#a6e22e>Unauthorized</span>
+</span></span><span style=display:flex><span><span style=color:#a6e22e>Connection</span><span style=color:#f92672>:</span> <span style=color:#a6e22e>keep</span><span style=color:#f92672>-</span><span style=color:#a6e22e>alive</span>
+</span></span><span style=display:flex><span><span style=color:#a6e22e>Content</span><span style=color:#f92672>-</span><span style=color:#a6e22e>Length</span><span style=color:#f92672>:</span> <span style=color:#ae81ff>13</span>
+</span></span><span style=display:flex><span><span style=color:#a6e22e>Content</span><span style=color:#f92672>-</span><span style=color:#a6e22e>Type</span><span style=color:#f92672>:</span> <span style=color:#a6e22e>text</span><span style=color:#f92672>/</span><span style=color:#a6e22e>html</span>; <span style=color:#a6e22e>charset</span><span style=color:#f92672>=</span><span style=color:#a6e22e>utf</span><span style=color:#f92672>-</span><span style=color:#ae81ff>8</span>
+</span></span><span style=display:flex><span>Date<span style=color:#f92672>:</span> <span style=color:#a6e22e>Sun</span>, <span style=color:#ae81ff>21</span> <span style=color:#a6e22e>Aug</span> <span style=color:#ae81ff>2016</span> <span style=color:#ae81ff>07</span><span style=color:#f92672>:</span><span style=color:#ae81ff>00</span><span style=color:#f92672>:</span><span style=color:#ae81ff>02</span> <span style=color:#a6e22e>GMT</span>
+</span></span><span style=display:flex><span><span style=color:#a6e22e>ETag</span><span style=color:#f92672>:</span> <span style=color:#a6e22e>W</span><span style=color:#f92672>/</span><span style=color:#e6db74>&#34;d-j0viHsPPu6FaNJ6cXoiFeQ&#34;</span>
+</span></span><span style=display:flex><span><span style=color:#a6e22e>X</span><span style=color:#f92672>-</span><span style=color:#a6e22e>Powered</span><span style=color:#f92672>-</span><span style=color:#a6e22e>By</span><span style=color:#f92672>:</span> <span style=color:#a6e22e>Express</span>
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span><span style=color:#a6e22e>invalid</span> <span style=color:#a6e22e>token</span>
+</span></span></code></pre></div><p>使用 JWT 就可以成功调用</p><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-javascript data-lang=javascript><span style=display:flex><span><span style=color:#f92672>%</span> <span style=color:#a6e22e>http</span> <span style=color:#a6e22e>POST</span> <span style=color:#a6e22e>http</span><span style=color:#f92672>:</span><span style=color:#75715e>//localhost:3000/user Authorization:&#34;Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VybmFtZSI6ImFkbWluIiwiaWF0IjoxNDcxNzYyNjYyfQ.o5RFJB4GiR28HzXbSptU6MsPwW1tSXSDIjlzn7erG0M&#34; username=&#39;hexiangyu&#39; password=&#39;password&#39; country=&#39;CN&#39; age=22
+</span></span></span><span style=display:flex><span><span style=color:#75715e></span><span style=color:#a6e22e>HTTP</span><span style=color:#f92672>/</span><span style=color:#ae81ff>1.1</span> <span style=color:#ae81ff>200</span> <span style=color:#a6e22e>OK</span>
+</span></span><span style=display:flex><span><span style=color:#a6e22e>Connection</span><span style=color:#f92672>:</span> <span style=color:#a6e22e>keep</span><span style=color:#f92672>-</span><span style=color:#a6e22e>alive</span>
+</span></span><span style=display:flex><span><span style=color:#a6e22e>Content</span><span style=color:#f92672>-</span><span style=color:#a6e22e>Length</span><span style=color:#f92672>:</span> <span style=color:#ae81ff>66</span>
+</span></span><span style=display:flex><span><span style=color:#a6e22e>Content</span><span style=color:#f92672>-</span><span style=color:#a6e22e>Type</span><span style=color:#f92672>:</span> <span style=color:#a6e22e>application</span><span style=color:#f92672>/</span><span style=color:#a6e22e>json</span>; <span style=color:#a6e22e>charset</span><span style=color:#f92672>=</span><span style=color:#a6e22e>utf</span><span style=color:#f92672>-</span><span style=color:#ae81ff>8</span>
+</span></span><span style=display:flex><span>Date<span style=color:#f92672>:</span> <span style=color:#a6e22e>Sun</span>, <span style=color:#ae81ff>21</span> <span style=color:#a6e22e>Aug</span> <span style=color:#ae81ff>2016</span> <span style=color:#ae81ff>07</span><span style=color:#f92672>:</span><span style=color:#ae81ff>04</span><span style=color:#f92672>:</span><span style=color:#ae81ff>34</span> <span style=color:#a6e22e>GMT</span>
+</span></span><span style=display:flex><span><span style=color:#a6e22e>ETag</span><span style=color:#f92672>:</span> <span style=color:#a6e22e>W</span><span style=color:#f92672>/</span><span style=color:#e6db74>&#34;42-YnGYuyDLxpVUexEGEcQj1g&#34;</span>
+</span></span><span style=display:flex><span><span style=color:#a6e22e>X</span><span style=color:#f92672>-</span><span style=color:#a6e22e>Powered</span><span style=color:#f92672>-</span><span style=color:#a6e22e>By</span><span style=color:#f92672>:</span> <span style=color:#a6e22e>Express</span>
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>{
+</span></span><span style=display:flex><span>    <span style=color:#e6db74>&#34;age&#34;</span><span style=color:#f92672>:</span> <span style=color:#e6db74>&#34;22&#34;</span>,
+</span></span><span style=display:flex><span>    <span style=color:#e6db74>&#34;country&#34;</span><span style=color:#f92672>:</span> <span style=color:#e6db74>&#34;CN&#34;</span>,
+</span></span><span style=display:flex><span>    <span style=color:#e6db74>&#34;id&#34;</span><span style=color:#f92672>:</span> <span style=color:#e6db74>&#34;r1sFMCUc&#34;</span>,
+</span></span><span style=display:flex><span>    <span style=color:#e6db74>&#34;username&#34;</span><span style=color:#f92672>:</span> <span style=color:#e6db74>&#34;hexiangyu&#34;</span>
+</span></span><span style=display:flex><span>}
+</span></span></code></pre></div><h2 id=reference>Reference</h2><ul><li><a href=https://jwt.io/introduction/>JSON Web Token Introduction</a></li><li><a href=http://www.iana.org/assignments/jwt/jwt.xhtml>IANA JSON Web Token</a></li><li><a href=https://pythonhosted.org/Flask-JWT/>Flask-JWT</a></li><li><a href=https://github.com/auth0/express-jwt>express-jwt</a></li></ul></section><nav class="mt-24 flex rounded-lg bg-black/[3%] text-lg dark:bg-white/[8%]"><a class="flex w-1/2 items-center p-6 pr-3 no-underline" href=http://hexiangyu.me/posts/ordereddict-double-linked-list/><span class=mr-1.5>←</span><span>OrderedDict —— 双向循环列表的最佳实践</span></a>
+<a class="ml-auto flex w-1/2 items-center justify-end p-6 pl-3 no-underline" href=http://hexiangyu.me/posts/weapp-github/><span>玩玩微信小程序</span><span class=ml-1.5>→</span></a></nav></article></main><footer class="opaco mx-auto flex h-[5rem] max-w-3xl items-center px-8 text-[0.9em] opacity-60"><div class=mr-auto>&copy; 2022
+<a class=link href=http://hexiangyu.me/>正小歪 BLOG</a></div><a class="link mx-6" href=https://gohugo.io/ rel=noopener target=_blank>Powered by Hugo️️</a>️
+<a class=link href=https://github.com/nanxiaobei/hugo-paper rel=noopener target=_blank>▷ Paper 6</a></footer></body></html>

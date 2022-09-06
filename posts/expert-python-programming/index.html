@@ -1,0 +1,937 @@
+<!doctype html><html class="not-ready text-sm lg:text-base" style=--bg:#faf6f1 lang=en-us><head><meta charset=utf-8><meta http-equiv=x-ua-compatible content="IE=edge"><meta name=viewport content="width=device-width,initial-scale=1,shrink-to-fit=no"><title>《Python 高级编程》读书笔记 - 正小歪 BLOG</title><meta name=theme-color><meta name=description content="列表推导 在Python中总是要透着一种极简主义，这样才能显示出Python牛逼哄哄。所以Python语法中总是能写的短就写的短，这是Python的精髓。
+列表推导就是为了简化列表生成，换一种说法就是用一行代码生成复杂的列表。
+在C语言中你要生成一个0~100中偶数构成的数组你只能这么写：
+int array[50] = {}; for(int i = 0; i < 100; i++) { if(0 == i % 2) array[i] = i; } 一共用了5行，当然更多时候是6行。
+Python也有这种土逼的写法，当然也有更牛逼的写法，你可以这样写：
+[i for i in xrange(100) if (i % 2) is 0] Python的enmuerate内建函数十分有用，不仅能取元素还可以取序号
+>>> l = ['a', 'b', 'c', 'd'] >>> for i, e in enumerate(l): ... print &#34;{0} : {1}&#34;.format(i,e) ... 0 : a 1 : b 2 : c 3 : d >>> 结合列表推导，可以写出很简洁的代码："><meta name=author content><link rel="preload stylesheet" as=style href=http://hexiangyu.me/main.min.css><script defer src=http://hexiangyu.me/highlight.min.js onload=hljs.initHighlightingOnLoad()></script>
+<link rel=preload as=image href=http://hexiangyu.me/theme.png><link rel=icon href=http://hexiangyu.me/favicon.ico><link rel=apple-touch-icon href=http://hexiangyu.me/apple-touch-icon.png><meta name=generator content="Hugo 0.102.3"><meta property="og:title" content="《Python 高级编程》读书笔记"><meta property="og:description" content="列表推导 在Python中总是要透着一种极简主义，这样才能显示出Python牛逼哄哄。所以Python语法中总是能写的短就写的短，这是Python的精髓。
+列表推导就是为了简化列表生成，换一种说法就是用一行代码生成复杂的列表。
+在C语言中你要生成一个0~100中偶数构成的数组你只能这么写：
+int array[50] = {}; for(int i = 0; i < 100; i++) { if(0 == i % 2) array[i] = i; } 一共用了5行，当然更多时候是6行。
+Python也有这种土逼的写法，当然也有更牛逼的写法，你可以这样写：
+[i for i in xrange(100) if (i % 2) is 0] Python的enmuerate内建函数十分有用，不仅能取元素还可以取序号
+>>> l = ['a', 'b', 'c', 'd'] >>> for i, e in enumerate(l): ... print &#34;{0} : {1}&#34;.format(i,e) ... 0 : a 1 : b 2 : c 3 : d >>> 结合列表推导，可以写出很简洁的代码："><meta property="og:type" content="article"><meta property="og:url" content="http://hexiangyu.me/posts/expert-python-programming/"><meta property="article:section" content="posts"><meta property="article:published_time" content="2015-08-01T16:54:46+00:00"><meta property="article:modified_time" content="2015-08-01T16:54:46+00:00"><meta itemprop=name content="《Python 高级编程》读书笔记"><meta itemprop=description content="列表推导 在Python中总是要透着一种极简主义，这样才能显示出Python牛逼哄哄。所以Python语法中总是能写的短就写的短，这是Python的精髓。
+列表推导就是为了简化列表生成，换一种说法就是用一行代码生成复杂的列表。
+在C语言中你要生成一个0~100中偶数构成的数组你只能这么写：
+int array[50] = {}; for(int i = 0; i < 100; i++) { if(0 == i % 2) array[i] = i; } 一共用了5行，当然更多时候是6行。
+Python也有这种土逼的写法，当然也有更牛逼的写法，你可以这样写：
+[i for i in xrange(100) if (i % 2) is 0] Python的enmuerate内建函数十分有用，不仅能取元素还可以取序号
+>>> l = ['a', 'b', 'c', 'd'] >>> for i, e in enumerate(l): ... print &#34;{0} : {1}&#34;.format(i,e) ... 0 : a 1 : b 2 : c 3 : d >>> 结合列表推导，可以写出很简洁的代码："><meta itemprop=datePublished content="2015-08-01T16:54:46+00:00"><meta itemprop=dateModified content="2015-08-01T16:54:46+00:00"><meta itemprop=wordCount content="2501"><meta itemprop=keywords content><meta name=twitter:card content="summary"><meta name=twitter:title content="《Python 高级编程》读书笔记"><meta name=twitter:description content="列表推导 在Python中总是要透着一种极简主义，这样才能显示出Python牛逼哄哄。所以Python语法中总是能写的短就写的短，这是Python的精髓。
+列表推导就是为了简化列表生成，换一种说法就是用一行代码生成复杂的列表。
+在C语言中你要生成一个0~100中偶数构成的数组你只能这么写：
+int array[50] = {}; for(int i = 0; i < 100; i++) { if(0 == i % 2) array[i] = i; } 一共用了5行，当然更多时候是6行。
+Python也有这种土逼的写法，当然也有更牛逼的写法，你可以这样写：
+[i for i in xrange(100) if (i % 2) is 0] Python的enmuerate内建函数十分有用，不仅能取元素还可以取序号
+>>> l = ['a', 'b', 'c', 'd'] >>> for i, e in enumerate(l): ... print &#34;{0} : {1}&#34;.format(i,e) ... 0 : a 1 : b 2 : c 3 : d >>> 结合列表推导，可以写出很简洁的代码："></head><body class="text-black duration-200 ease-out dark:text-white"><header class="mx-auto flex h-[5rem] max-w-3xl px-8 lg:justify-center"><div class="relative z-50 mr-auto flex items-center"><a class="-translate-x-[1px] -translate-y-0.5 text-3xl font-bold" href=http://hexiangyu.me/>正小歪 BLOG</a>
+<a class="btn-dark ml-6 h-6 w-6 shrink-0 cursor-pointer [background:url(./theme.png)_left_center/_auto_theme('spacing.6')_no-repeat] [transition:_background-position_0.4s_steps(5)] dark:[background-position:right]"></a></div><a class="btn-menu relative z-50 -mr-8 flex h-[5rem] w-[5rem] shrink-0 cursor-pointer flex-col items-center justify-center gap-2.5 lg:hidden"></a>
+<script>const htmlClass=document.documentElement.classList;setTimeout(()=>{htmlClass.remove("not-ready")},10);const btnMenu=document.querySelector(".btn-menu");btnMenu.addEventListener("click",()=>{htmlClass.toggle("open")});const metaTheme=document.querySelector('meta[name="theme-color"]'),lightBg=`"#faf6f1"`.replace(/"/g,""),setDark=e=>{metaTheme.setAttribute("content",e?"#000":lightBg),htmlClass[e?"add":"remove"]("dark"),localStorage.setItem("dark",e)},darkScheme=window.matchMedia("(prefers-color-scheme: dark)"),darkVal=localStorage.getItem("dark");setDark(darkVal?darkVal==="true":darkScheme.matches),darkScheme.addEventListener("change",e=>{setDark(e.matches)});const btnDark=document.querySelector(".btn-dark");btnDark.addEventListener("click",()=>{setDark(localStorage.getItem("dark")!=="true")})</script><div class="nav-wrapper fixed inset-x-0 top-full z-40 flex h-full select-none flex-col justify-center pb-16 duration-200 dark:bg-black lg:static lg:h-auto lg:flex-row lg:!bg-transparent lg:pb-0 lg:transition-none"></div></header><main class="prose prose-neutral relative mx-auto min-h-[calc(100%-10rem)] max-w-3xl px-8 pt-20 pb-32 dark:prose-invert"><article><header class=mb-20><h1 class="!my-0 pb-2.5">《Python 高级编程》读书笔记</h1><div class="text-sm opacity-60"><time>Aug 1, 2015</time></div></header><section><h2 id=列表推导>列表推导</h2><p>在Python中总是要透着一种极简主义，这样才能显示出Python牛逼哄哄。所以Python语法中总是能写的短就写的短，这是Python的精髓。</p><p>列表推导就是为了简化列表生成，换一种说法就是用一行代码生成复杂的列表。</p><p>在C语言中你要生成一个0~100中偶数构成的数组你只能这么写：</p><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-c data-lang=c><span style=display:flex><span><span style=color:#66d9ef>int</span> array[<span style=color:#ae81ff>50</span>] <span style=color:#f92672>=</span> {};
+</span></span><span style=display:flex><span><span style=color:#66d9ef>for</span>(<span style=color:#66d9ef>int</span> i <span style=color:#f92672>=</span> <span style=color:#ae81ff>0</span>; i <span style=color:#f92672>&lt;</span> <span style=color:#ae81ff>100</span>; i<span style=color:#f92672>++</span>)
+</span></span><span style=display:flex><span>{
+</span></span><span style=display:flex><span>    <span style=color:#66d9ef>if</span>(<span style=color:#ae81ff>0</span> <span style=color:#f92672>==</span> i <span style=color:#f92672>%</span> <span style=color:#ae81ff>2</span>)
+</span></span><span style=display:flex><span>        array[i] <span style=color:#f92672>=</span> i;
+</span></span><span style=display:flex><span>}
+</span></span></code></pre></div><p>一共用了5行，当然更多时候是6行。</p><p>Python也有这种土逼的写法，当然也有更牛逼的写法，你可以这样写：</p><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-python data-lang=python><span style=display:flex><span>[i <span style=color:#66d9ef>for</span> i <span style=color:#f92672>in</span> xrange(<span style=color:#ae81ff>100</span>) <span style=color:#66d9ef>if</span> (i <span style=color:#f92672>%</span> <span style=color:#ae81ff>2</span>) <span style=color:#f92672>is</span> <span style=color:#ae81ff>0</span>]
+</span></span></code></pre></div><p>Python的enmuerate内建函数十分有用，不仅能取元素还可以取序号</p><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-python data-lang=python><span style=display:flex><span><span style=color:#f92672>&gt;&gt;&gt;</span> l <span style=color:#f92672>=</span> [<span style=color:#e6db74>&#39;a&#39;</span>, <span style=color:#e6db74>&#39;b&#39;</span>, <span style=color:#e6db74>&#39;c&#39;</span>, <span style=color:#e6db74>&#39;d&#39;</span>]
+</span></span><span style=display:flex><span><span style=color:#f92672>&gt;&gt;&gt;</span> <span style=color:#66d9ef>for</span> i, e <span style=color:#f92672>in</span> enumerate(l):
+</span></span><span style=display:flex><span><span style=color:#f92672>...</span>   print <span style=color:#e6db74>&#34;</span><span style=color:#e6db74>{0}</span><span style=color:#e6db74> : </span><span style=color:#e6db74>{1}</span><span style=color:#e6db74>&#34;</span><span style=color:#f92672>.</span>format(i,e)
+</span></span><span style=display:flex><span><span style=color:#f92672>...</span> 
+</span></span><span style=display:flex><span><span style=color:#ae81ff>0</span> : a
+</span></span><span style=display:flex><span><span style=color:#ae81ff>1</span> : b
+</span></span><span style=display:flex><span><span style=color:#ae81ff>2</span> : c
+</span></span><span style=display:flex><span><span style=color:#ae81ff>3</span> : d
+</span></span><span style=display:flex><span><span style=color:#f92672>&gt;&gt;&gt;</span> 
+</span></span></code></pre></div><p>结合列表推导，可以写出很简洁的代码：</p><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-python data-lang=python><span style=display:flex><span><span style=color:#f92672>&gt;&gt;&gt;</span> <span style=color:#66d9ef>def</span> <span style=color:#a6e22e>handle_something</span>(pos, elem):
+</span></span><span style=display:flex><span><span style=color:#f92672>...</span>     <span style=color:#66d9ef>return</span> <span style=color:#e6db74>&#34;</span><span style=color:#e6db74>{0}</span><span style=color:#e6db74> : </span><span style=color:#e6db74>{1}</span><span style=color:#e6db74>&#34;</span><span style=color:#f92672>.</span>format(pos, elem)
+</span></span><span style=display:flex><span><span style=color:#f92672>...</span> 
+</span></span><span style=display:flex><span><span style=color:#f92672>&gt;&gt;&gt;</span> something <span style=color:#f92672>=</span> [<span style=color:#e6db74>&#34;one&#34;</span>, <span style=color:#e6db74>&#34;two&#34;</span>, <span style=color:#e6db74>&#34;three&#34;</span>, <span style=color:#e6db74>&#34;four&#34;</span>]
+</span></span><span style=display:flex><span><span style=color:#f92672>&gt;&gt;&gt;</span> [handle_something(p, e) <span style=color:#66d9ef>for</span> p, e <span style=color:#f92672>in</span> enumerate(something)]
+</span></span><span style=display:flex><span>[<span style=color:#e6db74>&#39;0 : one&#39;</span>, <span style=color:#e6db74>&#39;1 : two&#39;</span>, <span style=color:#e6db74>&#39;2 : three&#39;</span>, <span style=color:#e6db74>&#39;3 : four&#39;</span>]
+</span></span><span style=display:flex><span><span style=color:#f92672>&gt;&gt;&gt;</span>
+</span></span></code></pre></div><p><strong>当要对序列中的内容进行循环处理时， 就应该尝试使用List comprehensions</strong></p><hr><h2 id=迭代器和生成器>迭代器和生成器</h2><p>迭代器是一种高效率的迭代方式，基于两个方法</p><ul><li>next 返回容器的下一个项目</li><li>__iter__ 返回迭代器本身</li></ul><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-python data-lang=python><span style=display:flex><span><span style=color:#f92672>&gt;&gt;&gt;</span> i <span style=color:#f92672>=</span> iter(<span style=color:#e6db74>&#34;abc&#34;</span>)
+</span></span><span style=display:flex><span><span style=color:#f92672>&gt;&gt;&gt;</span> i<span style=color:#f92672>.</span>next()
+</span></span><span style=display:flex><span><span style=color:#e6db74>&#39;a&#39;</span>
+</span></span><span style=display:flex><span><span style=color:#f92672>&gt;&gt;&gt;</span> i<span style=color:#f92672>.</span>next()
+</span></span><span style=display:flex><span><span style=color:#e6db74>&#39;b&#39;</span>
+</span></span><span style=display:flex><span><span style=color:#f92672>&gt;&gt;&gt;</span> i<span style=color:#f92672>.</span>next()
+</span></span><span style=display:flex><span><span style=color:#e6db74>&#39;c&#39;</span>
+</span></span><span style=display:flex><span><span style=color:#f92672>&gt;&gt;&gt;</span> i<span style=color:#f92672>.</span>next()
+</span></span><span style=display:flex><span>Traceback (most recent call last):
+</span></span><span style=display:flex><span>  File <span style=color:#e6db74>&#34;&#34;</span>, line <span style=color:#ae81ff>1</span>, <span style=color:#f92672>in</span> 
+</span></span><span style=display:flex><span><span style=color:#a6e22e>StopIteration</span>
+</span></span><span style=display:flex><span><span style=color:#f92672>&gt;&gt;&gt;</span> 
+</span></span></code></pre></div><p>在迭代器的最后，也就是没有对象可以返回的时候，就会抛出StopIteration异常，这个异常会被for捕获用作停止的条件。</p><p>要实现一个自定义的类迭代器，必须实现上面的两个两个方法，next用于遍历，__iter__用于返回。</p><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-python data-lang=python><span style=display:flex><span><span style=color:#f92672>&gt;&gt;&gt;</span> <span style=color:#66d9ef>class</span> <span style=color:#a6e22e>MyIterator</span>(object):
+</span></span><span style=display:flex><span><span style=color:#f92672>...</span>   <span style=color:#66d9ef>def</span> __init__(self, step):
+</span></span><span style=display:flex><span><span style=color:#f92672>...</span>     self<span style=color:#f92672>.</span>step <span style=color:#f92672>=</span> step
+</span></span><span style=display:flex><span><span style=color:#f92672>...</span>   <span style=color:#66d9ef>def</span> <span style=color:#a6e22e>next</span>(self):
+</span></span><span style=display:flex><span><span style=color:#f92672>...</span>     <span style=color:#66d9ef>if</span> self<span style=color:#f92672>.</span>step <span style=color:#f92672>==</span> <span style=color:#ae81ff>0</span>:
+</span></span><span style=display:flex><span><span style=color:#f92672>...</span>         <span style=color:#66d9ef>raise</span> <span style=color:#a6e22e>StopIteration</span>
+</span></span><span style=display:flex><span><span style=color:#f92672>...</span>     self<span style=color:#f92672>.</span>step <span style=color:#f92672>-=</span> <span style=color:#ae81ff>1</span>
+</span></span><span style=display:flex><span><span style=color:#f92672>...</span>     <span style=color:#66d9ef>return</span> self<span style=color:#f92672>.</span>step
+</span></span><span style=display:flex><span><span style=color:#f92672>...</span>   <span style=color:#66d9ef>def</span> __iter__(self):
+</span></span><span style=display:flex><span><span style=color:#f92672>...</span>     <span style=color:#66d9ef>return</span> self
+</span></span><span style=display:flex><span><span style=color:#f92672>...</span> 
+</span></span><span style=display:flex><span><span style=color:#f92672>&gt;&gt;&gt;</span> <span style=color:#66d9ef>for</span> el <span style=color:#f92672>in</span> MyIterator(<span style=color:#ae81ff>4</span>):
+</span></span><span style=display:flex><span><span style=color:#f92672>...</span>     print el
+</span></span><span style=display:flex><span><span style=color:#f92672>...</span> 
+</span></span><span style=display:flex><span><span style=color:#ae81ff>3</span>
+</span></span><span style=display:flex><span><span style=color:#ae81ff>2</span>
+</span></span><span style=display:flex><span><span style=color:#ae81ff>1</span>
+</span></span><span style=display:flex><span><span style=color:#ae81ff>0</span>
+</span></span><span style=display:flex><span><span style=color:#f92672>&gt;&gt;&gt;</span> 
+</span></span></code></pre></div><p>书中没有对这段程序详细说明，以下是我的理解</p><blockquote><p>流程是这样子的：</p></blockquote><ol><li>首先初始化类传入4这个参数</li><li>调用next方法， step - 1,返回 3，输出</li><li>调用__iter__方法，返回self，也就是把self.step当作参数传入</li><li>如此循环</li></ol><h3 id=221-生成器>2.2.1 生成器</h3><p>对于yield的使用可以是程序更简单、高效。yield指令可以暂停一个函数返回结果，保存现场，下次需要时候继续执行。这个有点像函数的入栈和出栈的过程。但只是形式上相同罢了。</p><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-python data-lang=python><span style=display:flex><span><span style=color:#f92672>&gt;&gt;&gt;</span> <span style=color:#66d9ef>def</span> <span style=color:#a6e22e>fibonacii</span>():
+</span></span><span style=display:flex><span><span style=color:#f92672>...</span>     a, b <span style=color:#f92672>=</span> <span style=color:#ae81ff>0</span>, <span style=color:#ae81ff>1</span>
+</span></span><span style=display:flex><span><span style=color:#f92672>...</span>     <span style=color:#66d9ef>while</span> <span style=color:#66d9ef>True</span>:
+</span></span><span style=display:flex><span><span style=color:#f92672>...</span>         <span style=color:#66d9ef>yield</span> b
+</span></span><span style=display:flex><span><span style=color:#f92672>...</span>         a, b <span style=color:#f92672>=</span> b, a <span style=color:#f92672>+</span> b
+</span></span><span style=display:flex><span><span style=color:#f92672>...</span> 
+</span></span><span style=display:flex><span><span style=color:#f92672>&gt;&gt;&gt;</span> fib <span style=color:#f92672>=</span> fibonacii()
+</span></span><span style=display:flex><span><span style=color:#f92672>&gt;&gt;&gt;</span> fib<span style=color:#f92672>.</span>next()
+</span></span><span style=display:flex><span><span style=color:#ae81ff>1</span>
+</span></span><span style=display:flex><span><span style=color:#f92672>&gt;&gt;&gt;</span> fib<span style=color:#f92672>.</span>next()
+</span></span><span style=display:flex><span><span style=color:#ae81ff>1</span>
+</span></span><span style=display:flex><span><span style=color:#f92672>&gt;&gt;&gt;</span> fib<span style=color:#f92672>.</span>next()
+</span></span><span style=display:flex><span><span style=color:#ae81ff>2</span>
+</span></span><span style=display:flex><span><span style=color:#f92672>&gt;&gt;&gt;</span> fib<span style=color:#f92672>.</span>next()
+</span></span><span style=display:flex><span><span style=color:#ae81ff>3</span>
+</span></span><span style=display:flex><span><span style=color:#f92672>&gt;&gt;&gt;</span> [fib<span style=color:#f92672>.</span>next() <span style=color:#66d9ef>for</span> i <span style=color:#f92672>in</span> range(<span style=color:#ae81ff>10</span>)]
+</span></span><span style=display:flex><span>[<span style=color:#ae81ff>5</span>, <span style=color:#ae81ff>8</span>, <span style=color:#ae81ff>13</span>, <span style=color:#ae81ff>21</span>, <span style=color:#ae81ff>34</span>, <span style=color:#ae81ff>55</span>, <span style=color:#ae81ff>89</span>, <span style=color:#ae81ff>144</span>, <span style=color:#ae81ff>233</span>, <span style=color:#ae81ff>377</span>]
+</span></span><span style=display:flex><span><span style=color:#f92672>&gt;&gt;&gt;</span> 
+</span></span></code></pre></div><p>带有yield的函数不再是一个普通的函数，而是一个generator对象，可以保存环境，每次生成序列中的下一个元素。</p><blockquote><ol><li>书中没有说明生成器的原理，网上也没有很确定的说法，查阅资料后，个人理解是：当带有yield的函数生成的同时也会生成一个协程，这个协程用于保存yield的上下文，当再次代用该函数时候，切换到协程中取值。</li><li>书中提到“不必须提供使函数可停止的方法”，事实上说的也就是return。在yield函数中只能是<strong>return</strong>而且立马抛出StopIteration，不能是<strong>return a</strong>这样子的，否则抛出SyntaxError</li></ol></blockquote><p>这是抛出SyntaxError：</p><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-python data-lang=python><span style=display:flex><span><span style=color:#f92672>&gt;&gt;&gt;</span> <span style=color:#66d9ef>def</span> <span style=color:#a6e22e>thorwstop</span>():
+</span></span><span style=display:flex><span><span style=color:#f92672>...</span>     a <span style=color:#f92672>=</span> <span style=color:#ae81ff>0</span>
+</span></span><span style=display:flex><span><span style=color:#f92672>...</span>     <span style=color:#66d9ef>while</span> <span style=color:#66d9ef>True</span>:
+</span></span><span style=display:flex><span><span style=color:#f92672>...</span>         <span style=color:#66d9ef>if</span> a <span style=color:#f92672>==</span> <span style=color:#ae81ff>3</span>:
+</span></span><span style=display:flex><span><span style=color:#f92672>...</span>             <span style=color:#66d9ef>return</span> a
+</span></span><span style=display:flex><span><span style=color:#f92672>...</span>         a <span style=color:#f92672>+=</span> <span style=color:#ae81ff>1</span>
+</span></span><span style=display:flex><span><span style=color:#f92672>...</span>         <span style=color:#66d9ef>yield</span> b
+</span></span><span style=display:flex><span><span style=color:#f92672>...</span> 
+</span></span><span style=display:flex><span>  File <span style=color:#e6db74>&#34;&#34;</span>, line <span style=color:#ae81ff>7</span>
+</span></span><span style=display:flex><span><span style=color:#a6e22e>SyntaxError</span>: <span style=color:#e6db74>&#39;return&#39;</span> <span style=color:#66d9ef>with</span> argument inside generator
+</span></span></code></pre></div><p>这是抛出StopIteration：</p><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-python data-lang=python><span style=display:flex><span><span style=color:#f92672>&gt;&gt;&gt;</span> <span style=color:#66d9ef>def</span> <span style=color:#a6e22e>thorwstop</span>():
+</span></span><span style=display:flex><span><span style=color:#f92672>...</span>     a <span style=color:#f92672>=</span> <span style=color:#ae81ff>0</span>
+</span></span><span style=display:flex><span><span style=color:#f92672>...</span>     <span style=color:#66d9ef>while</span> <span style=color:#66d9ef>True</span>:
+</span></span><span style=display:flex><span><span style=color:#f92672>...</span>         <span style=color:#66d9ef>if</span> a <span style=color:#f92672>==</span> <span style=color:#ae81ff>3</span>:
+</span></span><span style=display:flex><span><span style=color:#f92672>...</span>             <span style=color:#66d9ef>return</span>
+</span></span><span style=display:flex><span><span style=color:#f92672>...</span>         <span style=color:#66d9ef>yield</span> a
+</span></span><span style=display:flex><span><span style=color:#f92672>...</span>         a <span style=color:#f92672>+=</span> <span style=color:#ae81ff>1</span>
+</span></span><span style=display:flex><span><span style=color:#f92672>&gt;&gt;&gt;</span>
+</span></span><span style=display:flex><span><span style=color:#f92672>&gt;&gt;&gt;</span> ts <span style=color:#f92672>=</span> thorwstop()
+</span></span><span style=display:flex><span><span style=color:#f92672>&gt;&gt;&gt;</span> ts<span style=color:#f92672>.</span>next()
+</span></span><span style=display:flex><span><span style=color:#ae81ff>0</span>
+</span></span><span style=display:flex><span><span style=color:#f92672>&gt;&gt;&gt;</span> ts<span style=color:#f92672>.</span>next()
+</span></span><span style=display:flex><span><span style=color:#ae81ff>1</span>
+</span></span><span style=display:flex><span><span style=color:#f92672>&gt;&gt;&gt;</span> ts<span style=color:#f92672>.</span>next()
+</span></span><span style=display:flex><span><span style=color:#ae81ff>2</span>
+</span></span><span style=display:flex><span><span style=color:#f92672>&gt;&gt;&gt;</span> ts<span style=color:#f92672>.</span>next()
+</span></span><span style=display:flex><span>Traceback (most recent call last):
+</span></span><span style=display:flex><span>  File <span style=color:#e6db74>&#34;&#34;</span>, line <span style=color:#ae81ff>1</span>, <span style=color:#f92672>in</span> 
+</span></span><span style=display:flex><span><span style=color:#a6e22e>StopIteration</span>
+</span></span><span style=display:flex><span><span style=color:#f92672>&gt;&gt;&gt;</span> 
+</span></span></code></pre></div><p>yield最大的用处的就要提供一个值的时候，不必事前得到全部元素，这样的好处不言而喻，省内存，效率高。这看起来和迭代器有些类似，但是要明确两点：</p><ol><li>迭代器必须要知道下一个迭代的对象是谁，也就是迭代的是一个已经知道的值</li><li>yield每次返回的可以是我们不知道的值，这个值可能是通过某个函数计算得出的</li></ol><p>现在有这么一个应用场景：现在正在写一个股票软件，要获取某一只股票实时状态，涨了多少，跌了多少。这都是无法事先知道的，要通过函数实时获取，然后绘制的一个图上。</p><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-python data-lang=python><span style=display:flex><span><span style=color:#f92672>&gt;&gt;&gt;</span> <span style=color:#f92672>from</span> random <span style=color:#f92672>import</span> randint
+</span></span><span style=display:flex><span><span style=color:#f92672>&gt;&gt;&gt;</span> <span style=color:#66d9ef>def</span> <span style=color:#a6e22e>get_info</span>():
+</span></span><span style=display:flex><span><span style=color:#f92672>...</span>     <span style=color:#66d9ef>while</span> <span style=color:#66d9ef>True</span>:
+</span></span><span style=display:flex><span><span style=color:#f92672>...</span>         a <span style=color:#f92672>=</span> randint(<span style=color:#ae81ff>0</span>, <span style=color:#ae81ff>100</span>)
+</span></span><span style=display:flex><span><span style=color:#f92672>...</span>         <span style=color:#66d9ef>yield</span> a
+</span></span><span style=display:flex><span><span style=color:#f92672>...</span> 
+</span></span><span style=display:flex><span><span style=color:#f92672>&gt;&gt;&gt;</span> <span style=color:#66d9ef>def</span> <span style=color:#a6e22e>plot</span>(values):
+</span></span><span style=display:flex><span><span style=color:#f92672>...</span>     <span style=color:#66d9ef>for</span> value <span style=color:#f92672>in</span> values:
+</span></span><span style=display:flex><span><span style=color:#f92672>...</span>         value <span style=color:#f92672>=</span> str(value) <span style=color:#f92672>+</span> <span style=color:#e6db74>&#34;%&#34;</span>
+</span></span><span style=display:flex><span><span style=color:#f92672>...</span>         <span style=color:#66d9ef>yield</span> value
+</span></span><span style=display:flex><span><span style=color:#f92672>...</span> 
+</span></span><span style=display:flex><span><span style=color:#f92672>&gt;&gt;&gt;</span> p <span style=color:#f92672>=</span> plot(get_info())
+</span></span><span style=display:flex><span><span style=color:#f92672>&gt;&gt;&gt;</span> p<span style=color:#f92672>.</span>next()
+</span></span><span style=display:flex><span><span style=color:#e6db74>&#39;88%&#39;</span>
+</span></span><span style=display:flex><span><span style=color:#f92672>&gt;&gt;&gt;</span> p<span style=color:#f92672>.</span>next()
+</span></span><span style=display:flex><span><span style=color:#e6db74>&#39;61%&#39;</span>
+</span></span><span style=display:flex><span><span style=color:#f92672>&gt;&gt;&gt;</span> p<span style=color:#f92672>.</span>next()
+</span></span><span style=display:flex><span><span style=color:#e6db74>&#39;0%&#39;</span>
+</span></span><span style=display:flex><span><span style=color:#f92672>&gt;&gt;&gt;</span> p<span style=color:#f92672>.</span>next()
+</span></span><span style=display:flex><span><span style=color:#e6db74>&#39;7%&#39;</span>
+</span></span><span style=display:flex><span><span style=color:#f92672>&gt;&gt;&gt;</span> p<span style=color:#f92672>.</span>next()
+</span></span><span style=display:flex><span><span style=color:#e6db74>&#39;6%&#39;</span>
+</span></span><span style=display:flex><span><span style=color:#f92672>&gt;&gt;&gt;</span> p<span style=color:#f92672>.</span>next()
+</span></span><span style=display:flex><span><span style=color:#e6db74>&#39;19%&#39;</span>
+</span></span><span style=display:flex><span><span style=color:#f92672>&gt;&gt;&gt;</span>
+</span></span></code></pre></div><p>yield不仅能传出也可以传入，程序也是停在yield出等待参数传入，使用send方法可以传入：</p><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-python data-lang=python><span style=display:flex><span><span style=color:#f92672>&gt;&gt;&gt;</span> <span style=color:#66d9ef>def</span> <span style=color:#a6e22e>send_gen</span>():
+</span></span><span style=display:flex><span><span style=color:#f92672>...</span>     <span style=color:#66d9ef>while</span> <span style=color:#66d9ef>True</span>:
+</span></span><span style=display:flex><span><span style=color:#f92672>...</span>         str <span style=color:#f92672>=</span> (<span style=color:#66d9ef>yield</span>)
+</span></span><span style=display:flex><span><span style=color:#f92672>...</span>         print str
+</span></span><span style=display:flex><span><span style=color:#f92672>...</span> 
+</span></span><span style=display:flex><span><span style=color:#f92672>&gt;&gt;&gt;</span> sg <span style=color:#f92672>=</span> send_gen()
+</span></span><span style=display:flex><span><span style=color:#f92672>&gt;&gt;&gt;</span> sg<span style=color:#f92672>.</span>next()
+</span></span><span style=display:flex><span><span style=color:#f92672>&gt;&gt;&gt;</span> sg<span style=color:#f92672>.</span>send(<span style=color:#e6db74>&#34;hello&#34;</span>)
+</span></span><span style=display:flex><span>hello
+</span></span><span style=display:flex><span><span style=color:#f92672>&gt;&gt;&gt;</span> sg<span style=color:#f92672>.</span>send(<span style=color:#e6db74>&#34;python&#34;</span>)
+</span></span><span style=display:flex><span>python
+</span></span><span style=display:flex><span><span style=color:#f92672>&gt;&gt;&gt;</span> sg<span style=color:#f92672>.</span>send(<span style=color:#e6db74>&#34;generator&#34;</span>)
+</span></span><span style=display:flex><span>generator
+</span></span><span style=display:flex><span><span style=color:#f92672>&gt;&gt;&gt;</span> 
+</span></span></code></pre></div><blockquote><p>send机制和next一样，但是yield将编程能够返回的传入的值。因而，这个函数可以根据客服端代码来改变行为。同时还添加了throw和close两个函数，以完成该行为。它们将向生成器抛出一个错误：</p></blockquote><ul><li>throw允许客户端代码传入要抛出的任何类型的异常</li><li>close的工作方式是相同的，但是会抛出一个特定的GeneratorExit</li></ul><p>一个生成器模版应该由try、except、finally组成：</p><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-python data-lang=python><span style=display:flex><span><span style=color:#f92672>&gt;&gt;&gt;</span> <span style=color:#66d9ef>def</span> <span style=color:#a6e22e>fuck_generator</span>():
+</span></span><span style=display:flex><span><span style=color:#f92672>...</span>     <span style=color:#66d9ef>try</span>:
+</span></span><span style=display:flex><span><span style=color:#f92672>...</span>         i <span style=color:#f92672>=</span> <span style=color:#ae81ff>0</span>
+</span></span><span style=display:flex><span><span style=color:#f92672>...</span>         <span style=color:#66d9ef>while</span> <span style=color:#66d9ef>True</span>:
+</span></span><span style=display:flex><span><span style=color:#f92672>...</span>             <span style=color:#66d9ef>yield</span> <span style=color:#e6db74>&#34;fuck </span><span style=color:#e6db74>{0}</span><span style=color:#e6db74>&#34;</span><span style=color:#f92672>.</span>format(i)
+</span></span><span style=display:flex><span><span style=color:#f92672>...</span>             i <span style=color:#f92672>+=</span> <span style=color:#ae81ff>1</span>
+</span></span><span style=display:flex><span><span style=color:#f92672>...</span>     <span style=color:#66d9ef>except</span> <span style=color:#a6e22e>ValueError</span>:
+</span></span><span style=display:flex><span><span style=color:#f92672>...</span>         <span style=color:#66d9ef>yield</span> <span style=color:#e6db74>&#34;catch your error&#34;</span>
+</span></span><span style=display:flex><span><span style=color:#f92672>...</span>     <span style=color:#66d9ef>finally</span>:
+</span></span><span style=display:flex><span><span style=color:#f92672>...</span>         print <span style=color:#e6db74>&#34;fuck everthing, bye-bye&#34;</span>
+</span></span><span style=display:flex><span><span style=color:#f92672>...</span> 
+</span></span><span style=display:flex><span><span style=color:#f92672>&gt;&gt;&gt;</span> gen <span style=color:#f92672>=</span> fuck_generator()
+</span></span><span style=display:flex><span><span style=color:#f92672>&gt;&gt;&gt;</span> gen<span style=color:#f92672>.</span>next()
+</span></span><span style=display:flex><span><span style=color:#e6db74>&#39;fuck 0&#39;</span>
+</span></span><span style=display:flex><span><span style=color:#f92672>&gt;&gt;&gt;</span> gen<span style=color:#f92672>.</span>next()
+</span></span><span style=display:flex><span><span style=color:#e6db74>&#39;fuck 1&#39;</span>
+</span></span><span style=display:flex><span><span style=color:#f92672>&gt;&gt;&gt;</span> gen<span style=color:#f92672>.</span>next()
+</span></span><span style=display:flex><span><span style=color:#e6db74>&#39;fuck 2&#39;</span>
+</span></span><span style=display:flex><span><span style=color:#f92672>&gt;&gt;&gt;</span> gen<span style=color:#f92672>.</span>throw(<span style=color:#a6e22e>ValueError</span>(<span style=color:#e6db74>&#34;fuck, fuck, fuck&#34;</span>))
+</span></span><span style=display:flex><span><span style=color:#e6db74>&#39;catch your error&#39;</span>
+</span></span><span style=display:flex><span><span style=color:#f92672>&gt;&gt;&gt;</span> gen<span style=color:#f92672>.</span>close()
+</span></span><span style=display:flex><span>fuck everthing, bye<span style=color:#f92672>-</span>bye
+</span></span><span style=display:flex><span><span style=color:#f92672>&gt;&gt;&gt;</span> gen<span style=color:#f92672>.</span>next()
+</span></span><span style=display:flex><span>Traceback (most recent call last):
+</span></span><span style=display:flex><span>  File <span style=color:#e6db74>&#34;&#34;</span>, line <span style=color:#ae81ff>1</span>, <span style=color:#f92672>in</span> 
+</span></span><span style=display:flex><span><span style=color:#a6e22e>StopIteration</span>
+</span></span><span style=display:flex><span><span style=color:#f92672>&gt;&gt;&gt;</span> 
+</span></span></code></pre></div><hr><h3 id=协同程序>协同程序</h3><p>没看懂</p><hr><h3 id=生成器表达式>生成器表达式</h3><p>生成器表达式就是用列表推导的语法来替代yield，把[]替换成()。</p><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-python data-lang=python><span style=display:flex><span><span style=color:#f92672>&gt;&gt;&gt;</span> iter <span style=color:#f92672>=</span> (i <span style=color:#66d9ef>for</span> i <span style=color:#f92672>in</span> range(<span style=color:#ae81ff>10</span>) <span style=color:#66d9ef>if</span> i <span style=color:#f92672>%</span> <span style=color:#ae81ff>2</span> <span style=color:#f92672>==</span> <span style=color:#ae81ff>0</span>)
+</span></span><span style=display:flex><span><span style=color:#f92672>&gt;&gt;&gt;</span> iter<span style=color:#f92672>.</span>next()
+</span></span><span style=display:flex><span><span style=color:#ae81ff>0</span>
+</span></span><span style=display:flex><span><span style=color:#f92672>&gt;&gt;&gt;</span> iter<span style=color:#f92672>.</span>next()
+</span></span><span style=display:flex><span><span style=color:#ae81ff>2</span>
+</span></span><span style=display:flex><span><span style=color:#f92672>&gt;&gt;&gt;</span> iter<span style=color:#f92672>.</span>next()
+</span></span><span style=display:flex><span><span style=color:#ae81ff>4</span>
+</span></span><span style=display:flex><span><span style=color:#f92672>&gt;&gt;&gt;</span> iter<span style=color:#f92672>.</span>next()
+</span></span><span style=display:flex><span><span style=color:#ae81ff>6</span>
+</span></span><span style=display:flex><span><span style=color:#f92672>&gt;&gt;&gt;</span> iter<span style=color:#f92672>.</span>next()
+</span></span><span style=display:flex><span><span style=color:#ae81ff>8</span>
+</span></span><span style=display:flex><span><span style=color:#f92672>&gt;&gt;&gt;</span> iter<span style=color:#f92672>.</span>next()
+</span></span><span style=display:flex><span>Traceback (most recent call last):
+</span></span><span style=display:flex><span>  File <span style=color:#e6db74>&#34;&#34;</span>, line <span style=color:#ae81ff>1</span>, <span style=color:#f92672>in</span> 
+</span></span><span style=display:flex><span><span style=color:#a6e22e>StopIteration</span>
+</span></span><span style=display:flex><span><span style=color:#f92672>&gt;&gt;&gt;</span> 
+</span></span></code></pre></div><p>对于创建简单的生成器，使用生成器表达式，可以减少代码量。</p><hr><h3 id=itertools模块>itertools模块</h3><h4 id=islice窗口迭代器>islice：窗口迭代器</h4><p>返回一个子序列的迭代器，超出范围不执行。</p><blockquote><p><strong>itertools.islice(iterable, [start,] stop[, step])</strong></p></blockquote><ul><li>iterable一个可迭代对象</li><li>start开始位置</li><li>stop结束位置</li><li>step步长</li></ul><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-python data-lang=python><span style=display:flex><span><span style=color:#f92672>&gt;&gt;&gt;</span> <span style=color:#f92672>from</span> itertools <span style=color:#f92672>import</span> islice
+</span></span><span style=display:flex><span><span style=color:#f92672>&gt;&gt;&gt;</span> <span style=color:#66d9ef>def</span> <span style=color:#a6e22e>fuck_by_step</span>():
+</span></span><span style=display:flex><span><span style=color:#f92672>...</span>   str <span style=color:#f92672>=</span> <span style=color:#e6db74>&#34;fuck&#34;</span>
+</span></span><span style=display:flex><span><span style=color:#f92672>...</span>   <span style=color:#66d9ef>for</span> c <span style=color:#f92672>in</span> islice(str, <span style=color:#ae81ff>1</span>, <span style=color:#66d9ef>None</span>):
+</span></span><span style=display:flex><span><span style=color:#f92672>...</span>     <span style=color:#66d9ef>yield</span> c
+</span></span><span style=display:flex><span><span style=color:#f92672>...</span> 
+</span></span><span style=display:flex><span><span style=color:#f92672>&gt;&gt;&gt;</span> fuck <span style=color:#f92672>=</span> fuck_by_step()
+</span></span><span style=display:flex><span><span style=color:#f92672>&gt;&gt;&gt;</span> fuck<span style=color:#f92672>.</span>next()
+</span></span><span style=display:flex><span><span style=color:#e6db74>&#39;u&#39;</span>
+</span></span><span style=display:flex><span><span style=color:#f92672>&gt;&gt;&gt;</span> fuck<span style=color:#f92672>.</span>next()
+</span></span><span style=display:flex><span><span style=color:#e6db74>&#39;c&#39;</span>
+</span></span><span style=display:flex><span><span style=color:#f92672>&gt;&gt;&gt;</span> fuck<span style=color:#f92672>.</span>next()
+</span></span><span style=display:flex><span><span style=color:#e6db74>&#39;k&#39;</span>
+</span></span><span style=display:flex><span><span style=color:#f92672>&gt;&gt;&gt;</span> fuck<span style=color:#f92672>.</span>next()
+</span></span><span style=display:flex><span>Traceback (most recent call last):
+</span></span><span style=display:flex><span>  File <span style=color:#e6db74>&#34;&#34;</span>, line <span style=color:#ae81ff>1</span>, <span style=color:#f92672>in</span> 
+</span></span><span style=display:flex><span><span style=color:#a6e22e>StopIteration</span>
+</span></span><span style=display:flex><span><span style=color:#f92672>&gt;&gt;&gt;</span> 
+</span></span></code></pre></div><p>islice函数就是从特定位置开始迭代，可以指定结束位置，范围为[), 可以指定步长。</p><h4 id=tee-往返式的迭代器>tee： 往返式的迭代器</h4><p>书中的例子，不能清楚表示tee的作用，有点看不懂的感觉。其实就是tee可以返回同一个迭代对象的多个迭代器，默认的2个。</p><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-python data-lang=python><span style=display:flex><span><span style=color:#f92672>&gt;&gt;&gt;</span> <span style=color:#f92672>from</span> itertools <span style=color:#f92672>import</span> tee
+</span></span><span style=display:flex><span><span style=color:#f92672>&gt;&gt;&gt;</span> iter_fuck <span style=color:#f92672>=</span> [<span style=color:#ae81ff>1</span>, <span style=color:#ae81ff>2</span>, <span style=color:#ae81ff>3</span>, <span style=color:#ae81ff>4</span>]
+</span></span><span style=display:flex><span><span style=color:#f92672>&gt;&gt;&gt;</span> fuck_a, fuck_b <span style=color:#f92672>=</span> tee(iter_fuck)
+</span></span><span style=display:flex><span><span style=color:#f92672>&gt;&gt;&gt;</span> fuck_a<span style=color:#f92672>.</span>next()
+</span></span><span style=display:flex><span><span style=color:#ae81ff>1</span>
+</span></span><span style=display:flex><span><span style=color:#f92672>&gt;&gt;&gt;</span> fuck_a<span style=color:#f92672>.</span>next()
+</span></span><span style=display:flex><span><span style=color:#ae81ff>2</span>
+</span></span><span style=display:flex><span><span style=color:#f92672>&gt;&gt;&gt;</span> fuck_a<span style=color:#f92672>.</span>next()
+</span></span><span style=display:flex><span><span style=color:#ae81ff>3</span>
+</span></span><span style=display:flex><span><span style=color:#f92672>&gt;&gt;&gt;</span> fuck_a<span style=color:#f92672>.</span>next()
+</span></span><span style=display:flex><span><span style=color:#ae81ff>4</span>
+</span></span><span style=display:flex><span><span style=color:#f92672>&gt;&gt;&gt;</span> fuck_a<span style=color:#f92672>.</span>next()
+</span></span><span style=display:flex><span>Traceback (most recent call last):
+</span></span><span style=display:flex><span>  File <span style=color:#e6db74>&#34;&#34;</span>, line <span style=color:#ae81ff>1</span>, <span style=color:#f92672>in</span> 
+</span></span><span style=display:flex><span><span style=color:#a6e22e>StopIteration</span>
+</span></span><span style=display:flex><span><span style=color:#f92672>&gt;&gt;&gt;</span> fuck_b<span style=color:#f92672>.</span>next()
+</span></span><span style=display:flex><span><span style=color:#ae81ff>1</span>
+</span></span><span style=display:flex><span><span style=color:#f92672>&gt;&gt;&gt;</span> fuck_b<span style=color:#f92672>.</span>next()
+</span></span><span style=display:flex><span><span style=color:#ae81ff>2</span>
+</span></span><span style=display:flex><span><span style=color:#f92672>&gt;&gt;&gt;</span> fuck_b<span style=color:#f92672>.</span>next()
+</span></span><span style=display:flex><span><span style=color:#ae81ff>3</span>
+</span></span><span style=display:flex><span><span style=color:#f92672>&gt;&gt;&gt;</span> fuck_b<span style=color:#f92672>.</span>next()
+</span></span><span style=display:flex><span><span style=color:#ae81ff>4</span>
+</span></span><span style=display:flex><span><span style=color:#f92672>&gt;&gt;&gt;</span> fuck_b<span style=color:#f92672>.</span>next()
+</span></span><span style=display:flex><span>Traceback (most recent call last):
+</span></span><span style=display:flex><span>  File <span style=color:#e6db74>&#34;&#34;</span>, line <span style=color:#ae81ff>1</span>, <span style=color:#f92672>in</span> 
+</span></span><span style=display:flex><span><span style=color:#a6e22e>StopIteration</span>
+</span></span><span style=display:flex><span><span style=color:#f92672>&gt;&gt;&gt;</span> 
+</span></span></code></pre></div><hr><h4 id=groupbyuniq迭代器>groupby：uniq迭代器</h4><p>groupby是对可迭代对象重复元素进行分组。</p><blockquote><p>itertools.groupby(iterable[, key])</p></blockquote><ul><li>iterable一个可迭代的对象</li><li>key处理函数，默认为标识处理</li></ul><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-python data-lang=python><span style=display:flex><span><span style=color:#f92672>&gt;&gt;&gt;</span><span style=color:#f92672>from</span> itertools <span style=color:#f92672>import</span> groupby
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span><span style=color:#f92672>&gt;&gt;&gt;</span><span style=color:#66d9ef>def</span> <span style=color:#a6e22e>compress</span>(data):
+</span></span><span style=display:flex><span><span style=color:#f92672>...</span>    <span style=color:#66d9ef>return</span> ((len(list(group)), name) <span style=color:#66d9ef>for</span> name, group <span style=color:#f92672>in</span> groupby(data))
+</span></span><span style=display:flex><span><span style=color:#f92672>...</span>
+</span></span><span style=display:flex><span><span style=color:#f92672>&gt;&gt;&gt;</span><span style=color:#66d9ef>def</span> <span style=color:#a6e22e>combainator</span>(iter_data):
+</span></span><span style=display:flex><span><span style=color:#f92672>...</span>    string <span style=color:#f92672>=</span> <span style=color:#e6db74>&#34;&#34;</span>
+</span></span><span style=display:flex><span><span style=color:#f92672>...</span>    <span style=color:#66d9ef>for</span> t <span style=color:#f92672>in</span> iter_data:
+</span></span><span style=display:flex><span><span style=color:#f92672>...</span>        string <span style=color:#f92672>=</span> string <span style=color:#f92672>+</span> str(t[<span style=color:#ae81ff>0</span>]) <span style=color:#f92672>+</span> str(t[<span style=color:#ae81ff>1</span>])
+</span></span><span style=display:flex><span><span style=color:#f92672>...</span>    <span style=color:#66d9ef>return</span> string
+</span></span><span style=display:flex><span><span style=color:#f92672>...</span>
+</span></span><span style=display:flex><span><span style=color:#f92672>&gt;&gt;&gt;</span>raw_str <span style=color:#f92672>=</span> <span style=color:#e6db74>&#34;get uuuuuuuuuuuuup&#34;</span>
+</span></span><span style=display:flex><span><span style=color:#f92672>&gt;&gt;&gt;</span>com_str <span style=color:#f92672>=</span> combainator(compress(raw_str))
+</span></span><span style=display:flex><span><span style=color:#f92672>&gt;&gt;&gt;</span>print com_str
+</span></span><span style=display:flex><span><span style=color:#ae81ff>1</span>g1e1t1 <span style=color:#ae81ff>13</span>u1p
+</span></span><span style=display:flex><span><span style=color:#f92672>&gt;&gt;&gt;</span>
+</span></span></code></pre></div><h2 id=装饰器>装饰器</h2><p>书缺一页。。。。</p><h3 id=231-如何编写装饰器>2.3.1 如何编写装饰器</h3><p>无参数的通用模式：</p><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-python data-lang=python><span style=display:flex><span><span style=color:#66d9ef>def</span> <span style=color:#a6e22e>mydecorator</span>(function):
+</span></span><span style=display:flex><span>    <span style=color:#66d9ef>def</span> <span style=color:#a6e22e>_mydecorator</span>(<span style=color:#f92672>**</span>args, <span style=color:#f92672>**</span>kw):
+</span></span><span style=display:flex><span>        <span style=color:#75715e>#do something</span>
+</span></span><span style=display:flex><span>     
+</span></span><span style=display:flex><span>        res <span style=color:#f92672>=</span> function(<span style=color:#f92672>*</span>args, <span style=color:#f92672>**</span>kw)
+</span></span><span style=display:flex><span>        
+</span></span><span style=display:flex><span>        <span style=color:#75715e>#do something</span>
+</span></span><span style=display:flex><span>        <span style=color:#66d9ef>return</span> res
+</span></span><span style=display:flex><span>    <span style=color:#66d9ef>return</span> _mydecorator
+</span></span></code></pre></div><p>有参数的通用模式：</p><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-python data-lang=python><span style=display:flex><span><span style=color:#66d9ef>def</span> <span style=color:#a6e22e>mydecorator</span>(arg1, arg2):
+</span></span><span style=display:flex><span>    <span style=color:#66d9ef>def</span> <span style=color:#a6e22e>_mydecorator</span>(function):
+</span></span><span style=display:flex><span>        <span style=color:#66d9ef>def</span> <span style=color:#a6e22e>__mydecorator</span>(<span style=color:#f92672>*</span>args, <span style=color:#f92672>**</span>kw)
+</span></span><span style=display:flex><span>            <span style=color:#75715e>#do something</span>
+</span></span><span style=display:flex><span>     
+</span></span><span style=display:flex><span>            res <span style=color:#f92672>=</span> function(<span style=color:#f92672>*</span>args, <span style=color:#f92672>**</span>kw)
+</span></span><span style=display:flex><span>        
+</span></span><span style=display:flex><span>            <span style=color:#75715e>#do something</span>
+</span></span><span style=display:flex><span>            <span style=color:#66d9ef>return</span> res
+</span></span><span style=display:flex><span>        <span style=color:#66d9ef>return</span>  __mydecorator
+</span></span><span style=display:flex><span>    <span style=color:#66d9ef>return</span> _mydecorator
+</span></span></code></pre></div><h4 id=参数检查>参数检查</h4><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-python data-lang=python><span style=display:flex><span><span style=color:#f92672>from</span> itertools <span style=color:#f92672>import</span> izip
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span><span style=color:#66d9ef>def</span> <span style=color:#a6e22e>check_args</span>(in_<span style=color:#f92672>=</span>(), out<span style=color:#f92672>=</span>(type(<span style=color:#66d9ef>None</span>),)):
+</span></span><span style=display:flex><span>    <span style=color:#66d9ef>def</span> <span style=color:#a6e22e>_check_args</span>(function):
+</span></span><span style=display:flex><span>        <span style=color:#66d9ef>def</span> <span style=color:#a6e22e>_check_in</span>(in_args):
+</span></span><span style=display:flex><span>            chk_in_args <span style=color:#f92672>=</span> in_args
+</span></span><span style=display:flex><span>            <span style=color:#66d9ef>if</span> len(chk_in_args) <span style=color:#f92672>!=</span> len(in_):
+</span></span><span style=display:flex><span>                <span style=color:#66d9ef>raise</span>  <span style=color:#a6e22e>TypeError</span>(<span style=color:#e6db74>&#34;argument(in) count is wrong&#34;</span>)
+</span></span><span style=display:flex><span>            
+</span></span><span style=display:flex><span>            <span style=color:#66d9ef>for</span> type1, type2 <span style=color:#f92672>in</span> izip(chk_in_args, in_) :
+</span></span><span style=display:flex><span>                <span style=color:#66d9ef>if</span> type(type1) <span style=color:#f92672>!=</span> type2:
+</span></span><span style=display:flex><span>                    <span style=color:#66d9ef>raise</span> <span style=color:#a6e22e>TypeError</span>(<span style=color:#e6db74>&#34;argument&#39;s(in) type is&#39;t matched&#34;</span>)
+</span></span><span style=display:flex><span>        
+</span></span><span style=display:flex><span>        <span style=color:#66d9ef>def</span> <span style=color:#a6e22e>_chech_out</span>(out_args):
+</span></span><span style=display:flex><span>            <span style=color:#66d9ef>if</span> type(out_args) <span style=color:#f92672>==</span> tuple:
+</span></span><span style=display:flex><span>                <span style=color:#66d9ef>if</span> len(out_args) <span style=color:#f92672>!=</span> len(out):
+</span></span><span style=display:flex><span>                    <span style=color:#66d9ef>raise</span> <span style=color:#a6e22e>TypeError</span>(<span style=color:#e6db74>&#34;argument(out) count is wrong&#34;</span>)
+</span></span><span style=display:flex><span>            <span style=color:#66d9ef>else</span>:
+</span></span><span style=display:flex><span>                <span style=color:#66d9ef>if</span> len(out) <span style=color:#f92672>!=</span> <span style=color:#ae81ff>1</span>:
+</span></span><span style=display:flex><span>                    <span style=color:#66d9ef>raise</span> <span style=color:#a6e22e>TypeError</span>(<span style=color:#e6db74>&#34;argument(out) count is wrong&#34;</span>)
+</span></span><span style=display:flex><span>                <span style=color:#66d9ef>if</span> <span style=color:#f92672>not</span> type(out_args) <span style=color:#f92672>in</span> out:
+</span></span><span style=display:flex><span>                    <span style=color:#66d9ef>raise</span> <span style=color:#a6e22e>TypeError</span>(<span style=color:#e6db74>&#34;argument&#39;s(out) type is&#39;t matched&#34;</span>)        
+</span></span><span style=display:flex><span>        <span style=color:#66d9ef>def</span> <span style=color:#a6e22e>__chech_args</span>(<span style=color:#f92672>*</span>args):
+</span></span><span style=display:flex><span>            
+</span></span><span style=display:flex><span>            _check_in(args)
+</span></span><span style=display:flex><span>            
+</span></span><span style=display:flex><span>            res <span style=color:#f92672>=</span> function(<span style=color:#f92672>*</span>args)
+</span></span><span style=display:flex><span>            
+</span></span><span style=display:flex><span>            _chech_out(res)
+</span></span><span style=display:flex><span>            
+</span></span><span style=display:flex><span>            <span style=color:#66d9ef>return</span> res
+</span></span><span style=display:flex><span>        <span style=color:#66d9ef>return</span> __chech_args
+</span></span><span style=display:flex><span>    <span style=color:#66d9ef>return</span> _check_args
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span><span style=color:#a6e22e>@check_args</span>((int, int), )
+</span></span><span style=display:flex><span><span style=color:#66d9ef>def</span> <span style=color:#a6e22e>meth1</span>(i, j):
+</span></span><span style=display:flex><span>    print i,j
+</span></span><span style=display:flex><span> 
+</span></span><span style=display:flex><span><span style=color:#a6e22e>@check_args</span>((str, list), (dict, ))    
+</span></span><span style=display:flex><span><span style=color:#66d9ef>def</span> <span style=color:#a6e22e>meth2</span>(v_str, v_list):
+</span></span><span style=display:flex><span>    <span style=color:#66d9ef>return</span> {v_str : <span style=color:#ae81ff>1</span>}
+</span></span><span style=display:flex><span><span style=color:#66d9ef>if</span> __name__ <span style=color:#f92672>==</span> <span style=color:#e6db74>&#34;__main__&#34;</span>:
+</span></span><span style=display:flex><span>    
+</span></span><span style=display:flex><span>    meth1(<span style=color:#ae81ff>1</span>, <span style=color:#ae81ff>1</span>)
+</span></span><span style=display:flex><span>    meth2(<span style=color:#e6db74>&#34;1&#34;</span>, [<span style=color:#ae81ff>1</span>,<span style=color:#ae81ff>2</span>,<span style=color:#ae81ff>3</span>])
+</span></span></code></pre></div><h4 id=缓存>缓存</h4><p>没看懂</p><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-python data-lang=python><span style=display:flex><span><span style=color:#f92672>import</span> time
+</span></span><span style=display:flex><span><span style=color:#f92672>import</span> hashlib
+</span></span><span style=display:flex><span><span style=color:#f92672>import</span> pickle
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>cache <span style=color:#f92672>=</span> {}
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span><span style=color:#66d9ef>def</span> <span style=color:#a6e22e>is_obssolete</span>(entry, duration):
+</span></span><span style=display:flex><span>    <span style=color:#66d9ef>return</span> time<span style=color:#f92672>.</span>time() <span style=color:#f92672>-</span> entry[<span style=color:#e6db74>&#34;time&#34;</span>] <span style=color:#f92672>&gt;</span> duration
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span><span style=color:#66d9ef>def</span> <span style=color:#a6e22e>compute_key</span>(function, args, kw):
+</span></span><span style=display:flex><span>    key <span style=color:#f92672>=</span> pickle<span style=color:#f92672>.</span>dumps(function<span style=color:#f92672>.</span>func_name, args, kw)
+</span></span><span style=display:flex><span>    <span style=color:#66d9ef>return</span> hashlib<span style=color:#f92672>.</span>sha1(key)<span style=color:#f92672>.</span>hexdigest()
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span><span style=color:#66d9ef>def</span> <span style=color:#a6e22e>memoize</span>(duration<span style=color:#f92672>=</span><span style=color:#ae81ff>10</span>):
+</span></span><span style=display:flex><span>    <span style=color:#66d9ef>def</span> <span style=color:#a6e22e>_memoize</span>(function):
+</span></span><span style=display:flex><span>        <span style=color:#66d9ef>def</span> <span style=color:#a6e22e>__memoize</span>(<span style=color:#f92672>*</span>args, <span style=color:#f92672>**</span>kw):
+</span></span><span style=display:flex><span>            key <span style=color:#f92672>=</span> compute_key(function, args, kw)
+</span></span><span style=display:flex><span>            
+</span></span><span style=display:flex><span>            <span style=color:#66d9ef>if</span>(key <span style=color:#f92672>in</span> cache <span style=color:#f92672>and</span> <span style=color:#f92672>not</span> is_obssolete(cache[key], duration)):
+</span></span><span style=display:flex><span>                print <span style=color:#e6db74>&#34;we got a winner&#34;</span>
+</span></span><span style=display:flex><span>                <span style=color:#66d9ef>return</span> cache[key][<span style=color:#e6db74>&#34;value&#34;</span>]
+</span></span><span style=display:flex><span>            
+</span></span><span style=display:flex><span>            result <span style=color:#f92672>=</span>  function(<span style=color:#f92672>*</span>args, <span style=color:#f92672>**</span>kw)
+</span></span><span style=display:flex><span>        
+</span></span><span style=display:flex><span>            cache[key] <span style=color:#f92672>=</span> {<span style=color:#e6db74>&#34;value&#34;</span>:result,
+</span></span><span style=display:flex><span>                          <span style=color:#e6db74>&#34;time&#34;</span>:time<span style=color:#f92672>.</span>time()}
+</span></span><span style=display:flex><span>            
+</span></span><span style=display:flex><span>            <span style=color:#66d9ef>return</span> result
+</span></span><span style=display:flex><span>        <span style=color:#66d9ef>return</span> __memoize
+</span></span><span style=display:flex><span>    <span style=color:#66d9ef>return</span> _memoize
+</span></span></code></pre></div><h4 id=代理>代理</h4><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-python data-lang=python><span style=display:flex><span><span style=color:#75715e>#!/usr/bin/env python</span>
+</span></span><span style=display:flex><span><span style=color:#75715e># -*- coding: UTF-8 -*-</span>
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span><span style=color:#66d9ef>class</span> <span style=color:#a6e22e>User</span>(object):
+</span></span><span style=display:flex><span>    <span style=color:#66d9ef>def</span> __init__(self, roles):
+</span></span><span style=display:flex><span>        self<span style=color:#f92672>.</span>roles <span style=color:#f92672>=</span> roles
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span><span style=color:#66d9ef>class</span> <span style=color:#a6e22e>Unauthorized</span>(<span style=color:#a6e22e>Exception</span>):
+</span></span><span style=display:flex><span>    <span style=color:#66d9ef>pass</span>
+</span></span><span style=display:flex><span>        
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span><span style=color:#66d9ef>def</span> <span style=color:#a6e22e>protect</span>(role):
+</span></span><span style=display:flex><span>    <span style=color:#66d9ef>def</span> <span style=color:#a6e22e>_protect</span>(function):
+</span></span><span style=display:flex><span>        <span style=color:#66d9ef>def</span> <span style=color:#a6e22e>__protect</span>(<span style=color:#f92672>*</span>args, <span style=color:#f92672>**</span>kw):
+</span></span><span style=display:flex><span>            
+</span></span><span style=display:flex><span>            user <span style=color:#f92672>=</span> globals()<span style=color:#f92672>.</span>get(<span style=color:#e6db74>&#34;user&#34;</span>)
+</span></span><span style=display:flex><span>            <span style=color:#66d9ef>if</span> user <span style=color:#f92672>is</span> <span style=color:#66d9ef>None</span> <span style=color:#f92672>or</span> role <span style=color:#f92672>not</span> <span style=color:#f92672>in</span> user<span style=color:#f92672>.</span>roles:
+</span></span><span style=display:flex><span>                <span style=color:#66d9ef>raise</span> Unauthorized(<span style=color:#e6db74>&#34;I won&#39;t tell you&#34;</span>)
+</span></span><span style=display:flex><span>            <span style=color:#66d9ef>return</span> function(<span style=color:#f92672>*</span>args, <span style=color:#f92672>**</span>kw)
+</span></span><span style=display:flex><span>        <span style=color:#66d9ef>return</span> __protect
+</span></span><span style=display:flex><span>    <span style=color:#66d9ef>return</span> _protect        
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span><span style=color:#a6e22e>@protect</span>(<span style=color:#e6db74>&#34;admin&#34;</span>)
+</span></span><span style=display:flex><span><span style=color:#66d9ef>def</span> <span style=color:#a6e22e>premession</span>():
+</span></span><span style=display:flex><span>    print <span style=color:#e6db74>&#34;premession ok&#34;</span>
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span><span style=color:#66d9ef>if</span> __name__ <span style=color:#f92672>==</span> <span style=color:#e6db74>&#39;__main__&#39;</span>:
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>    jack <span style=color:#f92672>=</span> User((<span style=color:#e6db74>&#34;admin&#34;</span>, <span style=color:#e6db74>&#34;user&#34;</span>))
+</span></span><span style=display:flex><span>    bill <span style=color:#f92672>=</span> User((<span style=color:#e6db74>&#34;user&#34;</span>,))
+</span></span></code></pre></div><h4 id=上下文提供者>上下文提供者</h4><p>在函数运行前后执行一些其他的代码，例如：写一个线程安全的程序。</p><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-python data-lang=python><span style=display:flex><span><span style=color:#75715e>#!/usr/bin/env python</span>
+</span></span><span style=display:flex><span><span style=color:#75715e># -*- coding: UTF-8 -*-</span>
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span><span style=color:#f92672>from</span> threading <span style=color:#f92672>import</span> RLock
+</span></span><span style=display:flex><span>lock <span style=color:#f92672>=</span> RLock()
+</span></span><span style=display:flex><span><span style=color:#66d9ef>def</span> <span style=color:#a6e22e>synchronized</span>(function):
+</span></span><span style=display:flex><span>    <span style=color:#66d9ef>def</span> <span style=color:#a6e22e>_synchronized</span>(<span style=color:#f92672>*</span>args, <span style=color:#f92672>**</span>kw):
+</span></span><span style=display:flex><span>        lock<span style=color:#f92672>.</span>acquire()
+</span></span><span style=display:flex><span>        <span style=color:#66d9ef>try</span>:
+</span></span><span style=display:flex><span>            <span style=color:#66d9ef>return</span> function(<span style=color:#f92672>*</span>args, <span style=color:#f92672>**</span>kw)
+</span></span><span style=display:flex><span>        <span style=color:#66d9ef>finally</span>:
+</span></span><span style=display:flex><span>            lock<span style=color:#f92672>.</span>release()
+</span></span><span style=display:flex><span>    <span style=color:#66d9ef>return</span> _synchronized
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span><span style=color:#66d9ef>if</span> __name__ <span style=color:#f92672>==</span> <span style=color:#e6db74>&#39;__main__&#39;</span>:
+</span></span><span style=display:flex><span>    <span style=color:#66d9ef>pass</span>
+</span></span></code></pre></div><hr><h2 id=with-和-contextlib>with 和 contextlib</h2><p>程序中很多地方使用try&mldr;except&mldr;finally来实现异常安全和一些清理代码，应用场景有：</p><blockquote><ul><li>关闭一个文件</li></ul></blockquote><ul><li>释放一个锁</li><li>创建一个烂事的代码补丁</li><li>在特殊的环境中运行受保护的代码</li></ul><p>with语句覆盖和这些场景，可以完美替代try&mldr;except&mldr;finally。</p><p>with协议中依赖的是**__enter__<strong>和</strong>__exit__**两个方法，任何类都一个实现with协议。</p><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-python data-lang=python><span style=display:flex><span><span style=color:#75715e>#!/usr/bin/env python</span>
+</span></span><span style=display:flex><span><span style=color:#75715e># -*- coding: UTF-8 -*-</span>
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span><span style=color:#66d9ef>class</span> <span style=color:#a6e22e>File</span>(object):
+</span></span><span style=display:flex><span>    <span style=color:#66d9ef>def</span> __init__(self, filename, mode):
+</span></span><span style=display:flex><span>        self<span style=color:#f92672>.</span>filename <span style=color:#f92672>=</span> filename
+</span></span><span style=display:flex><span>        self<span style=color:#f92672>.</span>mode <span style=color:#f92672>=</span> mode
+</span></span><span style=display:flex><span>    
+</span></span><span style=display:flex><span>    <span style=color:#66d9ef>def</span> __enter__(self):
+</span></span><span style=display:flex><span>        print <span style=color:#e6db74>&#39;entering this File class&#39;</span>
+</span></span><span style=display:flex><span>        self<span style=color:#f92672>.</span>fd <span style=color:#f92672>=</span> open(self<span style=color:#f92672>.</span>filename, self<span style=color:#f92672>.</span>mode)
+</span></span><span style=display:flex><span>        <span style=color:#66d9ef>return</span> self<span style=color:#f92672>.</span>fd
+</span></span><span style=display:flex><span>    
+</span></span><span style=display:flex><span>    <span style=color:#66d9ef>def</span> __exit__(self, exception_type, 
+</span></span><span style=display:flex><span>                 exception_value, 
+</span></span><span style=display:flex><span>                 exception_traceback):
+</span></span><span style=display:flex><span>        <span style=color:#66d9ef>if</span> exception_type <span style=color:#f92672>is</span> <span style=color:#66d9ef>None</span>:
+</span></span><span style=display:flex><span>            print <span style=color:#e6db74>&#39;without error&#39;</span>
+</span></span><span style=display:flex><span>        <span style=color:#66d9ef>else</span>:
+</span></span><span style=display:flex><span>            print <span style=color:#e6db74>&#34;with a error(</span><span style=color:#e6db74>{0}</span><span style=color:#e6db74>)&#34;</span><span style=color:#f92672>.</span>format(exception_value) 
+</span></span><span style=display:flex><span>            
+</span></span><span style=display:flex><span>        self<span style=color:#f92672>.</span>fd<span style=color:#f92672>.</span>close()
+</span></span><span style=display:flex><span>        print <span style=color:#e6db74>&#39;exiting this File class&#39;</span>
+</span></span></code></pre></div><p>**__enter__<strong>和</strong>__exit__<strong>分别对应进入和退出时候的方法，</strong>__exit__**还可以对异常进行捕捉，和try&mldr;except&mldr;finally的功能一模一样。</p><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-python data-lang=python><span style=display:flex><span><span style=color:#66d9ef>if</span> __name__ <span style=color:#f92672>==</span> <span style=color:#e6db74>&#39;__main__&#39;</span>:
+</span></span><span style=display:flex><span>    <span style=color:#66d9ef>with</span> File(<span style=color:#e6db74>&#34;1.txt&#34;</span>, <span style=color:#e6db74>&#39;r&#39;</span>) <span style=color:#66d9ef>as</span> f:
+</span></span><span style=display:flex><span>        print <span style=color:#e6db74>&#34;Hello World&#34;</span>
+</span></span></code></pre></div><p>输出信息为：</p><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-python data-lang=python><span style=display:flex><span><span style=color:#e6db74>&#39;&#39;&#39;
+</span></span></span><span style=display:flex><span><span style=color:#e6db74>entering this File class
+</span></span></span><span style=display:flex><span><span style=color:#e6db74>Hello World
+</span></span></span><span style=display:flex><span><span style=color:#e6db74>without error
+</span></span></span><span style=display:flex><span><span style=color:#e6db74>exiting this File class
+</span></span></span><span style=display:flex><span><span style=color:#e6db74>&#39;&#39;&#39;</span>
+</span></span></code></pre></div><p>加上异常：</p><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-python data-lang=python><span style=display:flex><span><span style=color:#66d9ef>if</span> __name__ <span style=color:#f92672>==</span> <span style=color:#e6db74>&#39;__main__&#39;</span>:
+</span></span><span style=display:flex><span>    <span style=color:#66d9ef>with</span> File(<span style=color:#e6db74>&#34;1.txt&#34;</span>, <span style=color:#e6db74>&#39;r&#39;</span>) <span style=color:#66d9ef>as</span> f:
+</span></span><span style=display:flex><span>        print <span style=color:#e6db74>&#34;Hello World&#34;</span>
+</span></span><span style=display:flex><span>        <span style=color:#66d9ef>raise</span> <span style=color:#a6e22e>TypeError</span>(<span style=color:#e6db74>&#34;i&#39;m a bug&#34;</span>)
+</span></span></code></pre></div><p>输出信息为：</p><pre tabindex=0><code>&#39;&#39;&#39;
+entering this File class
+Hello World
+with a error(i&#39;m a bug)
+exiting this File class
+Traceback (most recent call last):
+  File &#34;E:\mycode\Python\ѧϰ\src\with.py&#34;, line 28, in 
+    raise TypeError(&#34;i&#39;m a bug&#34;)
+TypeError: i&#39;m a bug
+&#39;&#39;&#39;
+</code></pre><p><strong>as</strong>的值关键字取决于**__enter__**的返回值，例子中也就是打开的文件描述符。</p><h3 id=contextlib模块>contextlib模块</h3><p>标准库中contextlib模块就是用来增强with的上下文管理。其中最有用的是contextmanager，
+这是一个装饰器，被该装饰器修饰的必须是以yield语句分开的**__enter__<strong>和</strong>__exit__<strong>两部分的生成器。
+yield之前的是</strong>__enter__<strong>中的内容，之后是</strong>__exit__**中的内容。</p><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-python data-lang=python><span style=display:flex><span><span style=color:#75715e>#!/usr/bin/env python</span>
+</span></span><span style=display:flex><span><span style=color:#75715e># -*- coding: UTF-8 -*-</span>
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span><span style=color:#f92672>import</span> contextlib
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span><span style=color:#a6e22e>@contextlib</span><span style=color:#f92672>.</span>contextmanager
+</span></span><span style=display:flex><span><span style=color:#66d9ef>def</span> <span style=color:#a6e22e>talk</span>():
+</span></span><span style=display:flex><span>    print <span style=color:#e6db74>&#34;entering&#34;</span>
+</span></span><span style=display:flex><span>    <span style=color:#66d9ef>try</span>:
+</span></span><span style=display:flex><span>        <span style=color:#66d9ef>yield</span> 
+</span></span><span style=display:flex><span>    <span style=color:#66d9ef>except</span> <span style=color:#a6e22e>Exception</span>, e:
+</span></span><span style=display:flex><span>        print e;
+</span></span><span style=display:flex><span>    <span style=color:#66d9ef>finally</span>:
+</span></span><span style=display:flex><span>        print <span style=color:#e6db74>&#34;leaving&#34;</span>
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span><span style=color:#66d9ef>if</span> __name__ <span style=color:#f92672>==</span> <span style=color:#e6db74>&#39;__main__&#39;</span>:
+</span></span><span style=display:flex><span>    <span style=color:#66d9ef>with</span> talk():
+</span></span><span style=display:flex><span>        print <span style=color:#e6db74>&#34;do something.&#34;</span>
+</span></span><span style=display:flex><span>        print <span style=color:#e6db74>&#34;do something..&#34;</span>
+</span></span><span style=display:flex><span>        print <span style=color:#e6db74>&#34;do something...&#34;</span>
+</span></span></code></pre></div><p>输出是：</p><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-python data-lang=python><span style=display:flex><span><span style=color:#e6db74>&#39;&#39;&#39;
+</span></span></span><span style=display:flex><span><span style=color:#e6db74>entering
+</span></span></span><span style=display:flex><span><span style=color:#e6db74>do something.
+</span></span></span><span style=display:flex><span><span style=color:#e6db74>do something..
+</span></span></span><span style=display:flex><span><span style=color:#e6db74>do something...
+</span></span></span><span style=display:flex><span><span style=color:#e6db74>leaving
+</span></span></span><span style=display:flex><span><span style=color:#e6db74>&#39;&#39;&#39;</span>
+</span></span></code></pre></div><p>如果要使用<strong>as</strong>关键字，那么yield要返回一个值，就和**__enter__**的返回值一样。</p><p>在contextlib模块还有closing和nested：
+有些函数或者类不支持with协议，句柄之类的并不会自己关闭，可以使用contextlib模块中的closing方法，自动调用close()方法</p><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-python data-lang=python><span style=display:flex><span><span style=color:#75715e>#!/usr/bin/env python</span>
+</span></span><span style=display:flex><span><span style=color:#75715e># -*- coding: UTF-8 -*-</span>
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span><span style=color:#f92672>import</span> contextlib
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span><span style=color:#66d9ef>class</span> <span style=color:#a6e22e>Work</span>(object):
+</span></span><span style=display:flex><span>    <span style=color:#66d9ef>def</span> __init__(self):
+</span></span><span style=display:flex><span>        print <span style=color:#e6db74>&#34;start to work&#34;</span>
+</span></span><span style=display:flex><span>    <span style=color:#66d9ef>def</span> <span style=color:#a6e22e>close</span>(self):
+</span></span><span style=display:flex><span>        print <span style=color:#e6db74>&#34;close and stop to work&#34;</span>
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span><span style=color:#66d9ef>if</span> __name__ <span style=color:#f92672>==</span> <span style=color:#e6db74>&#39;__main__&#39;</span>:
+</span></span><span style=display:flex><span>    print <span style=color:#e6db74>&#34;没有异常&#34;</span>
+</span></span><span style=display:flex><span>    <span style=color:#66d9ef>with</span> contextlib<span style=color:#f92672>.</span>closing(Work()) <span style=color:#66d9ef>as</span> w:
+</span></span><span style=display:flex><span>        print <span style=color:#e6db74>&#34;working&#34;</span>
+</span></span><span style=display:flex><span>    
+</span></span><span style=display:flex><span>    print <span style=color:#e6db74>&#39;-&#39;</span><span style=color:#f92672>*</span><span style=color:#ae81ff>30</span>
+</span></span><span style=display:flex><span>    print <span style=color:#e6db74>&#34;有异常&#34;</span>
+</span></span><span style=display:flex><span>    <span style=color:#66d9ef>try</span>:
+</span></span><span style=display:flex><span>        <span style=color:#66d9ef>with</span> contextlib<span style=color:#f92672>.</span>closing(Work()) <span style=color:#66d9ef>as</span> w:
+</span></span><span style=display:flex><span>            print <span style=color:#e6db74>&#34;working&#34;</span>
+</span></span><span style=display:flex><span>            <span style=color:#66d9ef>raise</span> <span style=color:#a6e22e>RuntimeError</span>(<span style=color:#e6db74>&#39;error message&#39;</span>)
+</span></span><span style=display:flex><span>    <span style=color:#66d9ef>except</span> <span style=color:#a6e22e>Exception</span>, e:
+</span></span><span style=display:flex><span>        print e
+</span></span></code></pre></div><p>输出为:</p><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-python data-lang=python><span style=display:flex><span><span style=color:#e6db74>&#39;&#39;&#39;
+</span></span></span><span style=display:flex><span><span style=color:#e6db74>没有异常
+</span></span></span><span style=display:flex><span><span style=color:#e6db74>start to work
+</span></span></span><span style=display:flex><span><span style=color:#e6db74>working
+</span></span></span><span style=display:flex><span><span style=color:#e6db74>close and stop to work
+</span></span></span><span style=display:flex><span><span style=color:#e6db74>------------------------------
+</span></span></span><span style=display:flex><span><span style=color:#e6db74>有异常
+</span></span></span><span style=display:flex><span><span style=color:#e6db74>start to work
+</span></span></span><span style=display:flex><span><span style=color:#e6db74>working
+</span></span></span><span style=display:flex><span><span style=color:#e6db74>close and stop to work
+</span></span></span><span style=display:flex><span><span style=color:#e6db74>error message
+</span></span></span><span style=display:flex><span><span style=color:#e6db74>&#39;&#39;&#39;</span>
+</span></span></code></pre></div><p>可以看出无论是否执行成功都会调用close()方法。</p><p>nested的作用是可以同时打开多个with协议的语法。</p><p>在2.7之前：</p><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-python data-lang=python><span style=display:flex><span><span style=color:#66d9ef>with</span> contextlib<span style=color:#f92672>.</span>nested(open(<span style=color:#e6db74>&#39;fileToRead.txt&#39;</span>, <span style=color:#e6db74>&#39;r&#39;</span>),
+</span></span><span style=display:flex><span>                       open(<span style=color:#e6db74>&#39;fileToWrite.txt&#39;</span>, <span style=color:#e6db74>&#39;w&#39;</span>)) <span style=color:#66d9ef>as</span> (reader, writer):
+</span></span><span style=display:flex><span>    writer<span style=color:#f92672>.</span>write(reader<span style=color:#f92672>.</span>read())
+</span></span></code></pre></div><p>在2.7之后可以直接使用：</p><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-python data-lang=python><span style=display:flex><span><span style=color:#66d9ef>with</span> open(<span style=color:#e6db74>&#39;fileToRead.txt&#39;</span>, <span style=color:#e6db74>&#39;r&#39;</span>) <span style=color:#66d9ef>as</span> reader, \
+</span></span><span style=display:flex><span>        open(<span style=color:#e6db74>&#39;fileToWrite.txt&#39;</span>, <span style=color:#e6db74>&#39;w&#39;</span>) <span style=color:#66d9ef>as</span> writer:
+</span></span><span style=display:flex><span>        writer<span style=color:#f92672>.</span>write(reader<span style=color:#f92672>.</span>read())
+</span></span></code></pre></div><h2 id=子类化内建类型>子类化内建类型</h2><p>内建类型object是所有内建类型的公共祖先。</p><p>当需要实现一个与内建类型十分类似的类时，可以使用例如<strong>list、tuple、dict</strong>这样的内建类型进行子类化。</p><p>可以继承父类中的方法在子类中使用，可以让内建类型适用在更多场景下,例如下面这个不能有重复元素的list：</p><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-python data-lang=python><span style=display:flex><span>In [<span style=color:#ae81ff>17</span>]: <span style=color:#66d9ef>class</span> <span style=color:#a6e22e>ListError</span>(<span style=color:#a6e22e>Exception</span>):
+</span></span><span style=display:flex><span>   <span style=color:#f92672>....</span>:     <span style=color:#66d9ef>pass</span>
+</span></span><span style=display:flex><span>   <span style=color:#f92672>....</span>: 
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>In [<span style=color:#ae81ff>18</span>]: <span style=color:#66d9ef>class</span> <span style=color:#a6e22e>SingleList</span>(list):
+</span></span><span style=display:flex><span>   <span style=color:#f92672>....</span>:     <span style=color:#66d9ef>def</span> <span style=color:#a6e22e>append</span>(self, elem):
+</span></span><span style=display:flex><span>   <span style=color:#f92672>....</span>:         <span style=color:#66d9ef>if</span> elem <span style=color:#f92672>in</span> self:
+</span></span><span style=display:flex><span>   <span style=color:#f92672>....</span>:             <span style=color:#66d9ef>raise</span> ListError(<span style=color:#e6db74>&#34;</span><span style=color:#e6db74>{0}</span><span style=color:#e6db74> aleady in SingleList&#34;</span>)
+</span></span><span style=display:flex><span>   <span style=color:#f92672>....</span>:         <span style=color:#66d9ef>else</span>:
+</span></span><span style=display:flex><span>   <span style=color:#f92672>....</span>:             super(SingleList, self)<span style=color:#f92672>.</span>append(elem)
+</span></span><span style=display:flex><span>   <span style=color:#f92672>....</span>:             
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>In [<span style=color:#ae81ff>19</span>]: sl <span style=color:#f92672>=</span> SingleList()
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>In [<span style=color:#ae81ff>20</span>]: sl<span style=color:#f92672>.</span>append(<span style=color:#e6db74>&#39;a&#39;</span>)
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>In [<span style=color:#ae81ff>21</span>]: sl<span style=color:#f92672>.</span>append(<span style=color:#e6db74>&#39;b&#39;</span>)
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>In [<span style=color:#ae81ff>22</span>]: sl<span style=color:#f92672>.</span>append(<span style=color:#e6db74>&#39;c&#39;</span>)
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>In [<span style=color:#ae81ff>23</span>]: sl<span style=color:#f92672>.</span>append(<span style=color:#e6db74>&#39;a&#39;</span>)
+</span></span><span style=display:flex><span><span style=color:#f92672>-----------------------------------------------------------------------</span>
+</span></span><span style=display:flex><span>ListError                                 Traceback (most recent call l
+</span></span><span style=display:flex><span> <span style=color:#f92672>in</span> ()
+</span></span><span style=display:flex><span><span style=color:#f92672>----&gt;</span> <span style=color:#ae81ff>1</span> sl<span style=color:#f92672>.</span>append(<span style=color:#e6db74>&#39;a&#39;</span>)
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span> <span style=color:#f92672>in</span> append(self, elem)
+</span></span><span style=display:flex><span>      <span style=color:#ae81ff>2</span>     <span style=color:#66d9ef>def</span> <span style=color:#a6e22e>append</span>(self, elem):
+</span></span><span style=display:flex><span>      <span style=color:#ae81ff>3</span>         <span style=color:#66d9ef>if</span> elem <span style=color:#f92672>in</span> self:
+</span></span><span style=display:flex><span><span style=color:#f92672>----&gt;</span> <span style=color:#ae81ff>4</span>             <span style=color:#66d9ef>raise</span> ListError(<span style=color:#e6db74>&#34;</span><span style=color:#e6db74>{0}</span><span style=color:#e6db74> aleady in SingleList&#34;</span>)
+</span></span><span style=display:flex><span>      <span style=color:#ae81ff>5</span>         <span style=color:#66d9ef>else</span>:
+</span></span><span style=display:flex><span>      <span style=color:#ae81ff>6</span>             super(SingleList, self)<span style=color:#f92672>.</span>append(elem)
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>ListError: {<span style=color:#ae81ff>0</span>} aleady <span style=color:#f92672>in</span> SingleList
+</span></span></code></pre></div><hr><h2 id=访问超类中的方法>访问超类中的方法</h2><p><strong>super</strong>是一个内建类型，用来访问属于某个对象的超类中的特性(attribute)</p><p>访问父类的方法有两种：</p><blockquote><ol><li>super(子类名, self) . 父类方法()</li></ol></blockquote><ol start=2><li>父类名 . 父类方法(self)</li></ol><p>暂且称为super法和self法</p><p>先定义一个父类<strong>Animal</strong></p><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-python data-lang=python><span style=display:flex><span>In [<span style=color:#ae81ff>35</span>]: <span style=color:#66d9ef>class</span> <span style=color:#a6e22e>Animal</span>(object):
+</span></span><span style=display:flex><span>   <span style=color:#f92672>....</span>:     <span style=color:#66d9ef>def</span> <span style=color:#a6e22e>walk</span>(self):
+</span></span><span style=display:flex><span>   <span style=color:#f92672>....</span>:         print <span style=color:#e6db74>&#34;Animal can walk&#34;</span>
+</span></span><span style=display:flex><span>   <span style=color:#f92672>....</span>:     
+</span></span></code></pre></div><p><strong>super</strong>使用父类方法</p><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-python data-lang=python><span style=display:flex><span>In [<span style=color:#ae81ff>36</span>]: <span style=color:#66d9ef>class</span> <span style=color:#a6e22e>People</span>(Animal):
+</span></span><span style=display:flex><span>   <span style=color:#f92672>....</span>:     <span style=color:#66d9ef>def</span> <span style=color:#a6e22e>fly</span>(self):
+</span></span><span style=display:flex><span>   <span style=color:#f92672>....</span>:         super(People, self)<span style=color:#f92672>.</span>walk()
+</span></span><span style=display:flex><span>   <span style=color:#f92672>....</span>:         print <span style=color:#e6db74>&#34;People can fly&#34;</span>
+</span></span><span style=display:flex><span>   <span style=color:#f92672>....</span>:         
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>In [<span style=color:#ae81ff>37</span>]: person <span style=color:#f92672>=</span> People()
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>In [<span style=color:#ae81ff>38</span>]: person<span style=color:#f92672>.</span>fly()
+</span></span><span style=display:flex><span>Animal can walk
+</span></span><span style=display:flex><span>People can fly
+</span></span></code></pre></div><p><strong>self</strong></p><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-python data-lang=python><span style=display:flex><span>In [<span style=color:#ae81ff>40</span>]: <span style=color:#66d9ef>class</span> <span style=color:#a6e22e>People</span>(Animal):
+</span></span><span style=display:flex><span>   <span style=color:#f92672>....</span>:     <span style=color:#66d9ef>def</span> <span style=color:#a6e22e>run</span>(self):
+</span></span><span style=display:flex><span>   <span style=color:#f92672>....</span>:         Animal<span style=color:#f92672>.</span>walk(self)
+</span></span><span style=display:flex><span>   <span style=color:#f92672>....</span>:         print <span style=color:#e6db74>&#34;People can run&#34;</span>
+</span></span><span style=display:flex><span>   <span style=color:#f92672>....</span>:         
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>In [<span style=color:#ae81ff>41</span>]: person <span style=color:#f92672>=</span> People()
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>In [<span style=color:#ae81ff>42</span>]: person<span style=color:#f92672>.</span>run()
+</span></span><span style=display:flex><span>Animal can walk
+</span></span><span style=display:flex><span>People can run
+</span></span></code></pre></div><p>其中super是新方法，对比下两种方法，关键的不同之处在于调用时候<strong>self法使用父类名字，super法使用子类名字</strong>。这就使得在多继承的时候super变的极其难用。</p><h3 id=理解python中方法解析顺序mro>理解Python中方法解析顺序（MRO）</h3><blockquote><p>Python2.3中添加了基于Dylan构建的MRO，即C3的一个新的MRO，它描述了C3构建一个类的线性化（也称优先级，即祖先的一个排序列表）的方法。这个列表被用于特性的查找</p></blockquote><p>书中描述的很理论化，这个本身就是可很理想的假设，因为没有人会这么设计。</p><p>说白了，以前的MRO是深度优先，现在的是广度优先。</p><h3 id=super的缺陷>super的缺陷</h3><p>在Python中子类不会自动调用父类的**__init__**，所以手动的调用。</p><h4 id=混用super和传统调用>混用super和传统调用</h4><p>定义两个基类A、B：</p><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-python data-lang=python><span style=display:flex><span>In [<span style=color:#ae81ff>1</span>]: <span style=color:#66d9ef>class</span> <span style=color:#a6e22e>A</span>(object):
+</span></span><span style=display:flex><span>   <span style=color:#f92672>...</span>:     <span style=color:#66d9ef>def</span> __init__(self):
+</span></span><span style=display:flex><span>   <span style=color:#f92672>...</span>:         print <span style=color:#e6db74>&#39;A&#39;</span>
+</span></span><span style=display:flex><span>   <span style=color:#f92672>...</span>:         super(A, self)<span style=color:#f92672>.</span>__init__()
+</span></span><span style=display:flex><span>   <span style=color:#f92672>...</span>:         
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>In [<span style=color:#ae81ff>2</span>]: <span style=color:#66d9ef>class</span> <span style=color:#a6e22e>B</span>(object):
+</span></span><span style=display:flex><span>   <span style=color:#f92672>...</span>:     <span style=color:#66d9ef>def</span> __init__(self):
+</span></span><span style=display:flex><span>   <span style=color:#f92672>...</span>:         print <span style=color:#e6db74>&#39;B&#39;</span>
+</span></span><span style=display:flex><span>   <span style=color:#f92672>...</span>:         super(B, self)<span style=color:#f92672>.</span>__init__()
+</span></span><span style=display:flex><span>   <span style=color:#f92672>...</span>:         
+</span></span></code></pre></div><p>定义一个C类继承A、B：</p><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-python data-lang=python><span style=display:flex><span>In [<span style=color:#ae81ff>3</span>]: <span style=color:#66d9ef>class</span> <span style=color:#a6e22e>C</span>(A, B):
+</span></span><span style=display:flex><span>   <span style=color:#f92672>...</span>:     <span style=color:#66d9ef>def</span> __init__(self):
+</span></span><span style=display:flex><span>   <span style=color:#f92672>...</span>:         print <span style=color:#e6db74>&#39;C&#39;</span>
+</span></span><span style=display:flex><span>   <span style=color:#f92672>...</span>:         A<span style=color:#f92672>.</span>__init__(self)
+</span></span><span style=display:flex><span>   <span style=color:#f92672>...</span>:         B<span style=color:#f92672>.</span>__init__(self)
+</span></span><span style=display:flex><span>   <span style=color:#f92672>...</span>:   
+</span></span></code></pre></div><p>这里在C类中使用super和基类使用传统调用，输出结果</p><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-python data-lang=python><span style=display:flex><span>In [<span style=color:#ae81ff>4</span>]: print <span style=color:#e6db74>&#34;MRO&#34;</span>, [x<span style=color:#f92672>.</span>__name__ <span style=color:#66d9ef>for</span> x <span style=color:#f92672>in</span> C<span style=color:#f92672>.</span>__mro__]
+</span></span><span style=display:flex><span>MRO [<span style=color:#e6db74>&#39;C&#39;</span>, <span style=color:#e6db74>&#39;A&#39;</span>, <span style=color:#e6db74>&#39;B&#39;</span>, <span style=color:#e6db74>&#39;object&#39;</span>]
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>In [<span style=color:#ae81ff>5</span>]: C()
+</span></span><span style=display:flex><span>C
+</span></span><span style=display:flex><span>A
+</span></span><span style=display:flex><span>B
+</span></span><span style=display:flex><span>B
+</span></span><span style=display:flex><span>Out[<span style=color:#ae81ff>5</span>]: <span style=color:#f92672>&lt;</span>__main__<span style=color:#f92672>.</span>C at <span style=color:#ae81ff>0x7fd2457df810</span><span style=color:#f92672>&gt;</span>
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>In [<span style=color:#ae81ff>6</span>]: 
+</span></span></code></pre></div><p>输出了两次B，这不是我们想要的。把C类中改成super方法后就正常了</p><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-python data-lang=python><span style=display:flex><span>In [<span style=color:#ae81ff>6</span>]: <span style=color:#66d9ef>class</span> <span style=color:#a6e22e>C</span>(A, B):
+</span></span><span style=display:flex><span>   <span style=color:#f92672>...</span>:     <span style=color:#66d9ef>def</span> __init__(self):
+</span></span><span style=display:flex><span>   <span style=color:#f92672>...</span>:         print <span style=color:#e6db74>&#39;C&#39;</span>
+</span></span><span style=display:flex><span>   <span style=color:#f92672>...</span>:         super(C, self)<span style=color:#f92672>.</span>__init__()
+</span></span><span style=display:flex><span>   <span style=color:#f92672>...</span>:         
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>In [<span style=color:#ae81ff>7</span>]: print <span style=color:#e6db74>&#34;MRO&#34;</span>, [x<span style=color:#f92672>.</span>__name__ <span style=color:#66d9ef>for</span> x <span style=color:#f92672>in</span> C<span style=color:#f92672>.</span>__mro__]
+</span></span><span style=display:flex><span>MRO [<span style=color:#e6db74>&#39;C&#39;</span>, <span style=color:#e6db74>&#39;A&#39;</span>, <span style=color:#e6db74>&#39;B&#39;</span>, <span style=color:#e6db74>&#39;object&#39;</span>]
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>In [<span style=color:#ae81ff>8</span>]: C()
+</span></span><span style=display:flex><span>C
+</span></span><span style=display:flex><span>A
+</span></span><span style=display:flex><span>B
+</span></span><span style=display:flex><span>Out[<span style=color:#ae81ff>8</span>]: <span style=color:#f92672>&lt;</span>__main__<span style=color:#f92672>.</span>C at <span style=color:#ae81ff>0x7fd2457df390</span><span style=color:#f92672>&gt;</span>
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>In [<span style=color:#ae81ff>9</span>]: 
+</span></span></code></pre></div><h4 id=不同类型的参数>不同类型的参数</h4><p>super的一个缺陷是，每个基类__init__的参数个数不同的话，怎么办？</p><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-python data-lang=python><span style=display:flex><span><span style=color:#66d9ef>class</span> <span style=color:#a6e22e>A</span>(object):
+</span></span><span style=display:flex><span>     <span style=color:#66d9ef>def</span> __init__(self):
+</span></span><span style=display:flex><span>         print <span style=color:#e6db74>&#39;A&#39;</span>
+</span></span><span style=display:flex><span>         super(A, self)<span style=color:#f92672>.</span>__init__()
+</span></span><span style=display:flex><span>   
+</span></span><span style=display:flex><span> <span style=color:#66d9ef>class</span> <span style=color:#a6e22e>B</span>(object):
+</span></span><span style=display:flex><span>     <span style=color:#66d9ef>def</span> __init__(self, arg):
+</span></span><span style=display:flex><span>         print <span style=color:#e6db74>&#39;B&#39;</span>
+</span></span><span style=display:flex><span>         super(B, self)<span style=color:#f92672>.</span>__init__()        
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span><span style=color:#66d9ef>class</span> <span style=color:#a6e22e>C</span>(A, B):
+</span></span><span style=display:flex><span>     <span style=color:#66d9ef>def</span> __init__(self, arg):
+</span></span><span style=display:flex><span>         print <span style=color:#e6db74>&#39;C&#39;</span>
+</span></span><span style=display:flex><span>         super(C, self)<span style=color:#f92672>.</span>__init__(arg)         
+</span></span><span style=display:flex><span>In [<span style=color:#ae81ff>12</span>]: c <span style=color:#f92672>=</span> C(<span style=color:#ae81ff>10</span>)
+</span></span><span style=display:flex><span>C
+</span></span></code></pre></div><pre tabindex=0><code>---------------------------------------------------------------------------
+TypeError                                 Traceback (most recent call last)
+ in ()
+----&gt; 1 c = C(10)
+
+ in __init__(self, arg)
+      2     def __init__(self, arg):
+      3         print &#39;C&#39;
+----&gt; 4         super(C, self).__init__(arg)
+      5 
+
+TypeError: __init__() takes exactly 1 argument (2 given)
+</code></pre><p>从报出的错误中可以看出是多了一个参数，导致**__init__**调用失败。</p><p>一个妥协的方法就是使用*args和**kw,这样无论是一个还是两个，还是没有参数，都可以成功。但是这么做导致代码变的脆落。另一个解决的办法就是使用传统的**__init__**，这又会导致第一个问题。</p><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-python data-lang=python><span style=display:flex><span><span style=color:#75715e>#!/usr/bin/env python</span>
+</span></span><span style=display:flex><span><span style=color:#75715e># -*- coding: UTF-8 -*-</span>
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span><span style=color:#66d9ef>class</span> <span style=color:#a6e22e>Base</span>(object):
+</span></span><span style=display:flex><span>    <span style=color:#66d9ef>def</span> __init__(self, <span style=color:#f92672>*</span>args, <span style=color:#f92672>**</span>kw):
+</span></span><span style=display:flex><span>        print <span style=color:#e6db74>&#39;Base&#39;</span>
+</span></span><span style=display:flex><span>        super(Base, self)<span style=color:#f92672>.</span>__init__()
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span><span style=color:#66d9ef>class</span> <span style=color:#a6e22e>A</span>(Base):
+</span></span><span style=display:flex><span>    <span style=color:#66d9ef>def</span> __init__(self, <span style=color:#f92672>*</span>args, <span style=color:#f92672>**</span>kw):
+</span></span><span style=display:flex><span>        print <span style=color:#e6db74>&#39;A&#39;</span>
+</span></span><span style=display:flex><span>        super(A, self)<span style=color:#f92672>.</span>__init__(<span style=color:#f92672>*</span>args, <span style=color:#f92672>**</span>kw)
+</span></span><span style=display:flex><span><span style=color:#66d9ef>class</span> <span style=color:#a6e22e>B</span>(Base):
+</span></span><span style=display:flex><span>    <span style=color:#66d9ef>def</span> __init__(self, <span style=color:#f92672>*</span>args, <span style=color:#f92672>**</span>kw): 
+</span></span><span style=display:flex><span>        print <span style=color:#e6db74>&#39;B&#39;</span>
+</span></span><span style=display:flex><span>        super(B, self)<span style=color:#f92672>.</span>__init__(<span style=color:#f92672>*</span>args, <span style=color:#f92672>**</span>kw)
+</span></span><span style=display:flex><span><span style=color:#66d9ef>class</span> <span style=color:#a6e22e>C</span>(A , B):
+</span></span><span style=display:flex><span>    <span style=color:#66d9ef>def</span> __init__(self, arg):
+</span></span><span style=display:flex><span>        print <span style=color:#e6db74>&#39;C&#39;</span>
+</span></span><span style=display:flex><span>        super(C, self)<span style=color:#f92672>.</span>__init__(arg)
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span><span style=color:#66d9ef>if</span> __name__ <span style=color:#f92672>==</span> <span style=color:#e6db74>&#39;__main__&#39;</span>:
+</span></span><span style=display:flex><span>    C(<span style=color:#ae81ff>10</span>)
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span><span style=color:#f92672>---------------------------------------</span>
+</span></span><span style=display:flex><span>C
+</span></span><span style=display:flex><span>A
+</span></span><span style=display:flex><span>B
+</span></span><span style=display:flex><span>Base
+</span></span></code></pre></div><p>书中的例子已经不能运行成功了，可能是版本更新的原因, object的__init__必须为空，否则会报出参数不对的错误。</p><h2 id=最佳实践>最佳实践</h2><ul><li>应该避免多重继承， 使用一些设计模式替代</li><li>super的使用必须一致， 在类层次结构中， 应该在所有地方使用super或者彻底不使用它。混用super和传统调用是一种混乱的方法， 人们倾向于避免使用super， 这样使代码更清晰。</li><li>不要混用老式和新式的类， 两者都具备的代码库将导致不同的MRO表现。</li><li>调用父类时必须检查类层次， 避免出现任何代码问题， 每次调用父类时， 必须查看一下所涉及的MRO（使用__mro__）</li></ul><h2 id=描述符和属性>描述符和属性</h2><p>Python没有private的关键字， 最接近的概念是“name mangling”， 就是在变量或者函数前面加上“__”时，它就重命名。</p><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-python data-lang=python><span style=display:flex><span>In [<span style=color:#ae81ff>18</span>]: <span style=color:#66d9ef>class</span> <span style=color:#a6e22e>Class</span>(object):
+</span></span><span style=display:flex><span>   <span style=color:#f92672>....</span>:     __private_value <span style=color:#f92672>=</span> <span style=color:#ae81ff>1</span>
+</span></span><span style=display:flex><span>   <span style=color:#f92672>....</span>:     
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>In [<span style=color:#ae81ff>19</span>]: c <span style=color:#f92672>=</span> Class()
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>In [<span style=color:#ae81ff>20</span>]: c<span style=color:#f92672>.</span>__private_value
+</span></span><span style=display:flex><span><span style=color:#f92672>---------------------------------------------------------------------------</span>
+</span></span><span style=display:flex><span><span style=color:#a6e22e>AttributeError</span>                            Traceback (most recent call last)
+</span></span><span style=display:flex><span> <span style=color:#f92672>in</span> ()
+</span></span><span style=display:flex><span><span style=color:#f92672>----&gt;</span> <span style=color:#ae81ff>1</span> c<span style=color:#f92672>.</span>__private_value
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span><span style=color:#a6e22e>AttributeError</span>: <span style=color:#e6db74>&#39;Class&#39;</span> object has no attribute <span style=color:#e6db74>&#39;__private_value&#39;</span>
+</span></span></code></pre></div><p>这样就和private很相似，找不到这个attribute。</p><p>查看一下该类的属性：</p><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-python data-lang=python><span style=display:flex><span>In [<span style=color:#ae81ff>21</span>]: dir(Class)
+</span></span><span style=display:flex><span>Out[<span style=color:#ae81ff>21</span>]: 
+</span></span><span style=display:flex><span>[<span style=color:#e6db74>&#39;_Class__private_value&#39;</span>,
+</span></span><span style=display:flex><span> <span style=color:#e6db74>&#39;__class__&#39;</span>,
+</span></span><span style=display:flex><span> <span style=color:#e6db74>&#39;__delattr__&#39;</span>,
+</span></span><span style=display:flex><span> <span style=color:#e6db74>&#39;__dict__&#39;</span>,
+</span></span><span style=display:flex><span> <span style=color:#e6db74>&#39;__doc__&#39;</span>,
+</span></span><span style=display:flex><span> <span style=color:#e6db74>&#39;__format__&#39;</span>,
+</span></span><span style=display:flex><span> <span style=color:#e6db74>&#39;__getattribute__&#39;</span>,
+</span></span><span style=display:flex><span> <span style=color:#e6db74>&#39;__hash__&#39;</span>,
+</span></span><span style=display:flex><span> <span style=color:#e6db74>&#39;__init__&#39;</span>,
+</span></span><span style=display:flex><span> <span style=color:#e6db74>&#39;__module__&#39;</span>,
+</span></span><span style=display:flex><span> <span style=color:#e6db74>&#39;__new__&#39;</span>,
+</span></span><span style=display:flex><span> <span style=color:#e6db74>&#39;__reduce__&#39;</span>,
+</span></span><span style=display:flex><span> <span style=color:#e6db74>&#39;__reduce_ex__&#39;</span>,
+</span></span><span style=display:flex><span> <span style=color:#e6db74>&#39;__repr__&#39;</span>,
+</span></span><span style=display:flex><span> <span style=color:#e6db74>&#39;__setattr__&#39;</span>,
+</span></span><span style=display:flex><span> <span style=color:#e6db74>&#39;__sizeof__&#39;</span>,
+</span></span><span style=display:flex><span> <span style=color:#e6db74>&#39;__str__&#39;</span>,
+</span></span><span style=display:flex><span> <span style=color:#e6db74>&#39;__subclasshook__&#39;</span>,
+</span></span><span style=display:flex><span> <span style=color:#e6db74>&#39;__weakref__&#39;</span>]
+</span></span></code></pre></div><p>属性有有**&rsquo;_Class__private_value&rsquo;**这么一项。和原来的属性类似。</p><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-python data-lang=python><span style=display:flex><span>In [<span style=color:#ae81ff>22</span>]: c<span style=color:#f92672>.</span>_Class__private_value
+</span></span><span style=display:flex><span>Out[<span style=color:#ae81ff>22</span>]: <span style=color:#ae81ff>1</span>
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>In [<span style=color:#ae81ff>23</span>]: c<span style=color:#f92672>.</span>_Class__private_value <span style=color:#f92672>=</span> <span style=color:#ae81ff>2</span>
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>In [<span style=color:#ae81ff>24</span>]: c<span style=color:#f92672>.</span>_Class__private_value
+</span></span><span style=display:flex><span>Out[<span style=color:#ae81ff>24</span>]: <span style=color:#ae81ff>2</span>
+</span></span></code></pre></div><p>依旧可以访问，修改，所以这个只是换了一个名字而已。它的真正作用是用来避免继承带来的命名冲突，特性被重命名为带有类名前缀的名称。</p><p>在实际中从不使用"__",而是使用"_&ldquo;替代。这个不会改变任何东西，只是标明这是私有的而已。</p><h3 id=描述符>描述符</h3><p>描述符用来自定义在引用一个对象上的特性时所应该完成的事情。它们是定义一个另一个类特性可能的访问方式的类。换句话硕，一个类可以委托另一个类来管理其特性。</p><p>描述符基于三个必须实现的特殊方法：</p><blockquote><ul><li>__set__ 在任何特性被设置的时候调用，在后面是实例中，将其称为setter；</li></ul></blockquote><ul><li>__get__ 在任何特性被读取的时调用（被称为getter）</li><li>__delete__ 在特性请求del时调用</li></ul><blockquote><p>这些方法在__dict__特性之前被调用。</p></blockquote><p>在类特性定义并且有一个getter和一个setter方法时，平常的包含一个对象的实例的所有元素的__dict__映射都将被劫持。</p><blockquote><ul><li>实现了__get__ 和__set__ 的描述符被称作数据描述符</li></ul></blockquote><ul><li>只实现了__get__的描述符被称为非数据描述符</li></ul><p>在Python中，访问一个属性的优先级顺序按照如下顺序:</p><ol><li>类属性</li><li>数据描述符</li><li>实例属性</li><li>非数据描述符</li><li>__getattr__()方法</li></ol><p>下面先创建一个描述符，并实例一个：</p><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-python data-lang=python><span style=display:flex><span>In [<span style=color:#ae81ff>1</span>]: <span style=color:#66d9ef>class</span> <span style=color:#a6e22e>UpperString</span>(object):
+</span></span><span style=display:flex><span>   <span style=color:#f92672>...</span>:     <span style=color:#66d9ef>def</span> __init__(self):
+</span></span><span style=display:flex><span>   <span style=color:#f92672>...</span>:         self<span style=color:#f92672>.</span>_value <span style=color:#f92672>=</span> <span style=color:#e6db74>&#39;&#39;</span>
+</span></span><span style=display:flex><span>   <span style=color:#f92672>...</span>:     <span style=color:#66d9ef>def</span> __get__(self, object, type):
+</span></span><span style=display:flex><span>   <span style=color:#f92672>...</span>:         <span style=color:#66d9ef>return</span> self<span style=color:#f92672>.</span>_value
+</span></span><span style=display:flex><span>   <span style=color:#f92672>...</span>:     <span style=color:#66d9ef>def</span> __set__(self, object, value):
+</span></span><span style=display:flex><span>   <span style=color:#f92672>...</span>:         self<span style=color:#f92672>.</span>_value <span style=color:#f92672>=</span> value<span style=color:#f92672>.</span>upper()
+</span></span><span style=display:flex><span>   <span style=color:#f92672>...</span>:         
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>In [<span style=color:#ae81ff>2</span>]: <span style=color:#66d9ef>class</span> <span style=color:#a6e22e>MyClass</span>(object):
+</span></span><span style=display:flex><span>   <span style=color:#f92672>...</span>:     attribute <span style=color:#f92672>=</span> UpperString()
+</span></span><span style=display:flex><span>   <span style=color:#f92672>...</span>:     
+</span></span></code></pre></div><p>类UpperString是一个数据描述符,通过它实例化了一个attribute，也就是说对attribute的get和set操作都会被UpperString描述符劫持。</p><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-python data-lang=python><span style=display:flex><span>In [<span style=color:#ae81ff>25</span>]: mc <span style=color:#f92672>=</span> MyClass()
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>In [<span style=color:#ae81ff>26</span>]: mc<span style=color:#f92672>.</span>attribute
+</span></span><span style=display:flex><span>Out[<span style=color:#ae81ff>26</span>]: <span style=color:#e6db74>&#39;&#39;</span>
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>In [<span style=color:#ae81ff>27</span>]: mc<span style=color:#f92672>.</span>attribute <span style=color:#f92672>=</span> <span style=color:#e6db74>&#34;my value&#34;</span>
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>In [<span style=color:#ae81ff>28</span>]: mc<span style=color:#f92672>.</span>attribute
+</span></span><span style=display:flex><span>Out[<span style=color:#ae81ff>28</span>]: <span style=color:#e6db74>&#39;MY VALUE&#39;</span>
+</span></span></code></pre></div><p>如果给实例子中添加一个新的特性，它将被保存在__dict__中</p><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-python data-lang=python><span style=display:flex><span>In [<span style=color:#ae81ff>29</span>]: mc<span style=color:#f92672>.</span>new_att <span style=color:#f92672>=</span> <span style=color:#ae81ff>1</span>
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>In [<span style=color:#ae81ff>30</span>]: mc<span style=color:#f92672>.</span>__dict__
+</span></span><span style=display:flex><span>Out[<span style=color:#ae81ff>30</span>]: {<span style=color:#e6db74>&#39;new_att&#39;</span>: <span style=color:#ae81ff>1</span>}
+</span></span></code></pre></div><p>数据描述符将优先于实例的__dict__</p><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-python data-lang=python><span style=display:flex><span>In [<span style=color:#ae81ff>35</span>]: MyClass<span style=color:#f92672>.</span>new_att <span style=color:#f92672>=</span> UpperString()
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>In [<span style=color:#ae81ff>36</span>]: mc<span style=color:#f92672>.</span>__dict__
+</span></span><span style=display:flex><span>Out[<span style=color:#ae81ff>36</span>]: {<span style=color:#e6db74>&#39;new_att&#39;</span>: <span style=color:#ae81ff>1</span>}
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>In [<span style=color:#ae81ff>37</span>]: mc<span style=color:#f92672>.</span>new_att
+</span></span><span style=display:flex><span>Out[<span style=color:#ae81ff>37</span>]: <span style=color:#e6db74>&#39;&#39;</span>
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>In [<span style=color:#ae81ff>38</span>]: mc<span style=color:#f92672>.</span>new_att <span style=color:#f92672>=</span> <span style=color:#e6db74>&#34;other value&#34;</span>
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>In [<span style=color:#ae81ff>39</span>]: mc<span style=color:#f92672>.</span>new_att
+</span></span><span style=display:flex><span>Out[<span style=color:#ae81ff>39</span>]: <span style=color:#e6db74>&#39;OTHER VALUE&#39;</span>
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>In [<span style=color:#ae81ff>40</span>]: mc<span style=color:#f92672>.</span>__dict__
+</span></span><span style=display:flex><span>Out[<span style=color:#ae81ff>40</span>]: {<span style=color:#e6db74>&#39;new_att&#39;</span>: <span style=color:#ae81ff>1</span>}
+</span></span></code></pre></div><p>对于非数据描述符，实例将优先于描述符</p><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-python data-lang=python><span style=display:flex><span><span style=color:#66d9ef>class</span> <span style=color:#a6e22e>Whatever</span>(object):
+</span></span><span style=display:flex><span>    <span style=color:#66d9ef>def</span> __get__(self, object, type):
+</span></span><span style=display:flex><span>        <span style=color:#66d9ef>return</span> <span style=color:#e6db74>&#34;whatever&#34;</span>
+</span></span><span style=display:flex><span>    
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>MyClass<span style=color:#f92672>.</span>whatever <span style=color:#f92672>=</span> Whatever()
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>mc<span style=color:#f92672>.</span>__dict__
+</span></span><span style=display:flex><span>{<span style=color:#e6db74>&#39;new_att&#39;</span>: <span style=color:#ae81ff>1</span>}
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>mc<span style=color:#f92672>.</span>whatever
+</span></span><span style=display:flex><span><span style=color:#e6db74>&#39;whatever&#39;</span>
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>mc<span style=color:#f92672>.</span>whatever <span style=color:#f92672>=</span> <span style=color:#ae81ff>1</span>
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>mc<span style=color:#f92672>.</span>__dict__
+</span></span><span style=display:flex><span>{<span style=color:#e6db74>&#39;new_att&#39;</span>: <span style=color:#ae81ff>1</span>, <span style=color:#e6db74>&#39;whatever&#39;</span>: <span style=color:#ae81ff>1</span>}
+</span></span></code></pre></div><p>描述符除了隐藏类的内容以外还有：</p><ul><li>内省描述符——这种描述符将检查宿主类签名，以计算一些信息</li><li>元描述符——这种描述符时类方法本身完成值计算</li></ul><h4 id=内省描述符>内省描述符</h4><p>内省描述符就是一种用于自我检查的通用描述符，也就是可以在多个不同的类使用的一种描述符，书中给的例子是类似dir方法的描述符，也就是列出类的属性。
+这种描述符就是检查了类中有什么东西和没有什么东西。我也模仿书中例子，写一个类似dir的自省描述符。</p><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-python data-lang=python><span style=display:flex><span><span style=color:#75715e>#!/usr/bin/env python</span>
+</span></span><span style=display:flex><span><span style=color:#75715e># -*- coding: UTF-8 -*-</span>
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span><span style=color:#66d9ef>class</span> <span style=color:#a6e22e>API</span>(object):
+</span></span><span style=display:flex><span>    <span style=color:#66d9ef>def</span> __get__(self, obj, type):
+</span></span><span style=display:flex><span>        <span style=color:#66d9ef>if</span> obj <span style=color:#f92672>is</span> <span style=color:#f92672>not</span> <span style=color:#66d9ef>None</span>:
+</span></span><span style=display:flex><span>            <span style=color:#66d9ef>return</span> self<span style=color:#f92672>.</span>_print_doc(obj)
+</span></span><span style=display:flex><span>        <span style=color:#66d9ef>else</span>:
+</span></span><span style=display:flex><span>            print <span style=color:#e6db74>&#34;No method in </span><span style=color:#e6db74>{0}</span><span style=color:#e6db74>&#34;</span><span style=color:#f92672>.</span>format(obj)
+</span></span><span style=display:flex><span>        
+</span></span><span style=display:flex><span>    <span style=color:#66d9ef>def</span> <span style=color:#a6e22e>_print_doc</span>(self, obj):
+</span></span><span style=display:flex><span>        method_list <span style=color:#f92672>=</span> [method <span style=color:#66d9ef>for</span> method <span style=color:#f92672>in</span> dir(obj) <span style=color:#66d9ef>if</span> <span style=color:#f92672>not</span> method<span style=color:#f92672>.</span>startswith(<span style=color:#e6db74>&#39;_&#39;</span>)]
+</span></span><span style=display:flex><span>        <span style=color:#66d9ef>for</span> m <span style=color:#f92672>in</span> method_list:
+</span></span><span style=display:flex><span>            print <span style=color:#e6db74>&#34;</span><span style=color:#e6db74>{0}</span><span style=color:#e6db74> : </span><span style=color:#e6db74>{1}</span><span style=color:#e6db74>&#34;</span><span style=color:#f92672>.</span>format(m, m<span style=color:#f92672>.</span>__doc__)
+</span></span><span style=display:flex><span>            print <span style=color:#e6db74>&#39;-&#39;</span><span style=color:#f92672>*</span><span style=color:#ae81ff>50</span>
+</span></span><span style=display:flex><span>        <span style=color:#66d9ef>return</span> <span style=color:#e6db74>&#34;Thank you for looking API&#34;</span>
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span><span style=color:#66d9ef>class</span> <span style=color:#a6e22e>MyClass</span>():
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>    __doc__ <span style=color:#f92672>=</span> API()
+</span></span><span style=display:flex><span>    
+</span></span><span style=display:flex><span>    <span style=color:#66d9ef>def</span> __init__(self):
+</span></span><span style=display:flex><span>        <span style=color:#e6db74>&#39;&#39;&#39; init MyClass &#39;&#39;&#39;</span>
+</span></span><span style=display:flex><span>        <span style=color:#66d9ef>pass</span>
+</span></span><span style=display:flex><span>    
+</span></span><span style=display:flex><span>    <span style=color:#66d9ef>def</span> <span style=color:#a6e22e>method1</span>(self):
+</span></span><span style=display:flex><span>        <span style=color:#e6db74>&#39;&#39;&#39;print the msg for method1&#39;&#39;&#39;</span>
+</span></span><span style=display:flex><span>        print <span style=color:#e6db74>&#34;i&#39;m method1&#34;</span>
+</span></span><span style=display:flex><span>    
+</span></span><span style=display:flex><span>    <span style=color:#66d9ef>def</span> <span style=color:#a6e22e>method2</span>(self):
+</span></span><span style=display:flex><span>        <span style=color:#e6db74>&#39;&#39;&#39;print the msg for method2&#39;&#39;&#39;</span>
+</span></span><span style=display:flex><span>        print <span style=color:#e6db74>&#34;i&#39;m method2&#34;</span>
+</span></span><span style=display:flex><span>        
+</span></span><span style=display:flex><span><span style=color:#66d9ef>if</span> __name__ <span style=color:#f92672>==</span> <span style=color:#e6db74>&#39;__main__&#39;</span>:
+</span></span><span style=display:flex><span>    mc <span style=color:#f92672>=</span> MyClass()
+</span></span><span style=display:flex><span>    print mc<span style=color:#f92672>.</span>__doc__
+</span></span></code></pre></div><p>非数据描述符API只有一个__get__方法，用于获取。在非数据描述符API中的_print_doc方法中，过滤掉内置方法，打印出每个方法的doc。</p><pre tabindex=0><code>&#34;&#34;&#34;
+method1 : str(object=&#39;&#39;) -&gt; string
+
+Return a nice string representation of the object.
+If the argument is a string, the return value is the same object.
+--------------------------------------------------
+method2 : str(object=&#39;&#39;) -&gt; string
+
+Return a nice string representation of the object.
+If the argument is a string, the return value is the same object.
+--------------------------------------------------
+Thank you for looking API
+&#34;&#34;&#34;
+</code></pre><h4 id=元描述符>元描述符</h4><p>略难，看看即可</p><h3 id=属性>属性</h3><blockquote><p>属性（Propetry）提供了一个内建的描述符类型，它知道如何将一个特性链接到以组方法上。属性采用fget参数和3个可选参数——fset、fdel、和doc。最后一个参数可以提供用来定义一个链接到特性的docstring，就像是个方法一样。</p></blockquote><p>这个propetry函数和前面的描述符基本类似，用参数来实现了描述符中的_<em>get</em>_、_<em>set</em>_、__del__方法而已。</p><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-python data-lang=python><span style=display:flex><span><span style=color:#75715e>#!/usr/bin/env python</span>
+</span></span><span style=display:flex><span><span style=color:#75715e># -*- coding: UTF-8 -*-</span>
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span><span style=color:#66d9ef>class</span> <span style=color:#a6e22e>MyClass</span>(object):
+</span></span><span style=display:flex><span>    <span style=color:#66d9ef>def</span> __init__(self):
+</span></span><span style=display:flex><span>        print <span style=color:#e6db74>&#39;init a value = 10&#39;</span>
+</span></span><span style=display:flex><span>        self<span style=color:#f92672>.</span>value <span style=color:#f92672>=</span> <span style=color:#ae81ff>10</span>;
+</span></span><span style=display:flex><span>    
+</span></span><span style=display:flex><span>    <span style=color:#66d9ef>def</span> <span style=color:#a6e22e>get</span>(self):
+</span></span><span style=display:flex><span>        print <span style=color:#e6db74>&#39;get a value&#39;</span>
+</span></span><span style=display:flex><span>        <span style=color:#66d9ef>return</span> self<span style=color:#f92672>.</span>value
+</span></span><span style=display:flex><span>    
+</span></span><span style=display:flex><span>    <span style=color:#66d9ef>def</span> <span style=color:#a6e22e>set</span>(self, value):
+</span></span><span style=display:flex><span>        print <span style=color:#e6db74>&#39;set value &#39;</span>
+</span></span><span style=display:flex><span>        self<span style=color:#f92672>.</span>value <span style=color:#f92672>=</span> value
+</span></span><span style=display:flex><span>    
+</span></span><span style=display:flex><span>    <span style=color:#66d9ef>def</span> <span style=color:#a6e22e>ddel</span>(self):
+</span></span><span style=display:flex><span>        print <span style=color:#e6db74>&#39;bye bye&#39;</span>
+</span></span><span style=display:flex><span>        self<span style=color:#f92672>.</span>value <span style=color:#f92672>=</span> <span style=color:#ae81ff>0</span>
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>    my_value <span style=color:#f92672>=</span> property(get, set, ddel, <span style=color:#e6db74>&#34;i&#39;m a value&#34;</span>)
+</span></span><span style=display:flex><span>    
+</span></span><span style=display:flex><span><span style=color:#66d9ef>if</span> __name__ <span style=color:#f92672>==</span> <span style=color:#e6db74>&#39;__main__&#39;</span>:
+</span></span><span style=display:flex><span>    mc <span style=color:#f92672>=</span> MyClass()
+</span></span><span style=display:flex><span>    mc<span style=color:#f92672>.</span>my_value
+</span></span><span style=display:flex><span>    mc<span style=color:#f92672>.</span>set(<span style=color:#ae81ff>50</span>)
+</span></span><span style=display:flex><span>    <span style=color:#66d9ef>del</span> mc<span style=color:#f92672>.</span>my_value
+</span></span></code></pre></div><p>输出为如下：</p><pre tabindex=0><code>&#39;&#39;&#39;
+init a value = 10
+get a value
+set value 
+bye bye
+&#39;&#39;&#39;
+</code></pre><p>和之前的描述符的现象一模一样，property为描述符提供了简单的接口。
+继承的时候会产生混乱，所创建的特性使用当前类创建，不应该在子类中重载。</p><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-python data-lang=python><span style=display:flex><span><span style=color:#66d9ef>class</span> <span style=color:#a6e22e>Base</span>(object):
+</span></span><span style=display:flex><span>    <span style=color:#66d9ef>def</span> <span style=color:#a6e22e>_get_price</span>(self):
+</span></span><span style=display:flex><span>        <span style=color:#66d9ef>return</span> <span style=color:#e6db74>&#34;$ 500&#34;</span>
+</span></span><span style=display:flex><span>    price <span style=color:#f92672>=</span> property(_get_price)
+</span></span><span style=display:flex><span>    
+</span></span><span style=display:flex><span><span style=color:#66d9ef>class</span> <span style=color:#a6e22e>SubClass</span>(Base):
+</span></span><span style=display:flex><span>    <span style=color:#66d9ef>def</span> <span style=color:#a6e22e>_get_price</span>(self):
+</span></span><span style=display:flex><span>        <span style=color:#66d9ef>return</span> <span style=color:#e6db74>&#34;$ 20&#34;</span>
+</span></span><span style=display:flex><span> 
+</span></span><span style=display:flex><span>money <span style=color:#f92672>=</span> SubClass()
+</span></span><span style=display:flex><span>money<span style=color:#f92672>.</span>price
+</span></span></code></pre></div><p>取得的是父类的方法，而不是子类的，这不是我们预期的。重载父类属性不是好的做法，重载自身属性更好一些。</p><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-python data-lang=python><span style=display:flex><span><span style=color:#66d9ef>class</span> <span style=color:#a6e22e>Base</span>(object):
+</span></span><span style=display:flex><span>    <span style=color:#66d9ef>def</span> <span style=color:#a6e22e>_get_price</span>(self):
+</span></span><span style=display:flex><span>        <span style=color:#66d9ef>return</span> <span style=color:#e6db74>&#34;$ 500&#34;</span>
+</span></span><span style=display:flex><span>    price <span style=color:#f92672>=</span> property(_get_price)
+</span></span><span style=display:flex><span>    
+</span></span><span style=display:flex><span><span style=color:#66d9ef>class</span> <span style=color:#a6e22e>SubClass</span>(Base):
+</span></span><span style=display:flex><span>    <span style=color:#66d9ef>def</span> <span style=color:#a6e22e>_get_price</span>(self):
+</span></span><span style=display:flex><span>        <span style=color:#66d9ef>return</span> <span style=color:#e6db74>&#34;$ 20&#34;</span>
+</span></span><span style=display:flex><span>    price <span style=color:#f92672>=</span> property(_get_price)
+</span></span><span style=display:flex><span>    
+</span></span><span style=display:flex><span>money <span style=color:#f92672>=</span> SubClass()
+</span></span><span style=display:flex><span>money<span style=color:#f92672>.</span>price
+</span></span></code></pre></div><h2 id=槽>槽</h2><blockquote><p>几乎从未被开发人员使用过的一种有趣的特性是槽</p></blockquote><p>嗯，没人用过</p><h2 id=元编程>元编程</h2><p>可以通过__new__和__metaclass__这两个特殊方法在运行时候修改类和对象的定义</p><h3 id=__new__方法>__new__方法</h3><p>__new__是一个元构造程序，当一个对象被工厂类实例化时候调用。</p><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-python data-lang=python><span style=display:flex><span>lass MyClass(object):
+</span></span><span style=display:flex><span>   <span style=color:#66d9ef>def</span> __new__(cls):
+</span></span><span style=display:flex><span>       print <span style=color:#e6db74>&#39;__new__&#39;</span>
+</span></span><span style=display:flex><span>       <span style=color:#66d9ef>return</span> object<span style=color:#f92672>.</span>__new__(cls)
+</span></span><span style=display:flex><span>   <span style=color:#66d9ef>def</span> __init__(self):
+</span></span><span style=display:flex><span>       print <span style=color:#e6db74>&#39;__init__&#39;</span>
+</span></span><span style=display:flex><span>  
+</span></span><span style=display:flex><span>nstance <span style=color:#f92672>=</span> MyClass()
+</span></span></code></pre></div><blockquote><ul><li>__new__方法是继承object中的__new__方法，所以该类必须先继承object。</li></ul></blockquote><ul><li>__new__的作用是返回一个实例化完成的类，就像程序中的instance，也可以是别的类。</li><li>__new__中的cls参数是要实例化的类，就是MyClass，也就是类中self</li><li>__new__的执行在__init__之前</li></ul><p>在实例化类之前，__new__总是在__init__之前执行完成更低层次的初始化工作，例如网络套接字或者数据库初始化应该在__new__中为不是__init__中控制。它在类的工作必须完成这个初始化以及必须被继承的时候通知我们。</p><h3 id=__metaclass__方法>__metaclass__方法</h3><p><a href=http://www.liaoxuefeng.com/wiki/001374738125095c955c1e6d8bb493182103fac9270762a000/001386820064557c69858840b4c48d2b8411bc2ea9099ba000>廖雪峰关于元类的理解(ORM例子有点难)</a>
+<a href=http://blog.jobbole.com/21351/>深刻理解Python中的元类(metaclass)，强烈推荐</a>
+元类提供了在类对象通过工厂方法在内存中创建时进行交互的能力，也就是动态的添加方法。内建类型type是内建的基本工厂，它用来生成指定名称、基类以及包含其特性的映射的任何类。</p><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-python data-lang=python><span style=display:flex><span>klass <span style=color:#f92672>=</span> type(<span style=color:#e6db74>&#39;MyClass&#39;</span>, (object,), {<span style=color:#e6db74>&#39;method&#39;</span>: method})
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>instance <span style=color:#f92672>=</span> klass()
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>instance<span style=color:#f92672>.</span>method()
+</span></span></code></pre></div><p>Python中一切都是对象，包括创建对象的类，它实际上也是一个type对象。等价的类创建方法是：</p><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-python data-lang=python><span style=display:flex><span>
+</span></span><span style=display:flex><span><span style=color:#66d9ef>class</span> <span style=color:#a6e22e>MyClass</span>(object):
+</span></span><span style=display:flex><span>    <span style=color:#66d9ef>def</span> <span style=color:#a6e22e>method</span>(self):
+</span></span><span style=display:flex><span>        <span style=color:#66d9ef>return</span> <span style=color:#ae81ff>1</span>
+</span></span><span style=display:flex><span>    
+</span></span><span style=display:flex><span>instance <span style=color:#f92672>=</span> MyClass()
+</span></span><span style=display:flex><span>instance<span style=color:#f92672>.</span>method()
+</span></span></code></pre></div><p>可以在类中显示的给__metaclass__赋值，所需要的是一个返回是type实例化后的类。如果某个类指定了__metaclass__，那么这个类将从__metaclass__中创建。
+__metaclass__的特性必须被设置为:</p><ul><li>接受和type相同的参数(类名， 一组基类，一个特性映射)</li><li>返回一个类对象</li></ul><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-python data-lang=python><span style=display:flex><span><span style=color:#66d9ef>def</span> <span style=color:#a6e22e>metaclass</span>(classname, base_types, func_dicts):
+</span></span><span style=display:flex><span>    <span style=color:#66d9ef>return</span> type(classname, base_types, func_dicts)
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span><span style=color:#66d9ef>class</span> <span style=color:#a6e22e>metaclass</span>(object):
+</span></span><span style=display:flex><span>    __metaclass__ <span style=color:#f92672>=</span> metaclass
+</span></span><span style=display:flex><span>    <span style=color:#66d9ef>def</span> <span style=color:#a6e22e>echo</span>(self, str):
+</span></span><span style=display:flex><span>        print str
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>instance <span style=color:#f92672>=</span> MyClass()
+</span></span><span style=display:flex><span>instance<span style=color:#f92672>.</span>echo(<span style=color:#e6db74>&#34;Hello World&#34;</span>)
+</span></span></code></pre></div><p>元类的强大特性，可以动态的在已经实例化的类定义上创建许多不同的变化。原则上能不使用就不使用。</p><p>使用场景:</p><ul><li>在框架级别，一个行为在许多类中是强制的时候</li><li>当一个特殊的行为被添加的目的不是诸如记录日志这样的类提供的功能交互时</li></ul><p>引用一句话：</p><blockquote><p>当你需要动态修改类时，99%的时间里你最好使用上面这两种技术。当然了，其实在99%的时间里你根本就不需要动态修改类</p></blockquote></section><nav class="mt-24 flex rounded-lg bg-black/[3%] text-lg dark:bg-white/[8%]"><a class="flex w-1/2 items-center p-6 pr-3 no-underline" href=http://hexiangyu.me/posts/css-designer-guide/><span class=mr-1.5>←</span><span>CSS 设计指南读书笔记</span></a></nav></article></main><footer class="opaco mx-auto flex h-[5rem] max-w-3xl items-center px-8 text-[0.9em] opacity-60"><div class=mr-auto>&copy; 2022
+<a class=link href=http://hexiangyu.me/>正小歪 BLOG</a></div><a class="link mx-6" href=https://gohugo.io/ rel=noopener target=_blank>Powered by Hugo️️</a>️
+<a class=link href=https://github.com/nanxiaobei/hugo-paper rel=noopener target=_blank>▷ Paper 6</a></footer></body></html>

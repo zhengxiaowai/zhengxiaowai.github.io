@@ -1,0 +1,111 @@
+<!doctype html><html class="not-ready text-sm lg:text-base" style=--bg:#faf6f1 lang=en-us><head><meta charset=utf-8><meta http-equiv=x-ua-compatible content="IE=edge"><meta name=viewport content="width=device-width,initial-scale=1,shrink-to-fit=no"><title>设计模式 —— 工厂方法 - 正小歪 BLOG</title><meta name=theme-color><meta name=description content="工厂方法是处理不指定对象具体类型情况下创建对象的问题。
+
+定义一个创建对象的接口，但让实现这个接口的类来决定实例化哪个类。工厂方法让类的实例化推迟到子类中进行。
+"><meta name=author content><link rel="preload stylesheet" as=style href=http://hexiangyu.me/main.min.css><script defer src=http://hexiangyu.me/highlight.min.js onload=hljs.initHighlightingOnLoad()></script>
+<link rel=preload as=image href=http://hexiangyu.me/theme.png><link rel=icon href=http://hexiangyu.me/favicon.ico><link rel=apple-touch-icon href=http://hexiangyu.me/apple-touch-icon.png><meta name=generator content="Hugo 0.102.3"><meta property="og:title" content="设计模式 —— 工厂方法"><meta property="og:description" content="工厂方法是处理不指定对象具体类型情况下创建对象的问题。
+
+定义一个创建对象的接口，但让实现这个接口的类来决定实例化哪个类。工厂方法让类的实例化推迟到子类中进行。
+"><meta property="og:type" content="article"><meta property="og:url" content="http://hexiangyu.me/posts/factory-method-pattern/"><meta property="article:section" content="posts"><meta property="article:published_time" content="2016-12-03T16:37:36+00:00"><meta property="article:modified_time" content="2016-12-03T16:37:36+00:00"><meta itemprop=name content="设计模式 —— 工厂方法"><meta itemprop=description content="工厂方法是处理不指定对象具体类型情况下创建对象的问题。
+
+定义一个创建对象的接口，但让实现这个接口的类来决定实例化哪个类。工厂方法让类的实例化推迟到子类中进行。
+"><meta itemprop=datePublished content="2016-12-03T16:37:36+00:00"><meta itemprop=dateModified content="2016-12-03T16:37:36+00:00"><meta itemprop=wordCount content="199"><meta itemprop=keywords content><meta name=twitter:card content="summary"><meta name=twitter:title content="设计模式 —— 工厂方法"><meta name=twitter:description content="工厂方法是处理不指定对象具体类型情况下创建对象的问题。
+
+定义一个创建对象的接口，但让实现这个接口的类来决定实例化哪个类。工厂方法让类的实例化推迟到子类中进行。
+"></head><body class="text-black duration-200 ease-out dark:text-white"><header class="mx-auto flex h-[5rem] max-w-3xl px-8 lg:justify-center"><div class="relative z-50 mr-auto flex items-center"><a class="-translate-x-[1px] -translate-y-0.5 text-3xl font-bold" href=http://hexiangyu.me/>正小歪 BLOG</a>
+<a class="btn-dark ml-6 h-6 w-6 shrink-0 cursor-pointer [background:url(./theme.png)_left_center/_auto_theme('spacing.6')_no-repeat] [transition:_background-position_0.4s_steps(5)] dark:[background-position:right]"></a></div><a class="btn-menu relative z-50 -mr-8 flex h-[5rem] w-[5rem] shrink-0 cursor-pointer flex-col items-center justify-center gap-2.5 lg:hidden"></a>
+<script>const htmlClass=document.documentElement.classList;setTimeout(()=>{htmlClass.remove("not-ready")},10);const btnMenu=document.querySelector(".btn-menu");btnMenu.addEventListener("click",()=>{htmlClass.toggle("open")});const metaTheme=document.querySelector('meta[name="theme-color"]'),lightBg=`"#faf6f1"`.replace(/"/g,""),setDark=e=>{metaTheme.setAttribute("content",e?"#000":lightBg),htmlClass[e?"add":"remove"]("dark"),localStorage.setItem("dark",e)},darkScheme=window.matchMedia("(prefers-color-scheme: dark)"),darkVal=localStorage.getItem("dark");setDark(darkVal?darkVal==="true":darkScheme.matches),darkScheme.addEventListener("change",e=>{setDark(e.matches)});const btnDark=document.querySelector(".btn-dark");btnDark.addEventListener("click",()=>{setDark(localStorage.getItem("dark")!=="true")})</script><div class="nav-wrapper fixed inset-x-0 top-full z-40 flex h-full select-none flex-col justify-center pb-16 duration-200 dark:bg-black lg:static lg:h-auto lg:flex-row lg:!bg-transparent lg:pb-0 lg:transition-none"></div></header><main class="prose prose-neutral relative mx-auto min-h-[calc(100%-10rem)] max-w-3xl px-8 pt-20 pb-32 dark:prose-invert"><article><header class=mb-20><h1 class="!my-0 pb-2.5">设计模式 —— 工厂方法</h1><div class="text-sm opacity-60"><time>Dec 3, 2016</time></div></header><section><p>工厂方法是处理不指定对象具体类型情况下创建对象的问题。</p><blockquote><p>定义一个创建对象的接口，但让实现这个接口的类来决定实例化哪个类。工厂方法让类的实例化推迟到子类中进行。</p></blockquote><p>在面向对象程序设计中，工厂是一个用来创建对象的对象，是构造方法的抽象。</p><p>工厂对象一般拥有多个创建对象的方法，工厂对象可以通过参数动态创建类，可以针对不同的创建对象，进行特殊的配置。</p><blockquote><p>下列情况可以考虑使用工厂方法模式：</p></blockquote><ul><li>创建对象需要大量重复的代码。</li><li>创建对象需要访问某些信息，而这些信息不应该包含在复合类中。</li><li>创建对象的生命周期必须集中管理，以保证在整个程序中具有一致的行为。</li></ul><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-python data-lang=python><span style=display:flex><span><span style=color:#66d9ef>def</span> <span style=color:#a6e22e>create_win_button</span>(button_name):
+</span></span><span style=display:flex><span>    <span style=color:#75715e># do something for win</span>
+</span></span><span style=display:flex><span>    <span style=color:#66d9ef>return</span> <span style=color:#e6db74>&#39;</span><span style=color:#e6db74>{}</span><span style=color:#e6db74> win button created&#39;</span><span style=color:#f92672>.</span>format(button_name)
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span><span style=color:#66d9ef>def</span> <span style=color:#a6e22e>create_mac_button</span>(button_name):
+</span></span><span style=display:flex><span>    <span style=color:#75715e># do something for mac</span>
+</span></span><span style=display:flex><span>    <span style=color:#66d9ef>return</span> <span style=color:#e6db74>&#39;</span><span style=color:#e6db74>{}</span><span style=color:#e6db74> mac button created&#39;</span><span style=color:#f92672>.</span>format(button_name)
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span><span style=color:#66d9ef>class</span> <span style=color:#a6e22e>ButtonFactory</span>(object):
+</span></span><span style=display:flex><span>    <span style=color:#66d9ef>def</span> <span style=color:#a6e22e>create</span>(self, button_name):
+</span></span><span style=display:flex><span>        <span style=color:#66d9ef>raise</span> <span style=color:#a6e22e>NotImplementedError</span>
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span><span style=color:#66d9ef>class</span> <span style=color:#a6e22e>WinButtonFactory</span>(ButtonFactory):
+</span></span><span style=display:flex><span>    <span style=color:#66d9ef>def</span> <span style=color:#a6e22e>create</span>(self, button_name):
+</span></span><span style=display:flex><span>        <span style=color:#66d9ef>return</span> create_win_button(button_name)
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span><span style=color:#66d9ef>class</span> <span style=color:#a6e22e>MacButtonFactory</span>(ButtonFactory):
+</span></span><span style=display:flex><span>    <span style=color:#66d9ef>def</span> <span style=color:#a6e22e>create</span>(self, button_name):
+</span></span><span style=display:flex><span>        <span style=color:#66d9ef>return</span> create_mac_button(button_name)
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span><span style=color:#66d9ef>if</span> __name__ <span style=color:#f92672>==</span> <span style=color:#e6db74>&#39;__main__&#39;</span>:
+</span></span><span style=display:flex><span>    win_button_factory <span style=color:#f92672>=</span> WinButtonFactory()
+</span></span><span style=display:flex><span>    mac_button_factory <span style=color:#f92672>=</span> MacButtonFactory()
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>    show_button_on_win <span style=color:#f92672>=</span> win_button_factory<span style=color:#f92672>.</span>create(<span style=color:#e6db74>&#39;show&#39;</span>)
+</span></span><span style=display:flex><span>    close_button_on_mac <span style=color:#f92672>=</span> win_button_factory<span style=color:#f92672>.</span>create(<span style=color:#e6db74>&#39;close&#39;</span>)
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>    print(show_button_on_win, close_button_on_mac)
+</span></span></code></pre></div><p>创建实例过程不一定使用单独的创建类，通常可以使用静态方法。当使用这种方式时，构造方法经常被设置成私有的，强制使用工厂方法的对象。</p><blockquote><p>Python 中没有私有的概念，一般用下划线表示私有</p></blockquote><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-python data-lang=python><span style=display:flex><span><span style=color:#f92672>from</span> collections <span style=color:#f92672>import</span> namedtuple
+</span></span><span style=display:flex><span><span style=color:#f92672>from</span> math <span style=color:#f92672>import</span> cos, sin, pi
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span><span style=color:#75715e># 禁止「构造函数 _create()」导出</span>
+</span></span><span style=display:flex><span>__all__ <span style=color:#f92672>=</span> [
+</span></span><span style=display:flex><span>    <span style=color:#e6db74>&#39;ComplexCreator&#39;</span>
+</span></span><span style=display:flex><span>]
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>Complex <span style=color:#f92672>=</span> namedtuple(<span style=color:#e6db74>&#39;Complex&#39;</span>, <span style=color:#e6db74>&#39;x y&#39;</span>)
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span><span style=color:#66d9ef>def</span> <span style=color:#a6e22e>_create</span>(a, b):
+</span></span><span style=display:flex><span>    <span style=color:#66d9ef>return</span> Complex(a, b)
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span><span style=color:#66d9ef>class</span> <span style=color:#a6e22e>ComplexCreator</span>(object):
+</span></span><span style=display:flex><span>    <span style=color:#a6e22e>@staticmethod</span>
+</span></span><span style=display:flex><span>    <span style=color:#66d9ef>def</span> <span style=color:#a6e22e>from_cartesian_factory</span>(real, imaginary):
+</span></span><span style=display:flex><span>        <span style=color:#66d9ef>return</span> _create(real, imaginary)
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>    <span style=color:#a6e22e>@staticmethod</span>
+</span></span><span style=display:flex><span>    <span style=color:#66d9ef>def</span> <span style=color:#a6e22e>from_polar_factory</span>(modulus, angle):
+</span></span><span style=display:flex><span>        <span style=color:#66d9ef>return</span> _create(modulus <span style=color:#f92672>*</span> cos(angle), angle <span style=color:#f92672>*</span> sin(modulus))
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span><span style=color:#66d9ef>if</span> __name__ <span style=color:#f92672>==</span> <span style=color:#e6db74>&#39;__main__&#39;</span>:
+</span></span><span style=display:flex><span>    cartesian_complex <span style=color:#f92672>=</span> ComplexCreator<span style=color:#f92672>.</span>from_cartesian_factory(<span style=color:#ae81ff>3</span>, <span style=color:#ae81ff>4</span>)
+</span></span><span style=display:flex><span>    polar_complex <span style=color:#f92672>=</span> ComplexCreator<span style=color:#f92672>.</span>from_polar_factory(<span style=color:#ae81ff>5</span>, pi)
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>    print(cartesian_complex, polar_complex)
+</span></span></code></pre></div><p>也可以利用动态语言 Function First 的特点，在工厂中根据合适的信息创建需要的对象。</p><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-python data-lang=python><span style=display:flex><span>__all__ <span style=color:#f92672>=</span> [
+</span></span><span style=display:flex><span>    <span style=color:#e6db74>&#34;image_reader_factory&#34;</span>
+</span></span><span style=display:flex><span>]
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span><span style=color:#66d9ef>def</span> <span style=color:#a6e22e>gif_reader</span>(image_file_path):
+</span></span><span style=display:flex><span>    <span style=color:#66d9ef>return</span> <span style=color:#e6db74>&#39;gif reader created&#39;</span>
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span><span style=color:#66d9ef>def</span> <span style=color:#a6e22e>jpeg_reader</span>(image_file_path):
+</span></span><span style=display:flex><span>    <span style=color:#66d9ef>return</span> <span style=color:#e6db74>&#39;jpeg reader created&#39;</span>
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span><span style=color:#66d9ef>def</span> <span style=color:#a6e22e>image_reader_factory</span>(image_file_path):
+</span></span><span style=display:flex><span>    reader <span style=color:#f92672>=</span> <span style=color:#66d9ef>None</span>
+</span></span><span style=display:flex><span>    <span style=color:#66d9ef>if</span> image_file_path<span style=color:#f92672>.</span>endswith(<span style=color:#e6db74>&#39;gif&#39;</span>):
+</span></span><span style=display:flex><span>        reader <span style=color:#f92672>=</span> gif_reader(image_file_path)
+</span></span><span style=display:flex><span>    <span style=color:#66d9ef>elif</span> image_file_path<span style=color:#f92672>.</span>endswith(<span style=color:#e6db74>&#39;jpeg&#39;</span>):
+</span></span><span style=display:flex><span>        reader <span style=color:#f92672>=</span> jpeg_reader(image_file_path)
+</span></span><span style=display:flex><span>    <span style=color:#66d9ef>else</span>:
+</span></span><span style=display:flex><span>        <span style=color:#66d9ef>raise</span> <span style=color:#a6e22e>ValueError</span>(<span style=color:#e6db74>&#39;invalid image type&#39;</span>)
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>    <span style=color:#66d9ef>return</span> reader
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span><span style=color:#66d9ef>if</span> __name__ <span style=color:#f92672>==</span> <span style=color:#e6db74>&#39;__main__&#39;</span>:
+</span></span><span style=display:flex><span>    gif <span style=color:#f92672>=</span> image_reader_factory(<span style=color:#e6db74>&#39;hexiangyu.gif&#39;</span>)
+</span></span><span style=display:flex><span>    jpeg <span style=color:#f92672>=</span> image_reader_factory(<span style=color:#e6db74>&#39;zhengxiaowai.jpeg&#39;</span>)
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>    print(gif, jpeg)
+</span></span></code></pre></div><p>工厂方法有三个局限性：</p><ol><li>重构会破坏客户端代码，因为会把标准创建类设置为私有的不允许调用</li><li>工厂方法所实例化的类具有私有的构造方法（Python没这个问题）</li><li>如果扩展工厂类，那么子类必须有自己的一套实现，否则会调用父类的方法</li></ol><h2 id=reference>Reference</h2><ul><li>维基百科 <a href=https://zh.wikipedia.org/wiki/%E5%B7%A5%E5%8E%82%E6%96%B9%E6%B3%95>工厂方法</a></li></ul></section><nav class="mt-24 flex rounded-lg bg-black/[3%] text-lg dark:bg-white/[8%]"><a class="flex w-1/2 items-center p-6 pr-3 no-underline" href=http://hexiangyu.me/posts/namedtuple-use-string-template/><span class=mr-1.5>←</span><span>namedtuple —— 使用字符串动态生成类</span></a>
+<a class="ml-auto flex w-1/2 items-center justify-end p-6 pl-3 no-underline" href=http://hexiangyu.me/posts/ordereddict-double-linked-list/><span>OrderedDict —— 双向循环列表的最佳实践</span><span class=ml-1.5>→</span></a></nav></article></main><footer class="opaco mx-auto flex h-[5rem] max-w-3xl items-center px-8 text-[0.9em] opacity-60"><div class=mr-auto>&copy; 2022
+<a class=link href=http://hexiangyu.me/>正小歪 BLOG</a></div><a class="link mx-6" href=https://gohugo.io/ rel=noopener target=_blank>Powered by Hugo️️</a>️
+<a class=link href=https://github.com/nanxiaobei/hugo-paper rel=noopener target=_blank>▷ Paper 6</a></footer></body></html>

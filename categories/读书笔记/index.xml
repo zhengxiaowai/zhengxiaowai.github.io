@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?><rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom"><channel><title>读书笔记 on 正小歪 BLOG</title><link>http://hexiangyu.me/categories/%E8%AF%BB%E4%B9%A6%E7%AC%94%E8%AE%B0/</link><description>Recent content in 读书笔记 on 正小歪 BLOG</description><generator>Hugo -- gohugo.io</generator><language>en-us</language><lastBuildDate>Sun, 01 Nov 2015 16:39:51 +0000</lastBuildDate><atom:link href="http://hexiangyu.me/categories/%E8%AF%BB%E4%B9%A6%E7%AC%94%E8%AE%B0/index.xml" rel="self" type="application/rss+xml"/><item><title>CSS 设计指南读书笔记</title><link>http://hexiangyu.me/posts/css-designer-guide/</link><pubDate>Sun, 01 Nov 2015 16:39:51 +0000</pubDate><guid>http://hexiangyu.me/posts/css-designer-guide/</guid><description>剖析CSS规则 给文档添加样式的方法有三种：行内样式、嵌入样式、链接样式。
+行内样式
+直接写在属性里：
+&amp;lt;p style=&amp;#34;font-size: 14px; color: red;&amp;#34;&amp;gt;我是一个内容&amp;lt;/p&amp;gt; 行内样式只能影响所在的标签，而且还会覆盖嵌入样式和链接样式。
+嵌入样式
+写在 style 标签中：
+&amp;lt;!DOCTYPE html&amp;gt; &amp;lt;html&amp;gt; &amp;lt;head&amp;gt; &amp;lt;title&amp;gt;&amp;lt;/title&amp;gt; &amp;lt;style type=&amp;#34;text/css&amp;#34;&amp;gt; h1 {font-size: 15px;} p {color: red;} &amp;lt;/style&amp;gt; &amp;lt;/head&amp;gt; &amp;lt;body&amp;gt; &amp;lt;h1&amp;gt;我是h1标签&amp;lt;/h1&amp;gt; &amp;lt;p&amp;gt;我是p标签&amp;lt;/p&amp;gt; &amp;lt;/body&amp;gt; &amp;lt;/html&amp;gt; 嵌入样式只适用于当前页面，会覆盖链接样式，同时会被行内样式覆盖。
+链接样式
+写在 link 标签中：
+&amp;lt;link rel=&amp;#34;stylesheet&amp;#34; type=&amp;#34;text/css&amp;#34; href=&amp;#34;css/style.css&amp;#34;&amp;gt; 链接样式适用于全部网站，前提是要把他引入。会被行内样式和嵌入样式覆盖，同时会被下一个链接样式覆盖。
+CSS命名规则 CSS的规则由选择符和声明符两部分组成。
+p {color: red;} p 是选择符，选择了p标签 {color: red;} 是声明符 选择符可以有：
+上下文选择符 ID和类选择符 属性选择符 声明符由三部分组成：
+{ } 花括号包围 color 标签的一个属性 red 属性的一个值 有三种使用方法：
+一条规则多个声明 p { color: red; font-size: 14px; font-weight: bold; } 多个属性选择符共用某些属性 h1 h2 h3 { color: red; font-size: 14px; font-weight: bold; } 对一个属性设置多次 h1 h2 h3 { color: red; font-size: 14px; font-weight: bold; } h3 {font-style: italic;} 上下文选择符 格式：标签1 标签2 {声明}</description></item><item><title>《Python 高级编程》读书笔记</title><link>http://hexiangyu.me/posts/expert-python-programming/</link><pubDate>Sat, 01 Aug 2015 16:54:46 +0000</pubDate><guid>http://hexiangyu.me/posts/expert-python-programming/</guid><description>列表推导 在Python中总是要透着一种极简主义，这样才能显示出Python牛逼哄哄。所以Python语法中总是能写的短就写的短，这是Python的精髓。
+列表推导就是为了简化列表生成，换一种说法就是用一行代码生成复杂的列表。
+在C语言中你要生成一个0~100中偶数构成的数组你只能这么写：
+int array[50] = {}; for(int i = 0; i &amp;lt; 100; i++) { if(0 == i % 2) array[i] = i; } 一共用了5行，当然更多时候是6行。
+Python也有这种土逼的写法，当然也有更牛逼的写法，你可以这样写：
+[i for i in xrange(100) if (i % 2) is 0] Python的enmuerate内建函数十分有用，不仅能取元素还可以取序号
+&amp;gt;&amp;gt;&amp;gt; l = [&amp;#39;a&amp;#39;, &amp;#39;b&amp;#39;, &amp;#39;c&amp;#39;, &amp;#39;d&amp;#39;] &amp;gt;&amp;gt;&amp;gt; for i, e in enumerate(l): ... print &amp;#34;{0} : {1}&amp;#34;.format(i,e) ... 0 : a 1 : b 2 : c 3 : d &amp;gt;&amp;gt;&amp;gt; 结合列表推导，可以写出很简洁的代码：</description></item></channel></rss>

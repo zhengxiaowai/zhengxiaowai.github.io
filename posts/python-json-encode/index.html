@@ -1,0 +1,180 @@
+<!doctype html><html class="not-ready text-sm lg:text-base" style=--bg:#faf6f1 lang=en-us><head><meta charset=utf-8><meta http-equiv=x-ua-compatible content="IE=edge"><meta name=viewport content="width=device-width,initial-scale=1,shrink-to-fit=no"><title>Python 优雅地 dumps 非标准类型 - 正小歪 BLOG</title><meta name=theme-color><meta name=description content="在 Python 很经常做的一件事就是 Python 数据类型和 JSON 数据类型的转换。
+但是存在一个明显的问题，JSON 作为一种数据交换格式有固定的数据类型，但是 Python 作为编程语言除了内置的数据类型以为还能编写自定义的数据类型。"><meta name=author content><link rel="preload stylesheet" as=style href=http://hexiangyu.me/main.min.css><script defer src=http://hexiangyu.me/highlight.min.js onload=hljs.initHighlightingOnLoad()></script>
+<link rel=preload as=image href=http://hexiangyu.me/theme.png><link rel=icon href=http://hexiangyu.me/favicon.ico><link rel=apple-touch-icon href=http://hexiangyu.me/apple-touch-icon.png><meta name=generator content="Hugo 0.102.3"><meta property="og:title" content="Python 优雅地 dumps 非标准类型"><meta property="og:description" content="在 Python 很经常做的一件事就是 Python 数据类型和 JSON 数据类型的转换。
+但是存在一个明显的问题，JSON 作为一种数据交换格式有固定的数据类型，但是 Python 作为编程语言除了内置的数据类型以为还能编写自定义的数据类型。"><meta property="og:type" content="article"><meta property="og:url" content="http://hexiangyu.me/posts/python-json-encode/"><meta property="article:section" content="posts"><meta property="article:published_time" content="2017-11-11T18:38:29+00:00"><meta property="article:modified_time" content="2017-11-11T18:38:29+00:00"><meta itemprop=name content="Python 优雅地 dumps 非标准类型"><meta itemprop=description content="在 Python 很经常做的一件事就是 Python 数据类型和 JSON 数据类型的转换。
+但是存在一个明显的问题，JSON 作为一种数据交换格式有固定的数据类型，但是 Python 作为编程语言除了内置的数据类型以为还能编写自定义的数据类型。"><meta itemprop=datePublished content="2017-11-11T18:38:29+00:00"><meta itemprop=dateModified content="2017-11-11T18:38:29+00:00"><meta itemprop=wordCount content="626"><meta itemprop=keywords content><meta name=twitter:card content="summary"><meta name=twitter:title content="Python 优雅地 dumps 非标准类型"><meta name=twitter:description content="在 Python 很经常做的一件事就是 Python 数据类型和 JSON 数据类型的转换。
+但是存在一个明显的问题，JSON 作为一种数据交换格式有固定的数据类型，但是 Python 作为编程语言除了内置的数据类型以为还能编写自定义的数据类型。"></head><body class="text-black duration-200 ease-out dark:text-white"><header class="mx-auto flex h-[5rem] max-w-3xl px-8 lg:justify-center"><div class="relative z-50 mr-auto flex items-center"><a class="-translate-x-[1px] -translate-y-0.5 text-3xl font-bold" href=http://hexiangyu.me/>正小歪 BLOG</a>
+<a class="btn-dark ml-6 h-6 w-6 shrink-0 cursor-pointer [background:url(./theme.png)_left_center/_auto_theme('spacing.6')_no-repeat] [transition:_background-position_0.4s_steps(5)] dark:[background-position:right]"></a></div><a class="btn-menu relative z-50 -mr-8 flex h-[5rem] w-[5rem] shrink-0 cursor-pointer flex-col items-center justify-center gap-2.5 lg:hidden"></a>
+<script>const htmlClass=document.documentElement.classList;setTimeout(()=>{htmlClass.remove("not-ready")},10);const btnMenu=document.querySelector(".btn-menu");btnMenu.addEventListener("click",()=>{htmlClass.toggle("open")});const metaTheme=document.querySelector('meta[name="theme-color"]'),lightBg=`"#faf6f1"`.replace(/"/g,""),setDark=e=>{metaTheme.setAttribute("content",e?"#000":lightBg),htmlClass[e?"add":"remove"]("dark"),localStorage.setItem("dark",e)},darkScheme=window.matchMedia("(prefers-color-scheme: dark)"),darkVal=localStorage.getItem("dark");setDark(darkVal?darkVal==="true":darkScheme.matches),darkScheme.addEventListener("change",e=>{setDark(e.matches)});const btnDark=document.querySelector(".btn-dark");btnDark.addEventListener("click",()=>{setDark(localStorage.getItem("dark")!=="true")})</script><div class="nav-wrapper fixed inset-x-0 top-full z-40 flex h-full select-none flex-col justify-center pb-16 duration-200 dark:bg-black lg:static lg:h-auto lg:flex-row lg:!bg-transparent lg:pb-0 lg:transition-none"></div></header><main class="prose prose-neutral relative mx-auto min-h-[calc(100%-10rem)] max-w-3xl px-8 pt-20 pb-32 dark:prose-invert"><article><header class=mb-20><h1 class="!my-0 pb-2.5">Python 优雅地 dumps 非标准类型</h1><div class="text-sm opacity-60"><time>Nov 11, 2017</time></div></header><section><p>在 Python 很经常做的一件事就是 Python 数据类型和 JSON 数据类型的转换。</p><p>但是存在一个明显的问题，JSON 作为一种数据交换格式有固定的数据类型，但是 Python 作为编程语言除了内置的数据类型以为还能编写自定义的数据类型。</p><blockquote><p>墙裂推荐：去看看 JSON 官网对 JSON 的介绍：http://www.json.org/json-zh.html</p></blockquote><p>比如你肯定遇到过类似的问题:</p><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-python data-lang=python><span style=display:flex><span><span style=color:#f92672>&gt;&gt;&gt;</span> <span style=color:#f92672>import</span> json
+</span></span><span style=display:flex><span><span style=color:#f92672>&gt;&gt;&gt;</span> <span style=color:#f92672>import</span> decimal
+</span></span><span style=display:flex><span><span style=color:#f92672>&gt;&gt;&gt;</span> 
+</span></span><span style=display:flex><span><span style=color:#f92672>&gt;&gt;&gt;</span> data <span style=color:#f92672>=</span> {<span style=color:#e6db74>&#39;key1&#39;</span>: <span style=color:#e6db74>&#39;string&#39;</span>, <span style=color:#e6db74>&#39;key2&#39;</span>: <span style=color:#ae81ff>10</span>, <span style=color:#e6db74>&#39;key3&#39;</span>: decimal<span style=color:#f92672>.</span>Decimal(<span style=color:#e6db74>&#39;1.45&#39;</span>)}
+</span></span><span style=display:flex><span><span style=color:#f92672>&gt;&gt;&gt;</span> json<span style=color:#f92672>.</span>dumps(data)
+</span></span><span style=display:flex><span>Traceback (most recent call last):
+</span></span><span style=display:flex><span>  File <span style=color:#e6db74>&#34;&lt;input&gt;&#34;</span>, line <span style=color:#ae81ff>1</span>, <span style=color:#f92672>in</span> <span style=color:#f92672>&lt;</span>module<span style=color:#f92672>&gt;</span>
+</span></span><span style=display:flex><span>    json<span style=color:#f92672>.</span>dumps(data)
+</span></span><span style=display:flex><span>  File <span style=color:#e6db74>&#34;/usr/lib/python3.6/json/__init__.py&#34;</span>, line <span style=color:#ae81ff>231</span>, <span style=color:#f92672>in</span> dumps
+</span></span><span style=display:flex><span>    <span style=color:#66d9ef>return</span> _default_encoder<span style=color:#f92672>.</span>encode(obj)
+</span></span><span style=display:flex><span>  File <span style=color:#e6db74>&#34;/usr/lib/python3.6/json/encoder.py&#34;</span>, line <span style=color:#ae81ff>199</span>, <span style=color:#f92672>in</span> encode
+</span></span><span style=display:flex><span>    chunks <span style=color:#f92672>=</span> self<span style=color:#f92672>.</span>iterencode(o, _one_shot<span style=color:#f92672>=</span><span style=color:#66d9ef>True</span>)
+</span></span><span style=display:flex><span>  File <span style=color:#e6db74>&#34;/usr/lib/python3.6/json/encoder.py&#34;</span>, line <span style=color:#ae81ff>257</span>, <span style=color:#f92672>in</span> iterencode
+</span></span><span style=display:flex><span>    <span style=color:#66d9ef>return</span> _iterencode(o, <span style=color:#ae81ff>0</span>)
+</span></span><span style=display:flex><span>  File <span style=color:#e6db74>&#34;/usr/lib/python3.6/json/encoder.py&#34;</span>, line <span style=color:#ae81ff>180</span>, <span style=color:#f92672>in</span> default
+</span></span><span style=display:flex><span>    o<span style=color:#f92672>.</span>__class__<span style=color:#f92672>.</span>__name__)
+</span></span><span style=display:flex><span><span style=color:#a6e22e>TypeError</span>: Object of type <span style=color:#e6db74>&#39;Decimal&#39;</span> <span style=color:#f92672>is</span> <span style=color:#f92672>not</span> JSON serializable
+</span></span></code></pre></div><p>那么问题就来了，如何把各种各样的 Python 数据类型转化成 JSON 数据类型。
+一种很不 pythonic 的做法就是，先转换成某种能和 JSON 数据类型直接转换的值，然后在 dump，这么做很直接很暴力，但是在各种花式数据类型面前就很无力。</p><p>Google 是解决问题的重要方式之一，当你一顿搜索过后，你就会发现其实可以在 dumps 时 encode 这个阶段对数据进行转化。</p><p>所以你肯定是那么做的，完美地解决了问题。</p><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-python data-lang=python><span style=display:flex><span><span style=color:#f92672>&gt;&gt;&gt;</span> <span style=color:#66d9ef>class</span> <span style=color:#a6e22e>DecimalEncoder</span>(json<span style=color:#f92672>.</span>JSONEncoder):
+</span></span><span style=display:flex><span><span style=color:#f92672>...</span>     <span style=color:#66d9ef>def</span> <span style=color:#a6e22e>default</span>(self, obj):
+</span></span><span style=display:flex><span><span style=color:#f92672>...</span>         <span style=color:#66d9ef>if</span> isinstance(obj, decimal<span style=color:#f92672>.</span>Decimal):
+</span></span><span style=display:flex><span><span style=color:#f92672>...</span>             <span style=color:#66d9ef>return</span> float(obj)
+</span></span><span style=display:flex><span><span style=color:#f92672>...</span>         <span style=color:#66d9ef>return</span> super(DecimalEncoder, self)<span style=color:#f92672>.</span>default(obj)
+</span></span><span style=display:flex><span><span style=color:#f92672>...</span>     
+</span></span><span style=display:flex><span><span style=color:#f92672>...</span> 
+</span></span><span style=display:flex><span><span style=color:#f92672>&gt;&gt;&gt;</span> 
+</span></span><span style=display:flex><span><span style=color:#f92672>&gt;&gt;&gt;</span> json<span style=color:#f92672>.</span>dumps(data, cls<span style=color:#f92672>=</span>DecimalEncoder)
+</span></span><span style=display:flex><span><span style=color:#e6db74>&#39;{&#34;key1&#34;: &#34;string&#34;, &#34;key2&#34;: 10, &#34;key3&#34;: 1.45}&#39;</span>
+</span></span></code></pre></div><h2 id=json-的-encode-过程>JSON 的 Encode 过程</h2><blockquote><p>文中代码摘自 <a href=https://github.com/python/cpython>https://github.com/python/cpython</a></p><p>删除了几乎所有的 docstring，由于代码太长，直接截取了重要片段。可以在片段最上方的链接查看完整的代码。</p></blockquote><p>熟悉 json 这个库的都知道基本只有4个常用的 API，分别是 dump、dumps 和 load、loads。</p><blockquote><p>源码位于 cpython/Lib/json 中</p></blockquote><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-python data-lang=python><span style=display:flex><span><span style=color:#75715e># https://github.com/python/cpython/blob/master/Lib/json/__init__.py#L183-L238</span>
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span><span style=color:#66d9ef>def</span> <span style=color:#a6e22e>dumps</span>(obj, <span style=color:#f92672>*</span>, skipkeys<span style=color:#f92672>=</span><span style=color:#66d9ef>False</span>, ensure_ascii<span style=color:#f92672>=</span><span style=color:#66d9ef>True</span>, check_circular<span style=color:#f92672>=</span><span style=color:#66d9ef>True</span>,
+</span></span><span style=display:flex><span>        allow_nan<span style=color:#f92672>=</span><span style=color:#66d9ef>True</span>, cls<span style=color:#f92672>=</span><span style=color:#66d9ef>None</span>, indent<span style=color:#f92672>=</span><span style=color:#66d9ef>None</span>, separators<span style=color:#f92672>=</span><span style=color:#66d9ef>None</span>,
+</span></span><span style=display:flex><span>        default<span style=color:#f92672>=</span><span style=color:#66d9ef>None</span>, sort_keys<span style=color:#f92672>=</span><span style=color:#66d9ef>False</span>, <span style=color:#f92672>**</span>kw):
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>     <span style=color:#75715e># cached encoder</span>
+</span></span><span style=display:flex><span>    <span style=color:#66d9ef>if</span> (<span style=color:#f92672>not</span> skipkeys <span style=color:#f92672>and</span> ensure_ascii <span style=color:#f92672>and</span>
+</span></span><span style=display:flex><span>        check_circular <span style=color:#f92672>and</span> allow_nan <span style=color:#f92672>and</span>
+</span></span><span style=display:flex><span>        cls <span style=color:#f92672>is</span> <span style=color:#66d9ef>None</span> <span style=color:#f92672>and</span> indent <span style=color:#f92672>is</span> <span style=color:#66d9ef>None</span> <span style=color:#f92672>and</span> separators <span style=color:#f92672>is</span> <span style=color:#66d9ef>None</span> <span style=color:#f92672>and</span>
+</span></span><span style=display:flex><span>        default <span style=color:#f92672>is</span> <span style=color:#66d9ef>None</span> <span style=color:#f92672>and</span> <span style=color:#f92672>not</span> sort_keys <span style=color:#f92672>and</span> <span style=color:#f92672>not</span> kw):
+</span></span><span style=display:flex><span>        <span style=color:#66d9ef>return</span> _default_encoder<span style=color:#f92672>.</span>encode(obj)
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>    <span style=color:#66d9ef>if</span> cls <span style=color:#f92672>is</span> <span style=color:#66d9ef>None</span>:
+</span></span><span style=display:flex><span>        cls <span style=color:#f92672>=</span> JSONEncoder
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>    <span style=color:#75715e># 重点</span>
+</span></span><span style=display:flex><span>    <span style=color:#66d9ef>return</span> cls(
+</span></span><span style=display:flex><span>        skipkeys<span style=color:#f92672>=</span>skipkeys, ensure_ascii<span style=color:#f92672>=</span>ensure_ascii,
+</span></span><span style=display:flex><span>        check_circular<span style=color:#f92672>=</span>check_circular, allow_nan<span style=color:#f92672>=</span>allow_nan, indent<span style=color:#f92672>=</span>indent,
+</span></span><span style=display:flex><span>        separators<span style=color:#f92672>=</span>separators, default<span style=color:#f92672>=</span>default, sort_keys<span style=color:#f92672>=</span>sort_keys,
+</span></span><span style=display:flex><span>        <span style=color:#f92672>**</span>kw)<span style=color:#f92672>.</span>encode(obj)
+</span></span></code></pre></div><p>直接看到最后的 return。可以发现如果不提供 cls 默认就使用 JSONEncoder，然后调用该类的实例方法 encode。</p><p>encode 方法也十分简单：</p><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-python data-lang=python><span style=display:flex><span><span style=color:#75715e># https://github.com/python/cpython/blob/191e993365ac3206f46132dcf46236471ec54bfa/Lib/json/encoder.py#L182-L202</span>
+</span></span><span style=display:flex><span><span style=color:#66d9ef>def</span> <span style=color:#a6e22e>encode</span>(self, o):
+</span></span><span style=display:flex><span>    <span style=color:#75715e># str 类型直接 encode 后返回</span>
+</span></span><span style=display:flex><span>    <span style=color:#66d9ef>if</span> isinstance(o, str):
+</span></span><span style=display:flex><span>        <span style=color:#66d9ef>if</span> self<span style=color:#f92672>.</span>ensure_ascii:
+</span></span><span style=display:flex><span>            <span style=color:#66d9ef>return</span> encode_basestring_ascii(o)
+</span></span><span style=display:flex><span>        <span style=color:#66d9ef>else</span>:
+</span></span><span style=display:flex><span>            <span style=color:#66d9ef>return</span> encode_basestring(o)
+</span></span><span style=display:flex><span>    
+</span></span><span style=display:flex><span>    <span style=color:#75715e># chunks 是数据中的各个部分</span>
+</span></span><span style=display:flex><span>    chunks <span style=color:#f92672>=</span> self<span style=color:#f92672>.</span>iterencode(o, _one_shot<span style=color:#f92672>=</span><span style=color:#66d9ef>True</span>)
+</span></span><span style=display:flex><span>    <span style=color:#66d9ef>if</span> <span style=color:#f92672>not</span> isinstance(chunks, (list, tuple)):
+</span></span><span style=display:flex><span>        chunks <span style=color:#f92672>=</span> list(chunks)
+</span></span><span style=display:flex><span>    <span style=color:#66d9ef>return</span> <span style=color:#e6db74>&#39;&#39;</span><span style=color:#f92672>.</span>join(chunks)
+</span></span></code></pre></div><p>可以看出最后的我们得到 JSON 都是 chunks 拼接得到的，chunks 是调用 self.iterencode 方法得到的。</p><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-python data-lang=python><span style=display:flex><span><span style=color:#75715e># https://github.com/python/cpython/blob/191e993365ac3206f46132dcf46236471ec54bfa/Lib/json/encoder.py#L204-257</span>
+</span></span><span style=display:flex><span>    <span style=color:#66d9ef>if</span> (_one_shot <span style=color:#f92672>and</span> c_make_encoder <span style=color:#f92672>is</span> <span style=color:#f92672>not</span> <span style=color:#66d9ef>None</span>
+</span></span><span style=display:flex><span>            <span style=color:#f92672>and</span> self<span style=color:#f92672>.</span>indent <span style=color:#f92672>is</span> <span style=color:#66d9ef>None</span>):
+</span></span><span style=display:flex><span>        _iterencode <span style=color:#f92672>=</span> c_make_encoder(
+</span></span><span style=display:flex><span>            markers, self<span style=color:#f92672>.</span>default, _encoder, self<span style=color:#f92672>.</span>indent,
+</span></span><span style=display:flex><span>            self<span style=color:#f92672>.</span>key_separator, self<span style=color:#f92672>.</span>item_separator, self<span style=color:#f92672>.</span>sort_keys,
+</span></span><span style=display:flex><span>            self<span style=color:#f92672>.</span>skipkeys, self<span style=color:#f92672>.</span>allow_nan)
+</span></span><span style=display:flex><span>    <span style=color:#66d9ef>else</span>:
+</span></span><span style=display:flex><span>        _iterencode <span style=color:#f92672>=</span> _make_iterencode(
+</span></span><span style=display:flex><span>            markers, self<span style=color:#f92672>.</span>default, _encoder, self<span style=color:#f92672>.</span>indent, floatstr,
+</span></span><span style=display:flex><span>            self<span style=color:#f92672>.</span>key_separator, self<span style=color:#f92672>.</span>item_separator, self<span style=color:#f92672>.</span>sort_keys,
+</span></span><span style=display:flex><span>            self<span style=color:#f92672>.</span>skipkeys, _one_shot)
+</span></span><span style=display:flex><span><span style=color:#66d9ef>return</span> _iterencode(o, <span style=color:#ae81ff>0</span>)
+</span></span></code></pre></div><p>iterencode 方法比较长，我们只关心最后几行。</p><p>返回值 <code>_iterencode</code>，是函数中 <code>c_make_encoder</code> 或者 <code>_make_iterencode</code> 这两个高阶函数的返回值。</p><p><code>c_make_encoder</code> 是来自 <code>_json</code> 这个 module ，这个 module 是一个 c 模块，我们不去关心这个模块怎么实现的。
+转去研究同等作用的 <code>_make_iterencode</code> 方法。</p><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-python data-lang=python><span style=display:flex><span><span style=color:#75715e># https://github.com/python/cpython/blob/191e993365ac3206f46132dcf46236471ec54bfa/Lib/json/encoder.py#L259-441</span>
+</span></span><span style=display:flex><span><span style=color:#66d9ef>def</span> <span style=color:#a6e22e>_iterencode</span>(o, _current_indent_level):
+</span></span><span style=display:flex><span>    <span style=color:#66d9ef>if</span> isinstance(o, str):
+</span></span><span style=display:flex><span>        <span style=color:#66d9ef>yield</span> _encoder(o)
+</span></span><span style=display:flex><span>    <span style=color:#66d9ef>elif</span> o <span style=color:#f92672>is</span> <span style=color:#66d9ef>None</span>:
+</span></span><span style=display:flex><span>        <span style=color:#66d9ef>yield</span> <span style=color:#e6db74>&#39;null&#39;</span>
+</span></span><span style=display:flex><span>    <span style=color:#66d9ef>elif</span> o <span style=color:#f92672>is</span> <span style=color:#66d9ef>True</span>:
+</span></span><span style=display:flex><span>        <span style=color:#66d9ef>yield</span> <span style=color:#e6db74>&#39;true&#39;</span>
+</span></span><span style=display:flex><span>    <span style=color:#66d9ef>elif</span> o <span style=color:#f92672>is</span> <span style=color:#66d9ef>False</span>:
+</span></span><span style=display:flex><span>        <span style=color:#66d9ef>yield</span> <span style=color:#e6db74>&#39;false&#39;</span>
+</span></span><span style=display:flex><span>    <span style=color:#66d9ef>elif</span> isinstance(o, int):
+</span></span><span style=display:flex><span>        <span style=color:#75715e># see comment for int/float in _make_iterencode</span>
+</span></span><span style=display:flex><span>        <span style=color:#66d9ef>yield</span> _intstr(o)
+</span></span><span style=display:flex><span>    <span style=color:#66d9ef>elif</span> isinstance(o, float):
+</span></span><span style=display:flex><span>        <span style=color:#75715e># see comment for int/float in _make_iterencode</span>
+</span></span><span style=display:flex><span>        <span style=color:#66d9ef>yield</span> _floatstr(o)
+</span></span><span style=display:flex><span>    <span style=color:#66d9ef>elif</span> isinstance(o, (list, tuple)):
+</span></span><span style=display:flex><span>        <span style=color:#66d9ef>yield from</span> _iterencode_list(o, _current_indent_level)
+</span></span><span style=display:flex><span>    <span style=color:#66d9ef>elif</span> isinstance(o, dict):
+</span></span><span style=display:flex><span>        <span style=color:#66d9ef>yield from</span> _iterencode_dict(o, _current_indent_level)
+</span></span><span style=display:flex><span>    <span style=color:#66d9ef>else</span>:
+</span></span><span style=display:flex><span>        <span style=color:#66d9ef>if</span> markers <span style=color:#f92672>is</span> <span style=color:#f92672>not</span> <span style=color:#66d9ef>None</span>:
+</span></span><span style=display:flex><span>            markerid <span style=color:#f92672>=</span> id(o)
+</span></span><span style=display:flex><span>            <span style=color:#66d9ef>if</span> markerid <span style=color:#f92672>in</span> markers:
+</span></span><span style=display:flex><span>                <span style=color:#66d9ef>raise</span> <span style=color:#a6e22e>ValueError</span>(<span style=color:#e6db74>&#34;Circular reference detected&#34;</span>)
+</span></span><span style=display:flex><span>            markers[markerid] <span style=color:#f92672>=</span> o
+</span></span><span style=display:flex><span>        o <span style=color:#f92672>=</span> _default(o)
+</span></span><span style=display:flex><span>        <span style=color:#66d9ef>yield from</span> _iterencode(o, _current_indent_level)
+</span></span><span style=display:flex><span>        <span style=color:#66d9ef>if</span> markers <span style=color:#f92672>is</span> <span style=color:#f92672>not</span> <span style=color:#66d9ef>None</span>:
+</span></span><span style=display:flex><span>            <span style=color:#66d9ef>del</span> markers[markerid]
+</span></span><span style=display:flex><span><span style=color:#66d9ef>return</span> _iterencode
+</span></span></code></pre></div><p>同样需要关心的只有返回的这个函数，代码里各种 if-elif-else 逐一把内置类型转换成 JSON 类型。
+在对面无法识别的类型时候就使用了 <code>_default()</code> 这个方法，然后递归调用解析各个值。</p><p><code>_default</code> 就是最前面那个被覆盖的 <code>default</code>。</p><p>到这里就可以完全了解 Python 是如何 encode 成 JSON 数据。</p><p>总结一下流程，<code>json.dumps()</code> 调用 JSONEncoder 的实例方法 <code>encode()</code>，随后使用 <code>iterencode()</code> 递归转化各种类型，最后把 chunks 拼接成字符串后返回。</p><h2 id=优雅的解决方案>优雅的解决方案</h2><p>通过前面的流程分析之后，知道为什么继承 JSONEncoder 然后覆盖 default 方法就可以完成自定义类型解析了。</p><p>也许你以后需要解析 datetime 类型数据，你可定会那么做：</p><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-python data-lang=python><span style=display:flex><span><span style=color:#66d9ef>class</span> <span style=color:#a6e22e>ExtendJSONEncoder</span>(json<span style=color:#f92672>.</span>JSONEncoder):
+</span></span><span style=display:flex><span>    <span style=color:#66d9ef>def</span> <span style=color:#a6e22e>default</span>(self, obj):
+</span></span><span style=display:flex><span>        <span style=color:#66d9ef>if</span> isinstance(obj, decimal<span style=color:#f92672>.</span>Decimal):
+</span></span><span style=display:flex><span>            <span style=color:#66d9ef>return</span> int(obj)
+</span></span><span style=display:flex><span>        
+</span></span><span style=display:flex><span>        <span style=color:#66d9ef>if</span> isinstance(obj, datetime<span style=color:#f92672>.</span>datetime):
+</span></span><span style=display:flex><span>            <span style=color:#66d9ef>return</span> obj<span style=color:#f92672>.</span>strftime(DATETIME_FORMAT) 
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>        <span style=color:#66d9ef>return</span> super(ExtendJSONEncoder, self)<span style=color:#f92672>.</span>default(obj)
+</span></span></code></pre></div><p>最后调用父类是 <code>default()</code> 方法纯粹是为了触发异常。</p><p>Python 可以使用 singledispatch 来解决这种单泛型问题。</p><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-python data-lang=python><span style=display:flex><span><span style=color:#f92672>import</span> json
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span><span style=color:#f92672>from</span> datetime <span style=color:#f92672>import</span> datetime
+</span></span><span style=display:flex><span><span style=color:#f92672>from</span> decimal <span style=color:#f92672>import</span> Decimal
+</span></span><span style=display:flex><span><span style=color:#f92672>from</span> functools <span style=color:#f92672>import</span> singledispatch
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span><span style=color:#66d9ef>class</span> <span style=color:#a6e22e>MyClass</span>:
+</span></span><span style=display:flex><span>    <span style=color:#66d9ef>def</span> __init__(self, value):
+</span></span><span style=display:flex><span>        self<span style=color:#f92672>.</span>_value <span style=color:#f92672>=</span> value
+</span></span><span style=display:flex><span>    
+</span></span><span style=display:flex><span>    <span style=color:#66d9ef>def</span> <span style=color:#a6e22e>get_value</span>(self):
+</span></span><span style=display:flex><span>        <span style=color:#66d9ef>return</span> self<span style=color:#f92672>.</span>_value
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span><span style=color:#75715e># 创建三个非内置类型的实例</span>
+</span></span><span style=display:flex><span>mc <span style=color:#f92672>=</span> MyClass(<span style=color:#e6db74>&#39;i am class MyClass &#39;</span>)
+</span></span><span style=display:flex><span>dm <span style=color:#f92672>=</span> Decimal(<span style=color:#e6db74>&#39;11.11&#39;</span>)
+</span></span><span style=display:flex><span>dt <span style=color:#f92672>=</span> datetime<span style=color:#f92672>.</span>now()
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span><span style=color:#a6e22e>@singledispatch</span>
+</span></span><span style=display:flex><span><span style=color:#66d9ef>def</span> <span style=color:#a6e22e>convert</span>(o):
+</span></span><span style=display:flex><span>    <span style=color:#66d9ef>raise</span> <span style=color:#a6e22e>TypeError</span>(<span style=color:#e6db74>&#39;can not convert type&#39;</span>)
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span><span style=color:#a6e22e>@convert</span><span style=color:#f92672>.</span>register(datetime)
+</span></span><span style=display:flex><span><span style=color:#66d9ef>def</span> <span style=color:#a6e22e>_</span>(o):
+</span></span><span style=display:flex><span>    <span style=color:#66d9ef>return</span> o<span style=color:#f92672>.</span>strftime(<span style=color:#e6db74>&#39;%b </span><span style=color:#e6db74>%d</span><span style=color:#e6db74> %Y %H:%M:%S&#39;</span>) 
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span><span style=color:#a6e22e>@convert</span><span style=color:#f92672>.</span>register(Decimal)
+</span></span><span style=display:flex><span><span style=color:#66d9ef>def</span> <span style=color:#a6e22e>_</span>(o):
+</span></span><span style=display:flex><span>    <span style=color:#66d9ef>return</span> float(o)
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span><span style=color:#a6e22e>@convert</span><span style=color:#f92672>.</span>register(MyClass)
+</span></span><span style=display:flex><span><span style=color:#66d9ef>def</span> <span style=color:#a6e22e>_</span>(o):
+</span></span><span style=display:flex><span>    <span style=color:#66d9ef>return</span> o<span style=color:#f92672>.</span>get_value()
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span><span style=color:#66d9ef>class</span> <span style=color:#a6e22e>ExtendJSONEncoder</span>(json<span style=color:#f92672>.</span>JSONEncoder):
+</span></span><span style=display:flex><span>    <span style=color:#66d9ef>def</span> <span style=color:#a6e22e>default</span>(self, obj):
+</span></span><span style=display:flex><span>        <span style=color:#66d9ef>try</span>:
+</span></span><span style=display:flex><span>            <span style=color:#66d9ef>return</span> convert(obj)
+</span></span><span style=display:flex><span>        <span style=color:#66d9ef>except</span> <span style=color:#a6e22e>TypeError</span>:
+</span></span><span style=display:flex><span>            <span style=color:#66d9ef>return</span> super(ExtendJSONEncoder, self)<span style=color:#f92672>.</span>default(obj)
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>data <span style=color:#f92672>=</span> {
+</span></span><span style=display:flex><span>    <span style=color:#e6db74>&#39;mc&#39;</span>: mc,
+</span></span><span style=display:flex><span>    <span style=color:#e6db74>&#39;dm&#39;</span>: dm,
+</span></span><span style=display:flex><span>    <span style=color:#e6db74>&#39;dt&#39;</span>: dt
+</span></span><span style=display:flex><span>}
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>json<span style=color:#f92672>.</span>dumps(data, cls<span style=color:#f92672>=</span>ExtendJSONEncoder)
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span><span style=color:#75715e># {&#34;mc&#34;: &#34;i am class MyClass &#34;, &#34;dm&#34;: 11.11, &#34;dt&#34;: &#34;Nov 10 2017 17:31:25&#34;}</span>
+</span></span></code></pre></div><p>这种写法比较符合设计模式的规范。假如以后有了新的类型，不用再修改 <code>ExtendJSONEncoder</code> 类，只需要添加适当的 singledispatch 方法就可以了， 比较 pythonic 。</p><p>如果你执意的想在类中添加 singledispatch 可以参考: <a href=https://stackoverflow.com/a/24602374/5227020>https://stackoverflow.com/a/24602374/5227020</a> ，当然我仍然觉得还是不要写在类中比较好。</p></section><nav class="mt-24 flex rounded-lg bg-black/[3%] text-lg dark:bg-white/[8%]"><a class="flex w-1/2 items-center p-6 pr-3 no-underline" href=http://hexiangyu.me/posts/pass-operation-expression/><span class=mr-1.5>←</span><span>Python 如何传递运算表达式</span></a>
+<a class="ml-auto flex w-1/2 items-center justify-end p-6 pl-3 no-underline" href=http://hexiangyu.me/posts/5-ways-to-make-django-admin-safer/><span>「译」5 种方法构建安全的 Django Admin</span><span class=ml-1.5>→</span></a></nav></article></main><footer class="opaco mx-auto flex h-[5rem] max-w-3xl items-center px-8 text-[0.9em] opacity-60"><div class=mr-auto>&copy; 2022
+<a class=link href=http://hexiangyu.me/>正小歪 BLOG</a></div><a class="link mx-6" href=https://gohugo.io/ rel=noopener target=_blank>Powered by Hugo️️</a>️
+<a class=link href=https://github.com/nanxiaobei/hugo-paper rel=noopener target=_blank>▷ Paper 6</a></footer></body></html>

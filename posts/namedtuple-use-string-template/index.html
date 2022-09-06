@@ -1,0 +1,139 @@
+<!doctype html><html class="not-ready text-sm lg:text-base" style=--bg:#faf6f1 lang=en-us><head><meta charset=utf-8><meta http-equiv=x-ua-compatible content="IE=edge"><meta name=viewport content="width=device-width,initial-scale=1,shrink-to-fit=no"><title>namedtuple —— 使用字符串动态生成类 - 正小歪 BLOG</title><meta name=theme-color><meta name=description content="Python 中的 namedtuple 是一个对 tuple 的加强机制，返回一个具有命名字段的 tuple 子类。"><meta name=author content><link rel="preload stylesheet" as=style href=http://hexiangyu.me/main.min.css><script defer src=http://hexiangyu.me/highlight.min.js onload=hljs.initHighlightingOnLoad()></script>
+<link rel=preload as=image href=http://hexiangyu.me/theme.png><link rel=icon href=http://hexiangyu.me/favicon.ico><link rel=apple-touch-icon href=http://hexiangyu.me/apple-touch-icon.png><meta name=generator content="Hugo 0.102.3"><meta property="og:title" content="namedtuple —— 使用字符串动态生成类"><meta property="og:description" content="Python 中的 namedtuple 是一个对 tuple 的加强机制，返回一个具有命名字段的 tuple 子类。"><meta property="og:type" content="article"><meta property="og:url" content="http://hexiangyu.me/posts/namedtuple-use-string-template/"><meta property="article:section" content="posts"><meta property="article:published_time" content="2016-12-08T16:32:00+00:00"><meta property="article:modified_time" content="2016-12-08T16:32:00+00:00"><meta itemprop=name content="namedtuple —— 使用字符串动态生成类"><meta itemprop=description content="Python 中的 namedtuple 是一个对 tuple 的加强机制，返回一个具有命名字段的 tuple 子类。"><meta itemprop=datePublished content="2016-12-08T16:32:00+00:00"><meta itemprop=dateModified content="2016-12-08T16:32:00+00:00"><meta itemprop=wordCount content="596"><meta itemprop=keywords content><meta name=twitter:card content="summary"><meta name=twitter:title content="namedtuple —— 使用字符串动态生成类"><meta name=twitter:description content="Python 中的 namedtuple 是一个对 tuple 的加强机制，返回一个具有命名字段的 tuple 子类。"></head><body class="text-black duration-200 ease-out dark:text-white"><header class="mx-auto flex h-[5rem] max-w-3xl px-8 lg:justify-center"><div class="relative z-50 mr-auto flex items-center"><a class="-translate-x-[1px] -translate-y-0.5 text-3xl font-bold" href=http://hexiangyu.me/>正小歪 BLOG</a>
+<a class="btn-dark ml-6 h-6 w-6 shrink-0 cursor-pointer [background:url(./theme.png)_left_center/_auto_theme('spacing.6')_no-repeat] [transition:_background-position_0.4s_steps(5)] dark:[background-position:right]"></a></div><a class="btn-menu relative z-50 -mr-8 flex h-[5rem] w-[5rem] shrink-0 cursor-pointer flex-col items-center justify-center gap-2.5 lg:hidden"></a>
+<script>const htmlClass=document.documentElement.classList;setTimeout(()=>{htmlClass.remove("not-ready")},10);const btnMenu=document.querySelector(".btn-menu");btnMenu.addEventListener("click",()=>{htmlClass.toggle("open")});const metaTheme=document.querySelector('meta[name="theme-color"]'),lightBg=`"#faf6f1"`.replace(/"/g,""),setDark=e=>{metaTheme.setAttribute("content",e?"#000":lightBg),htmlClass[e?"add":"remove"]("dark"),localStorage.setItem("dark",e)},darkScheme=window.matchMedia("(prefers-color-scheme: dark)"),darkVal=localStorage.getItem("dark");setDark(darkVal?darkVal==="true":darkScheme.matches),darkScheme.addEventListener("change",e=>{setDark(e.matches)});const btnDark=document.querySelector(".btn-dark");btnDark.addEventListener("click",()=>{setDark(localStorage.getItem("dark")!=="true")})</script><div class="nav-wrapper fixed inset-x-0 top-full z-40 flex h-full select-none flex-col justify-center pb-16 duration-200 dark:bg-black lg:static lg:h-auto lg:flex-row lg:!bg-transparent lg:pb-0 lg:transition-none"></div></header><main class="prose prose-neutral relative mx-auto min-h-[calc(100%-10rem)] max-w-3xl px-8 pt-20 pb-32 dark:prose-invert"><article><header class=mb-20><h1 class="!my-0 pb-2.5">namedtuple —— 使用字符串动态生成类</h1><div class="text-sm opacity-60"><time>Dec 8, 2016</time></div></header><section><p>Python 中的 <code>namedtuple</code> 是一个对 <code>tuple</code> 的加强机制，返回一个具有命名字段的 <code>tuple</code> 子类。</p><h2 id=参数检查>参数检查</h2><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-python data-lang=python><span style=display:flex><span><span style=color:#66d9ef>def</span> <span style=color:#a6e22e>namedtuple</span>(typename, filed_name, verbose<span style=color:#f92672>=</span><span style=color:#66d9ef>False</span>, rename<span style=color:#f92672>=</span><span style=color:#66d9ef>False</span>):
+</span></span><span style=display:flex><span>    <span style=color:#66d9ef>pass</span>
+</span></span></code></pre></div><p>namedtuple 的参数由四个构成：</p><ul><li>typename 是该元组的名字</li><li>field_name 是该元组成员的名字</li><li>verbose 是否输出构造的源码</li><li>rename 是否在 field_name 非法时候进行重命名</li></ul><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-python data-lang=python><span style=display:flex><span><span style=color:#66d9ef>if</span> isinstance(field_names, basestring):
+</span></span><span style=display:flex><span>    field_names <span style=color:#f92672>=</span> field_names<span style=color:#f92672>.</span>replace(<span style=color:#e6db74>&#39;,&#39;</span>, <span style=color:#e6db74>&#39; &#39;</span>)<span style=color:#f92672>.</span>split()
+</span></span><span style=display:flex><span>field_names <span style=color:#f92672>=</span> map(str, field_names)
+</span></span><span style=display:flex><span>typename <span style=color:#f92672>=</span> str(typename)
+</span></span></code></pre></div><p>调用 namedtuple 的第一步是处理 <code>field_name</code> 参数，该参数可以是 basestring 也就是说可以是 str 或者 unicode，再把 <code>field_name</code> 转化成列表。在使用 basestring 类型时，可以用 <code>,</code> 或者 <code></code>隔开。</p><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-python data-lang=python><span style=display:flex><span><span style=color:#66d9ef>if</span> rename:
+</span></span><span style=display:flex><span>    seen <span style=color:#f92672>=</span> set()
+</span></span><span style=display:flex><span>    <span style=color:#66d9ef>for</span> index, name <span style=color:#f92672>in</span> enumerate(field_names):
+</span></span><span style=display:flex><span>        <span style=color:#66d9ef>if</span> (<span style=color:#f92672>not</span> all(c<span style=color:#f92672>.</span>isalnum() <span style=color:#f92672>or</span> c<span style=color:#f92672>==</span><span style=color:#e6db74>&#39;_&#39;</span> <span style=color:#66d9ef>for</span> c <span style=color:#f92672>in</span> name)
+</span></span><span style=display:flex><span>            <span style=color:#f92672>or</span> _iskeyword(name)
+</span></span><span style=display:flex><span>            <span style=color:#f92672>or</span> <span style=color:#f92672>not</span> name
+</span></span><span style=display:flex><span>            <span style=color:#f92672>or</span> name[<span style=color:#ae81ff>0</span>]<span style=color:#f92672>.</span>isdigit()
+</span></span><span style=display:flex><span>            <span style=color:#f92672>or</span> name<span style=color:#f92672>.</span>startswith(<span style=color:#e6db74>&#39;_&#39;</span>)
+</span></span><span style=display:flex><span>            <span style=color:#f92672>or</span> name <span style=color:#f92672>in</span> seen):
+</span></span><span style=display:flex><span>            field_names[index] <span style=color:#f92672>=</span> <span style=color:#e6db74>&#39;_</span><span style=color:#e6db74>%d</span><span style=color:#e6db74>&#39;</span> <span style=color:#f92672>%</span> index
+</span></span><span style=display:flex><span>        seen<span style=color:#f92672>.</span>add(name)
+</span></span></code></pre></div><p>如果把 <code>rename</code> 为 <code>True</code> 将会重命名非法的的成员名字为「下划线 + 位置」,如果不使用 <code>rename</code> ，当非法成员存在时候会抛出异常。</p><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-python data-lang=python><span style=display:flex><span><span style=color:#66d9ef>for</span> name <span style=color:#f92672>in</span> [typename] <span style=color:#f92672>+</span> field_names:
+</span></span><span style=display:flex><span>    <span style=color:#75715e># 全部为 str 类型</span>
+</span></span><span style=display:flex><span>	<span style=color:#66d9ef>if</span> type(name) <span style=color:#f92672>!=</span> str:
+</span></span><span style=display:flex><span>		<span style=color:#66d9ef>raise</span> <span style=color:#a6e22e>TypeError</span>(<span style=color:#e6db74>&#39;Type names and field names must be strings&#39;</span>)
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>    <span style=color:#75715e># 不能只由数字和下划线</span>
+</span></span><span style=display:flex><span>	<span style=color:#66d9ef>if</span> <span style=color:#f92672>not</span> all(c<span style=color:#f92672>.</span>isalnum() <span style=color:#f92672>or</span> c<span style=color:#f92672>==</span><span style=color:#e6db74>&#39;_&#39;</span> <span style=color:#66d9ef>for</span> c <span style=color:#f92672>in</span> name):
+</span></span><span style=display:flex><span>		<span style=color:#66d9ef>raise</span> <span style=color:#a6e22e>ValueError</span>(<span style=color:#e6db74>&#39;Type names and field names can only contain &#39;</span>
+</span></span><span style=display:flex><span>						 <span style=color:#e6db74>&#39;alphanumeric characters and underscores: </span><span style=color:#e6db74>%r</span><span style=color:#e6db74>&#39;</span> <span style=color:#f92672>%</span> name)
+</span></span><span style=display:flex><span>    <span style=color:#75715e># 不能是关键字</span>
+</span></span><span style=display:flex><span>	<span style=color:#66d9ef>if</span> _iskeyword(name):
+</span></span><span style=display:flex><span>		<span style=color:#66d9ef>raise</span> <span style=color:#a6e22e>ValueError</span>(<span style=color:#e6db74>&#39;Type names and field names cannot be a &#39;</span>
+</span></span><span style=display:flex><span>						 <span style=color:#e6db74>&#39;keyword: </span><span style=color:#e6db74>%r</span><span style=color:#e6db74>&#39;</span> <span style=color:#f92672>%</span> name)
+</span></span><span style=display:flex><span>    <span style=color:#75715e># 不能以数字开头</span>
+</span></span><span style=display:flex><span>	<span style=color:#66d9ef>if</span> name[<span style=color:#ae81ff>0</span>]<span style=color:#f92672>.</span>isdigit():
+</span></span><span style=display:flex><span>		<span style=color:#66d9ef>raise</span> <span style=color:#a6e22e>ValueError</span>(<span style=color:#e6db74>&#39;Type names and field names cannot start with &#39;</span>
+</span></span><span style=display:flex><span>						 <span style=color:#e6db74>&#39;a number: </span><span style=color:#e6db74>%r</span><span style=color:#e6db74>&#39;</span> <span style=color:#f92672>%</span> name)
+</span></span><span style=display:flex><span>seen <span style=color:#f92672>=</span> set()
+</span></span><span style=display:flex><span><span style=color:#66d9ef>for</span> name <span style=color:#f92672>in</span> field_names:
+</span></span><span style=display:flex><span>    <span style=color:#75715e># 在 rename 为 False 时候 name 不能以下划线开始</span>
+</span></span><span style=display:flex><span>	<span style=color:#66d9ef>if</span> name<span style=color:#f92672>.</span>startswith(<span style=color:#e6db74>&#39;_&#39;</span>) <span style=color:#f92672>and</span> <span style=color:#f92672>not</span> rename:
+</span></span><span style=display:flex><span>		<span style=color:#66d9ef>raise</span> <span style=color:#a6e22e>ValueError</span>(<span style=color:#e6db74>&#39;Field names cannot start with an underscore: &#39;</span>
+</span></span><span style=display:flex><span>						 <span style=color:#e6db74>&#39;</span><span style=color:#e6db74>%r</span><span style=color:#e6db74>&#39;</span> <span style=color:#f92672>%</span> name)
+</span></span><span style=display:flex><span>    <span style=color:#75715e># 不能存在重复成员</span>
+</span></span><span style=display:flex><span>	<span style=color:#66d9ef>if</span> name <span style=color:#f92672>in</span> seen:
+</span></span><span style=display:flex><span>		<span style=color:#66d9ef>raise</span> <span style=color:#a6e22e>ValueError</span>(<span style=color:#e6db74>&#39;Encountered duplicate field name: </span><span style=color:#e6db74>%r</span><span style=color:#e6db74>&#39;</span> <span style=color:#f92672>%</span> name)
+</span></span><span style=display:flex><span>	seen<span style=color:#f92672>.</span>add(name)
+</span></span></code></pre></div><p>以上是对 <code>typename</code> 和 <code>field_name</code> 的类型检查，可以看出在使用时候应该避免以下情况：</p><ul><li>非 str</li><li>只用下划线和数字</li><li>关键字</li><li>数字开头</li><li>下划线开头</li><li>重复成员</li></ul><h2 id=填充类模板>填充「类模板」</h2><p>namedtuple 是继承自 <code>tuple</code> 的子类，具有他的一切特性，每个子类的代码都是在调用时候生成的，使用的是 Python 的字符串模板。</p><p>使用 <code>typename</code> 和 <code>field_name</code> 填充字符串模板，生成代码</p><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-python data-lang=python><span style=display:flex><span>class_definition <span style=color:#f92672>=</span> _class_template<span style=color:#f92672>.</span>format(
+</span></span><span style=display:flex><span>    typename <span style=color:#f92672>=</span> typename,
+</span></span><span style=display:flex><span>    field_names <span style=color:#f92672>=</span> tuple(field_names),
+</span></span><span style=display:flex><span>    num_fields <span style=color:#f92672>=</span> len(field_names),
+</span></span><span style=display:flex><span>    arg_list <span style=color:#f92672>=</span> repr(tuple(field_names))<span style=color:#f92672>.</span>replace(<span style=color:#e6db74>&#34;&#39;&#34;</span>, <span style=color:#e6db74>&#34;&#34;</span>)[<span style=color:#ae81ff>1</span>:<span style=color:#f92672>-</span><span style=color:#ae81ff>1</span>],
+</span></span><span style=display:flex><span>    repr_fmt <span style=color:#f92672>=</span> <span style=color:#e6db74>&#39;, &#39;</span><span style=color:#f92672>.</span>join(_repr_template<span style=color:#f92672>.</span>format(name<span style=color:#f92672>=</span>name)
+</span></span><span style=display:flex><span>                         <span style=color:#66d9ef>for</span> name <span style=color:#f92672>in</span> field_names),
+</span></span><span style=display:flex><span>    field_defs <span style=color:#f92672>=</span> <span style=color:#e6db74>&#39;</span><span style=color:#ae81ff>\n</span><span style=color:#e6db74>&#39;</span><span style=color:#f92672>.</span>join(_field_template<span style=color:#f92672>.</span>format(index<span style=color:#f92672>=</span>index, name<span style=color:#f92672>=</span>name)
+</span></span><span style=display:flex><span>                           <span style=color:#66d9ef>for</span> index, name <span style=color:#f92672>in</span> enumerate(field_names))
+</span></span><span style=display:flex><span>)
+</span></span></code></pre></div><p>定义一个 <code>Point</code> 参数有 <code>x, y, z</code>，打开 <code>verbose</code>，查看输出构建类。</p><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-python data-lang=python><span style=display:flex><span><span style=color:#f92672>&gt;&gt;&gt;</span> Point <span style=color:#f92672>=</span> namedtuple(<span style=color:#e6db74>&#39;Point&#39;</span>, <span style=color:#e6db74>&#39;x y z&#39;</span>, verbose<span style=color:#f92672>=</span><span style=color:#66d9ef>True</span>)
+</span></span><span style=display:flex><span><span style=color:#66d9ef>class</span> <span style=color:#a6e22e>Point</span>(tuple):
+</span></span><span style=display:flex><span>    <span style=color:#e6db74>&#39;Point(x, y, z)&#39;</span>
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>    __slots__ <span style=color:#f92672>=</span> ()
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>    <span style=color:#75715e># 定义的成员</span>
+</span></span><span style=display:flex><span>    _fields <span style=color:#f92672>=</span> (<span style=color:#e6db74>&#39;x&#39;</span>, <span style=color:#e6db74>&#39;y&#39;</span>, <span style=color:#e6db74>&#39;z&#39;</span>)
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>    <span style=color:#75715e># 实例化 namedstuple 的 Point</span>
+</span></span><span style=display:flex><span>    <span style=color:#66d9ef>def</span> __new__(_cls, x, y, z):
+</span></span><span style=display:flex><span>        <span style=color:#e6db74>&#39;Create new instance of Point(x, y, z)&#39;</span>
+</span></span><span style=display:flex><span>        <span style=color:#66d9ef>return</span> _tuple<span style=color:#f92672>.</span>__new__(_cls, (x, y, z))
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>    <span style=color:#75715e># 生成一个 Point 的实例</span>
+</span></span><span style=display:flex><span>    <span style=color:#a6e22e>@classmethod</span>
+</span></span><span style=display:flex><span>    <span style=color:#66d9ef>def</span> <span style=color:#a6e22e>_make</span>(cls, iterable, new<span style=color:#f92672>=</span>tuple<span style=color:#f92672>.</span>__new__, len<span style=color:#f92672>=</span>len):
+</span></span><span style=display:flex><span>        <span style=color:#e6db74>&#39;Make a new Point object from a sequence or iterable&#39;</span>
+</span></span><span style=display:flex><span>        result <span style=color:#f92672>=</span> new(cls, iterable)
+</span></span><span style=display:flex><span>        <span style=color:#66d9ef>if</span> len(result) <span style=color:#f92672>!=</span> <span style=color:#ae81ff>3</span>:
+</span></span><span style=display:flex><span>            <span style=color:#66d9ef>raise</span> <span style=color:#a6e22e>TypeError</span>(<span style=color:#e6db74>&#39;Expected 3 arguments, got </span><span style=color:#e6db74>%d</span><span style=color:#e6db74>&#39;</span> <span style=color:#f92672>%</span> len(result))
+</span></span><span style=display:flex><span>        <span style=color:#66d9ef>return</span> result
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>    <span style=color:#75715e># 显示信息</span>
+</span></span><span style=display:flex><span>    <span style=color:#66d9ef>def</span> __repr__(self):
+</span></span><span style=display:flex><span>        <span style=color:#e6db74>&#39;Return a nicely formatted representation string&#39;</span>
+</span></span><span style=display:flex><span>        <span style=color:#66d9ef>return</span> <span style=color:#e6db74>&#39;Point(x=</span><span style=color:#e6db74>%r</span><span style=color:#e6db74>, y=</span><span style=color:#e6db74>%r</span><span style=color:#e6db74>, z=</span><span style=color:#e6db74>%r</span><span style=color:#e6db74>)&#39;</span> <span style=color:#f92672>%</span> self
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>    <span style=color:#75715e># 把 field 转化成字典</span>
+</span></span><span style=display:flex><span>    <span style=color:#66d9ef>def</span> <span style=color:#a6e22e>_asdict</span>(self):
+</span></span><span style=display:flex><span>        <span style=color:#e6db74>&#39;Return a new OrderedDict which maps field names to their values&#39;</span>
+</span></span><span style=display:flex><span>        <span style=color:#66d9ef>return</span> OrderedDict(zip(self<span style=color:#f92672>.</span>_fields, self))
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>    <span style=color:#75715e># 替换成员的值，返回一个新的实例</span>
+</span></span><span style=display:flex><span>    <span style=color:#66d9ef>def</span> <span style=color:#a6e22e>_replace</span>(_self, <span style=color:#f92672>**</span>kwds):
+</span></span><span style=display:flex><span>        <span style=color:#e6db74>&#39;Return a new Point object replacing specified fields with new values&#39;</span>
+</span></span><span style=display:flex><span>        result <span style=color:#f92672>=</span> _self<span style=color:#f92672>.</span>_make(map(kwds<span style=color:#f92672>.</span>pop, (<span style=color:#e6db74>&#39;x&#39;</span>, <span style=color:#e6db74>&#39;y&#39;</span>, <span style=color:#e6db74>&#39;z&#39;</span>), _self))
+</span></span><span style=display:flex><span>        <span style=color:#66d9ef>if</span> kwds:
+</span></span><span style=display:flex><span>            <span style=color:#66d9ef>raise</span> <span style=color:#a6e22e>ValueError</span>(<span style=color:#e6db74>&#39;Got unexpected field names: </span><span style=color:#e6db74>%r</span><span style=color:#e6db74>&#39;</span> <span style=color:#f92672>%</span> kwds<span style=color:#f92672>.</span>keys())
+</span></span><span style=display:flex><span>        <span style=color:#66d9ef>return</span> result
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>    <span style=color:#75715e># 把整个 namedtuple 实例序列化</span>
+</span></span><span style=display:flex><span>    <span style=color:#66d9ef>def</span> <span style=color:#a6e22e>__getnewargs__</span>(self):
+</span></span><span style=display:flex><span>        <span style=color:#e6db74>&#39;Return self as a plain tuple.  Used by copy and pickle.&#39;</span>
+</span></span><span style=display:flex><span>        <span style=color:#66d9ef>return</span> tuple(self)
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>    <span style=color:#75715e># 构造类的各个成员成描述符</span>
+</span></span><span style=display:flex><span>    __dict__ <span style=color:#f92672>=</span> _property(_asdict)
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>    <span style=color:#75715e># 清除 OrderedDict 对数据进行 picker 化时候返回的状态</span>
+</span></span><span style=display:flex><span>    <span style=color:#66d9ef>def</span> <span style=color:#a6e22e>__getstate__</span>(self):
+</span></span><span style=display:flex><span>        <span style=color:#e6db74>&#39;Exclude the OrderedDict from pickling&#39;</span>
+</span></span><span style=display:flex><span>        <span style=color:#66d9ef>pass</span>
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>    <span style=color:#75715e># 定义 field 的属性为类属性，itemgetter 定义取值操作</span>
+</span></span><span style=display:flex><span>    x <span style=color:#f92672>=</span> _property(_itemgetter(<span style=color:#ae81ff>0</span>), doc<span style=color:#f92672>=</span><span style=color:#e6db74>&#39;Alias for field number 0&#39;</span>)
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>    y <span style=color:#f92672>=</span> _property(_itemgetter(<span style=color:#ae81ff>1</span>), doc<span style=color:#f92672>=</span><span style=color:#e6db74>&#39;Alias for field number 1&#39;</span>)
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>    z <span style=color:#f92672>=</span> _property(_itemgetter(<span style=color:#ae81ff>2</span>), doc<span style=color:#f92672>=</span><span style=color:#e6db74>&#39;Alias for field number 2&#39;</span>)
+</span></span></code></pre></div><p>至此，构建 Point 的代码已经填充完成，但是还需要使用解释器执行该代码片段，才能真正 load 进内存中</p><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-python data-lang=python><span style=display:flex><span><span style=color:#75715e># 执行 exec 时候临时的 namespace</span>
+</span></span><span style=display:flex><span>namespace <span style=color:#f92672>=</span> dict(_itemgetter<span style=color:#f92672>=</span>_itemgetter, __name__<span style=color:#f92672>=</span><span style=color:#e6db74>&#39;namedtuple_</span><span style=color:#e6db74>%s</span><span style=color:#e6db74>&#39;</span> <span style=color:#f92672>%</span> typename,
+</span></span><span style=display:flex><span>                 OrderedDict<span style=color:#f92672>=</span>OrderedDict, _property<span style=color:#f92672>=</span>property, _tuple<span style=color:#f92672>=</span>tuple)
+</span></span><span style=display:flex><span><span style=color:#66d9ef>try</span>:
+</span></span><span style=display:flex><span>    exec class_definition <span style=color:#f92672>in</span> namespace
+</span></span><span style=display:flex><span><span style=color:#66d9ef>except</span> <span style=color:#a6e22e>SyntaxError</span> <span style=color:#66d9ef>as</span> e:
+</span></span><span style=display:flex><span>    <span style=color:#66d9ef>raise</span> <span style=color:#a6e22e>SyntaxError</span>(e<span style=color:#f92672>.</span>message <span style=color:#f92672>+</span> <span style=color:#e6db74>&#39;:</span><span style=color:#ae81ff>\n</span><span style=color:#e6db74>&#39;</span> <span style=color:#f92672>+</span> class_definition)
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span><span style=color:#75715e># 返回生成的类</span>
+</span></span><span style=display:flex><span>result <span style=color:#f92672>=</span> namespace[typename]
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span><span style=color:#66d9ef>try</span>:
+</span></span><span style=display:flex><span>    <span style=color:#75715e># 把当前调用帧中的全局变量 __name__ 添加到生成类的 __module__ 中</span>
+</span></span><span style=display:flex><span>    result<span style=color:#f92672>.</span>__module__ <span style=color:#f92672>=</span> _sys<span style=color:#f92672>.</span>_getframe(<span style=color:#ae81ff>1</span>)<span style=color:#f92672>.</span>f_globals<span style=color:#f92672>.</span>get(<span style=color:#e6db74>&#39;__name__&#39;</span>, <span style=color:#e6db74>&#39;__main__&#39;</span>)
+</span></span><span style=display:flex><span><span style=color:#66d9ef>except</span> (<span style=color:#a6e22e>AttributeError</span>, <span style=color:#a6e22e>ValueError</span>):
+</span></span><span style=display:flex><span>    <span style=color:#66d9ef>pass</span>
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span><span style=color:#66d9ef>return</span> result
+</span></span></code></pre></div><p>class_definition 在使用 exec 执行的时候放在临时生成的 namespace 中，需要从 namespace 获取变量。</p><p>最后就可以使用 namedtuple 生成的类，每个成员都是类级别的描述符，实例化后和普通类一样使用，由于元组的不可修改的，所以 namedtuple 的属性也是不可以修改。</p></section><nav class="mt-24 flex rounded-lg bg-black/[3%] text-lg dark:bg-white/[8%]"><a class="flex w-1/2 items-center p-6 pr-3 no-underline" href=http://hexiangyu.me/posts/builder-pattern/><span class=mr-1.5>←</span><span>设计模式 —— 建造者模式</span></a>
+<a class="ml-auto flex w-1/2 items-center justify-end p-6 pl-3 no-underline" href=http://hexiangyu.me/posts/factory-method-pattern/><span>设计模式 —— 工厂方法</span><span class=ml-1.5>→</span></a></nav></article></main><footer class="opaco mx-auto flex h-[5rem] max-w-3xl items-center px-8 text-[0.9em] opacity-60"><div class=mr-auto>&copy; 2022
+<a class=link href=http://hexiangyu.me/>正小歪 BLOG</a></div><a class="link mx-6" href=https://gohugo.io/ rel=noopener target=_blank>Powered by Hugo️️</a>️
+<a class=link href=https://github.com/nanxiaobei/hugo-paper rel=noopener target=_blank>▷ Paper 6</a></footer></body></html>

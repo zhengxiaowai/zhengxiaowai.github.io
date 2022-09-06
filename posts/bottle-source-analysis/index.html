@@ -1,0 +1,233 @@
+<!doctype html><html class="not-ready text-sm lg:text-base" style=--bg:#faf6f1 lang=en-us><head><meta charset=utf-8><meta http-equiv=x-ua-compatible content="IE=edge"><meta name=viewport content="width=device-width,initial-scale=1,shrink-to-fit=no"><title>Bottle 源码分析 - 正小歪 BLOG</title><meta name=theme-color><meta name=description content="Bottle 是一个快速，简单和轻量级的 WSGI 微型 Web 框架的 Python。它作为单个文件模块分发，除了 Python 标准库之外没有依赖关系。
+选择源码分析的版本是 Release 于 2009 年 7 月 11 日的 0.4.10 （这是我能找到的最早的发布版本了）。"><meta name=author content><link rel="preload stylesheet" as=style href=http://hexiangyu.me/main.min.css><script defer src=http://hexiangyu.me/highlight.min.js onload=hljs.initHighlightingOnLoad()></script>
+<link rel=preload as=image href=http://hexiangyu.me/theme.png><link rel=icon href=http://hexiangyu.me/favicon.ico><link rel=apple-touch-icon href=http://hexiangyu.me/apple-touch-icon.png><meta name=generator content="Hugo 0.102.3"><meta property="og:title" content="Bottle 源码分析"><meta property="og:description" content="Bottle 是一个快速，简单和轻量级的 WSGI 微型 Web 框架的 Python。它作为单个文件模块分发，除了 Python 标准库之外没有依赖关系。
+选择源码分析的版本是 Release 于 2009 年 7 月 11 日的 0.4.10 （这是我能找到的最早的发布版本了）。"><meta property="og:type" content="article"><meta property="og:url" content="http://hexiangyu.me/posts/bottle-source-analysis/"><meta property="article:section" content="posts"><meta property="article:published_time" content="2017-05-21T16:20:12+00:00"><meta property="article:modified_time" content="2017-05-21T16:20:12+00:00"><meta itemprop=name content="Bottle 源码分析"><meta itemprop=description content="Bottle 是一个快速，简单和轻量级的 WSGI 微型 Web 框架的 Python。它作为单个文件模块分发，除了 Python 标准库之外没有依赖关系。
+选择源码分析的版本是 Release 于 2009 年 7 月 11 日的 0.4.10 （这是我能找到的最早的发布版本了）。"><meta itemprop=datePublished content="2017-05-21T16:20:12+00:00"><meta itemprop=dateModified content="2017-05-21T16:20:12+00:00"><meta itemprop=wordCount content="984"><meta itemprop=keywords content><meta name=twitter:card content="summary"><meta name=twitter:title content="Bottle 源码分析"><meta name=twitter:description content="Bottle 是一个快速，简单和轻量级的 WSGI 微型 Web 框架的 Python。它作为单个文件模块分发，除了 Python 标准库之外没有依赖关系。
+选择源码分析的版本是 Release 于 2009 年 7 月 11 日的 0.4.10 （这是我能找到的最早的发布版本了）。"></head><body class="text-black duration-200 ease-out dark:text-white"><header class="mx-auto flex h-[5rem] max-w-3xl px-8 lg:justify-center"><div class="relative z-50 mr-auto flex items-center"><a class="-translate-x-[1px] -translate-y-0.5 text-3xl font-bold" href=http://hexiangyu.me/>正小歪 BLOG</a>
+<a class="btn-dark ml-6 h-6 w-6 shrink-0 cursor-pointer [background:url(./theme.png)_left_center/_auto_theme('spacing.6')_no-repeat] [transition:_background-position_0.4s_steps(5)] dark:[background-position:right]"></a></div><a class="btn-menu relative z-50 -mr-8 flex h-[5rem] w-[5rem] shrink-0 cursor-pointer flex-col items-center justify-center gap-2.5 lg:hidden"></a>
+<script>const htmlClass=document.documentElement.classList;setTimeout(()=>{htmlClass.remove("not-ready")},10);const btnMenu=document.querySelector(".btn-menu");btnMenu.addEventListener("click",()=>{htmlClass.toggle("open")});const metaTheme=document.querySelector('meta[name="theme-color"]'),lightBg=`"#faf6f1"`.replace(/"/g,""),setDark=e=>{metaTheme.setAttribute("content",e?"#000":lightBg),htmlClass[e?"add":"remove"]("dark"),localStorage.setItem("dark",e)},darkScheme=window.matchMedia("(prefers-color-scheme: dark)"),darkVal=localStorage.getItem("dark");setDark(darkVal?darkVal==="true":darkScheme.matches),darkScheme.addEventListener("change",e=>{setDark(e.matches)});const btnDark=document.querySelector(".btn-dark");btnDark.addEventListener("click",()=>{setDark(localStorage.getItem("dark")!=="true")})</script><div class="nav-wrapper fixed inset-x-0 top-full z-40 flex h-full select-none flex-col justify-center pb-16 duration-200 dark:bg-black lg:static lg:h-auto lg:flex-row lg:!bg-transparent lg:pb-0 lg:transition-none"></div></header><main class="prose prose-neutral relative mx-auto min-h-[calc(100%-10rem)] max-w-3xl px-8 pt-20 pb-32 dark:prose-invert"><article><header class=mb-20><h1 class="!my-0 pb-2.5">Bottle 源码分析</h1><div class="text-sm opacity-60"><time>May 21, 2017</time></div></header><section><p>Bottle 是一个快速，简单和轻量级的 WSGI 微型 Web 框架的 Python。它作为单个文件模块分发，除了 Python 标准库之外没有依赖关系。</p><p>选择源码分析的版本是 Release 于 2009 年 7 月 11 日的 0.4.10 （这是我能找到的最早的发布版本了）。</p><p>为什么要分析 Bottle 这个比较冷门的框架？</p><ul><li>Bottle 从发布至今一直贯彻的微型 Web 框架的理念。</li><li>Bottle 一直坚持单文件发布，也就是只有一个 bottle.py 文件。</li><li>除了 Python 标准库之外没有依赖关系。</li><li>与 Flask、Django 都遵循 PEP-3333 的 WSGI 协议。</li><li>0.4.10 版本代码量小，加上大量注释也只有不到 1000 行的代码。</li></ul><p>所以，抛开框架的高级功能，单单从一个 Web 框架怎么处理请求的角度来看，Bottle 是最佳的选择。</p><blockquote><p>Flask 从第一版开始就是依赖于 werkzeug 实现，更多的实现细节需要从 werkzeug 中查找。</p><p>Django 是个重型框架，不适合整体代码阅读，各个组件看看就可以。</p><p>Tornado 是个异类，和 WSGI 没有什么关系。</p></blockquote><p>在阅读之前最好从 Github 上下载一份 <a href=https://github.com/bottlepy/bottle/archive/0.4.10.zip>0.4.10 版本的 Bottle</a> 的源码，边看边阅读本文。</p><p>阅读本文你需要有如下技能：</p><ul><li>熟悉 Python 的语法</li><li>熟悉 HTTP 协议</li><li>至少使用过一种 WSGI 的框架</li><li>了解 CGI</li><li>看得懂中文</li></ul><h2 id=流程结构分析>流程结构分析</h2><p>代码虽然不多，但是毫无目的的看难免思绪混乱，会看的心烦意乱，甚至会有产生「写的这是什么鬼？」的想法。</p><p>一个 Web 框架最核心也是最基本的功能就是处理 <strong>请求</strong> 和 <strong>响应</strong>。</p><p>但是在这之前，需要先创建一个 Server，才能开始处理啊！</p><p>所以大体的流程如下：</p><ol><li>怎么创建一个 WSGI 的 Server 。</li><li>怎么处理到来的请求。</li><li>怎么处理响应。</li></ol><h2 id=创建-wsgi-server>创建 WSGI Server</h2><p>在 Bottle 中关于创建一个<strong>标准</strong>的 WSGI Server 涉及的类或者方法只有 3 个。</p><blockquote><p>注意，这里只关心一个标准的 WSGI，和核心功能。包括注释、错误处理、参数处理，会统统删除。</p></blockquote><p>从文档中可以看到 Bottle 是通过一个 run 方法启动的。</p><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-python data-lang=python><span style=display:flex><span><span style=color:#66d9ef>def</span> <span style=color:#a6e22e>run</span>(server<span style=color:#f92672>=</span>WSGIRefServer, host<span style=color:#f92672>=</span><span style=color:#e6db74>&#39;127.0.0.1&#39;</span>, port<span style=color:#f92672>=</span><span style=color:#ae81ff>8080</span>, optinmize <span style=color:#f92672>=</span> <span style=color:#66d9ef>False</span>, <span style=color:#f92672>**</span>kargs):
+</span></span><span style=display:flex><span>    server <span style=color:#f92672>=</span> server(host<span style=color:#f92672>=</span>host, port<span style=color:#f92672>=</span>port, <span style=color:#f92672>**</span>kargs)
+</span></span><span style=display:flex><span>    server<span style=color:#f92672>.</span>run(WSGIHandler) 
+</span></span></code></pre></div><p>WSGIRefServer 继承自 ServerAdapter，并且覆盖了 run 方法。</p><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-python data-lang=python><span style=display:flex><span><span style=color:#66d9ef>class</span> <span style=color:#a6e22e>ServerAdapter</span>(object):
+</span></span><span style=display:flex><span>    <span style=color:#66d9ef>def</span> __init__(self, host<span style=color:#f92672>=</span><span style=color:#e6db74>&#39;127.0.0.1&#39;</span>, port<span style=color:#f92672>=</span><span style=color:#ae81ff>8080</span>, <span style=color:#f92672>**</span>kargs):
+</span></span><span style=display:flex><span>        self<span style=color:#f92672>.</span>host <span style=color:#f92672>=</span> host
+</span></span><span style=display:flex><span>        self<span style=color:#f92672>.</span>port <span style=color:#f92672>=</span> int(port)
+</span></span><span style=display:flex><span>        self<span style=color:#f92672>.</span>options <span style=color:#f92672>=</span> kargs
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>    <span style=color:#66d9ef>def</span> __repr__(self):
+</span></span><span style=display:flex><span>        <span style=color:#66d9ef>return</span> <span style=color:#e6db74>&#34;</span><span style=color:#e6db74>%s</span><span style=color:#e6db74> (</span><span style=color:#e6db74>%s</span><span style=color:#e6db74>:</span><span style=color:#e6db74>%d</span><span style=color:#e6db74>)&#34;</span> <span style=color:#f92672>%</span> (self<span style=color:#f92672>.</span>__class__<span style=color:#f92672>.</span>__name__, self<span style=color:#f92672>.</span>host, self<span style=color:#f92672>.</span>port)
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>    <span style=color:#66d9ef>def</span> <span style=color:#a6e22e>run</span>(self, handler):
+</span></span><span style=display:flex><span>        <span style=color:#66d9ef>pass</span>
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span><span style=color:#66d9ef>class</span> <span style=color:#a6e22e>WSGIRefServer</span>(ServerAdapter):
+</span></span><span style=display:flex><span>    <span style=color:#66d9ef>def</span> <span style=color:#a6e22e>run</span>(self, handler):
+</span></span><span style=display:flex><span>        <span style=color:#f92672>from</span> wsgiref.simple_server <span style=color:#f92672>import</span> make_server
+</span></span><span style=display:flex><span>        srv <span style=color:#f92672>=</span> make_server(self<span style=color:#f92672>.</span>host, self<span style=color:#f92672>.</span>port, handler)
+</span></span><span style=display:flex><span>        srv<span style=color:#f92672>.</span>serve_forever()
+</span></span></code></pre></div><p>这个 run 方法本身也是很简单，通过 Python 标准库中的 make_server 创建了一个 WSGI Server 然后跑了起来。</p><p>注意在 run 方法中的 WSGIHandler 和 WSGIRefServer.run 中的 handler 参数，这个就是如何处理一次请求和响应的关键所在。</p><p>在这之前，还需要先看看 Bottle 对 Request 和 Respouse 的定义。</p><h2 id=request-定义>Request 定义</h2><p>Bottle 为每次请求都会把一些参数保存在当前的线程中，通过继承 <code>threading.local</code> 实现线程安全。</p><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-python data-lang=python><span style=display:flex><span><span style=color:#66d9ef>class</span> <span style=color:#a6e22e>Request</span>(threading<span style=color:#f92672>.</span>local):
+</span></span><span style=display:flex><span>    <span style=color:#66d9ef>pass</span> <span style=color:#75715e># 省略其他方法</span>
+</span></span></code></pre></div><p>Request 是由一个方法和 8 个属性构成。</p><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-python data-lang=python><span style=display:flex><span><span style=color:#66d9ef>def</span> <span style=color:#a6e22e>bind</span>(self, environ):
+</span></span><span style=display:flex><span>    <span style=color:#e6db74>&#34;&#34;&#34; 绑定当前请求到 handler 中 &#34;&#34;&#34;</span>
+</span></span><span style=display:flex><span>    self<span style=color:#f92672>.</span>_environ <span style=color:#f92672>=</span> environ
+</span></span><span style=display:flex><span>    self<span style=color:#f92672>.</span>_GET <span style=color:#f92672>=</span> <span style=color:#66d9ef>None</span>
+</span></span><span style=display:flex><span>    self<span style=color:#f92672>.</span>_POST <span style=color:#f92672>=</span> <span style=color:#66d9ef>None</span>
+</span></span><span style=display:flex><span>    self<span style=color:#f92672>.</span>_GETPOST <span style=color:#f92672>=</span> <span style=color:#66d9ef>None</span>
+</span></span><span style=display:flex><span>    self<span style=color:#f92672>.</span>_COOKIES <span style=color:#f92672>=</span> <span style=color:#66d9ef>None</span>
+</span></span><span style=display:flex><span>    self<span style=color:#f92672>.</span>path <span style=color:#f92672>=</span> self<span style=color:#f92672>.</span>_environ<span style=color:#f92672>.</span>get(<span style=color:#e6db74>&#39;PATH_INFO&#39;</span>, <span style=color:#e6db74>&#39;/&#39;</span>)<span style=color:#f92672>.</span>strip()
+</span></span><span style=display:flex><span>    <span style=color:#66d9ef>if</span> <span style=color:#f92672>not</span> self<span style=color:#f92672>.</span>path<span style=color:#f92672>.</span>startswith(<span style=color:#e6db74>&#39;/&#39;</span>):
+</span></span><span style=display:flex><span>        self<span style=color:#f92672>.</span>path <span style=color:#f92672>=</span> <span style=color:#e6db74>&#39;/&#39;</span> <span style=color:#f92672>+</span> self<span style=color:#f92672>.</span>path
+</span></span></code></pre></div><p>bind 方法除了初始化一些变量以外，还添加 environ 到本次请求当中，environ 是一个字典包含了 CGI 的环境变量，更多 environ 内容参考<a href=https://www.python.org/dev/peps/pep-3333/#id24>PEP-3333 中 environ Variables 部分</a>。</p><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-python data-lang=python><span style=display:flex><span><span style=color:#a6e22e>@property</span>
+</span></span><span style=display:flex><span><span style=color:#66d9ef>def</span> <span style=color:#a6e22e>method</span>(self):
+</span></span><span style=display:flex><span>    <span style=color:#e6db74>&#39;&#39;&#39; 返回请求方法 (GET,POST,PUT,DELETE 等) &#39;&#39;&#39;</span>
+</span></span><span style=display:flex><span>    <span style=color:#66d9ef>return</span> self<span style=color:#f92672>.</span>_environ<span style=color:#f92672>.</span>get(<span style=color:#e6db74>&#39;REQUEST_METHOD&#39;</span>, <span style=color:#e6db74>&#39;GET&#39;</span>)<span style=color:#f92672>.</span>upper()
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span><span style=color:#a6e22e>@property</span>
+</span></span><span style=display:flex><span><span style=color:#66d9ef>def</span> <span style=color:#a6e22e>query_string</span>(self):
+</span></span><span style=display:flex><span>    <span style=color:#e6db74>&#39;&#39;&#39; QUERY_STRING 的内容 &#39;&#39;&#39;</span>
+</span></span><span style=display:flex><span>    <span style=color:#66d9ef>return</span> self<span style=color:#f92672>.</span>_environ<span style=color:#f92672>.</span>get(<span style=color:#e6db74>&#39;QUERY_STRING&#39;</span>, <span style=color:#e6db74>&#39;&#39;</span>)
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span><span style=color:#a6e22e>@property</span>
+</span></span><span style=display:flex><span><span style=color:#66d9ef>def</span> <span style=color:#a6e22e>input_length</span>(self):
+</span></span><span style=display:flex><span>    <span style=color:#e6db74>&#39;&#39;&#39; Content 的长度 &#39;&#39;&#39;</span>
+</span></span><span style=display:flex><span>    <span style=color:#66d9ef>try</span>:
+</span></span><span style=display:flex><span>        <span style=color:#66d9ef>return</span> int(self<span style=color:#f92672>.</span>_environ<span style=color:#f92672>.</span>get(<span style=color:#e6db74>&#39;CONTENT_LENGTH&#39;</span>, <span style=color:#e6db74>&#39;0&#39;</span>))
+</span></span><span style=display:flex><span>    <span style=color:#66d9ef>except</span> <span style=color:#a6e22e>ValueError</span>:
+</span></span><span style=display:flex><span>        <span style=color:#66d9ef>return</span> <span style=color:#ae81ff>0</span>
+</span></span></code></pre></div><p>这三个属性比较简单，只是从 _environ 中取出了CGI 的某个环境变量。</p><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-python data-lang=python><span style=display:flex><span><span style=color:#a6e22e>@property</span>
+</span></span><span style=display:flex><span><span style=color:#66d9ef>def</span> <span style=color:#a6e22e>GET</span>(self):
+</span></span><span style=display:flex><span>    <span style=color:#e6db74>&#34;&#34;&#34; 返回字典类型的 GET 参数 &#34;&#34;&#34;</span>
+</span></span><span style=display:flex><span>    <span style=color:#66d9ef>if</span> self<span style=color:#f92672>.</span>_GET <span style=color:#f92672>is</span> <span style=color:#66d9ef>None</span>:
+</span></span><span style=display:flex><span>        raw_dict <span style=color:#f92672>=</span> parse_qs(self<span style=color:#f92672>.</span>query_string, keep_blank_values<span style=color:#f92672>=</span><span style=color:#ae81ff>1</span>)
+</span></span><span style=display:flex><span>        self<span style=color:#f92672>.</span>_GET <span style=color:#f92672>=</span> {}
+</span></span><span style=display:flex><span>        <span style=color:#66d9ef>for</span> key, value <span style=color:#f92672>in</span> raw_dict<span style=color:#f92672>.</span>items():
+</span></span><span style=display:flex><span>            <span style=color:#66d9ef>if</span> len(value) <span style=color:#f92672>==</span> <span style=color:#ae81ff>1</span>:
+</span></span><span style=display:flex><span>                self<span style=color:#f92672>.</span>_GET[key] <span style=color:#f92672>=</span> value[<span style=color:#ae81ff>0</span>]
+</span></span><span style=display:flex><span>            <span style=color:#66d9ef>else</span>:
+</span></span><span style=display:flex><span>                self<span style=color:#f92672>.</span>_GET[key] <span style=color:#f92672>=</span> value
+</span></span><span style=display:flex><span>    <span style=color:#66d9ef>return</span> self<span style=color:#f92672>.</span>_GET
+</span></span></code></pre></div><p>GET 属性把 query_string 解析成字典放入当前请求的变量中，所以在请求中获取 GET 方法的参数可以使用 <code>requst.GET['xxxx']</code> 这样子的用法。</p><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-python data-lang=python><span style=display:flex><span><span style=color:#a6e22e>@property</span>
+</span></span><span style=display:flex><span><span style=color:#66d9ef>def</span> <span style=color:#a6e22e>POST</span>(self):
+</span></span><span style=display:flex><span>    <span style=color:#e6db74>&#34;&#34;&#34;返回字典类型的 POST 参数&#34;&#34;&#34;</span>
+</span></span><span style=display:flex><span>    <span style=color:#66d9ef>if</span> self<span style=color:#f92672>.</span>_POST <span style=color:#f92672>is</span> <span style=color:#66d9ef>None</span>:
+</span></span><span style=display:flex><span>        raw_data <span style=color:#f92672>=</span> cgi<span style=color:#f92672>.</span>FieldStorage(
+</span></span><span style=display:flex><span>            fp<span style=color:#f92672>=</span>self<span style=color:#f92672>.</span>_environ[<span style=color:#e6db74>&#39;wsgi.input&#39;</span>], environ<span style=color:#f92672>=</span>self<span style=color:#f92672>.</span>_environ)
+</span></span><span style=display:flex><span>        self<span style=color:#f92672>.</span>_POST <span style=color:#f92672>=</span> {}
+</span></span><span style=display:flex><span>        <span style=color:#66d9ef>if</span> raw_data:
+</span></span><span style=display:flex><span>            <span style=color:#66d9ef>for</span> key <span style=color:#f92672>in</span> raw_data:
+</span></span><span style=display:flex><span>                <span style=color:#66d9ef>if</span> isinstance(raw_data[key], list):
+</span></span><span style=display:flex><span>                    self<span style=color:#f92672>.</span>_POST[key] <span style=color:#f92672>=</span> [v<span style=color:#f92672>.</span>value <span style=color:#66d9ef>for</span> v <span style=color:#f92672>in</span> raw_data[key]]
+</span></span><span style=display:flex><span>                <span style=color:#66d9ef>elif</span> raw_data[key]<span style=color:#f92672>.</span>filename:
+</span></span><span style=display:flex><span>                    self<span style=color:#f92672>.</span>_POST[key] <span style=color:#f92672>=</span> raw_data[key]
+</span></span><span style=display:flex><span>                <span style=color:#66d9ef>else</span>:
+</span></span><span style=display:flex><span>                    self<span style=color:#f92672>.</span>_POST[key] <span style=color:#f92672>=</span> raw_data[key]<span style=color:#f92672>.</span>value
+</span></span><span style=display:flex><span>    <span style=color:#66d9ef>return</span> self<span style=color:#f92672>.</span>_POST
+</span></span></code></pre></div><p>POST 属性从 wsgi.input 中获取内容（也就是表单提交的内容）放入当前请求的变量中，可以通过 <code>request.POST['xxxx']</code> 来获取数据。</p><p>从 GET 和 POST 这两属性的使用来看，包括 Flask 和 Django 都实现了类似的方法，这方法属性拥有一样的步骤就是获取数据，然后转换成标准的字典格式，实现上来看没什么复杂的，就是普通的字符串处理而已。</p><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-python data-lang=python><span style=display:flex><span><span style=color:#a6e22e>@property</span>
+</span></span><span style=display:flex><span><span style=color:#66d9ef>def</span> <span style=color:#a6e22e>params</span>(self):
+</span></span><span style=display:flex><span>    <span style=color:#e6db74>&#39;&#39;&#39; 返回 GET 和 POST 的混合数据，POST 会覆盖 GET &#39;&#39;&#39;</span>
+</span></span><span style=display:flex><span>    <span style=color:#66d9ef>if</span> self<span style=color:#f92672>.</span>_GETPOST <span style=color:#f92672>is</span> <span style=color:#66d9ef>None</span>:
+</span></span><span style=display:flex><span>        self<span style=color:#f92672>.</span>_GETPOST <span style=color:#f92672>=</span> dict(self<span style=color:#f92672>.</span>GET)
+</span></span><span style=display:flex><span>        self<span style=color:#f92672>.</span>_GETPOST<span style=color:#f92672>.</span>update(dict(self<span style=color:#f92672>.</span>POST))
+</span></span><span style=display:flex><span>    <span style=color:#66d9ef>return</span> self<span style=color:#f92672>.</span>_GETPOST
+</span></span></code></pre></div><p>params 属性提供了一个便利访问数据的方法。</p><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-python data-lang=python><span style=display:flex><span><span style=color:#a6e22e>@property</span>
+</span></span><span style=display:flex><span><span style=color:#66d9ef>def</span> <span style=color:#a6e22e>COOKIES</span>(self):
+</span></span><span style=display:flex><span>    <span style=color:#e6db74>&#34;&#34;&#34;Returns a dict with COOKIES.&#34;&#34;&#34;</span>
+</span></span><span style=display:flex><span>    <span style=color:#66d9ef>if</span> self<span style=color:#f92672>.</span>_COOKIES <span style=color:#f92672>is</span> <span style=color:#66d9ef>None</span>:
+</span></span><span style=display:flex><span>        raw_dict <span style=color:#f92672>=</span> Cookie<span style=color:#f92672>.</span>SimpleCookie(self<span style=color:#f92672>.</span>_environ<span style=color:#f92672>.</span>get(<span style=color:#e6db74>&#39;HTTP_COOKIE&#39;</span>,<span style=color:#e6db74>&#39;&#39;</span>))
+</span></span><span style=display:flex><span>        self<span style=color:#f92672>.</span>_COOKIES <span style=color:#f92672>=</span> {}
+</span></span><span style=display:flex><span>        <span style=color:#66d9ef>for</span> cookie <span style=color:#f92672>in</span> raw_dict<span style=color:#f92672>.</span>values():
+</span></span><span style=display:flex><span>            self<span style=color:#f92672>.</span>_COOKIES[cookie<span style=color:#f92672>.</span>key] <span style=color:#f92672>=</span> cookie<span style=color:#f92672>.</span>value
+</span></span><span style=display:flex><span>     <span style=color:#66d9ef>return</span> self<span style=color:#f92672>.</span>_COOKIES
+</span></span></code></pre></div><p>Bottle 的 COOKIES 管理比较简单，只是单纯的从 CGI 中获取请求的 Cookie，如果存在的话直接返回。</p><p>以上就是 Bottle 的请求定义的内容。</p><p>简单总结来看，Request 从 CGI 中获取数据并且做一些数据处理，然后绑定到变量上。</p><h2 id=response-定义>Response 定义</h2><p>整体结构和 Resquest 大致一样。</p><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-python data-lang=python><span style=display:flex><span><span style=color:#66d9ef>def</span> <span style=color:#a6e22e>bind</span>(self):
+</span></span><span style=display:flex><span>    <span style=color:#e6db74>&#34;&#34;&#34; 清除旧数据并创建一个全新的响应对象 &#34;&#34;&#34;</span>
+</span></span><span style=display:flex><span>    self<span style=color:#f92672>.</span>_COOKIES <span style=color:#f92672>=</span> <span style=color:#66d9ef>None</span>
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>    self<span style=color:#f92672>.</span>status <span style=color:#f92672>=</span> <span style=color:#ae81ff>200</span>
+</span></span><span style=display:flex><span>    self<span style=color:#f92672>.</span>header <span style=color:#f92672>=</span> HeaderDict()
+</span></span><span style=display:flex><span>    self<span style=color:#f92672>.</span>content_type <span style=color:#f92672>=</span> <span style=color:#e6db74>&#39;text/html&#39;</span>
+</span></span><span style=display:flex><span>    self<span style=color:#f92672>.</span>error <span style=color:#f92672>=</span> <span style=color:#66d9ef>None</span>
+</span></span></code></pre></div><p>bind 方法只是初始化了一些变量。其中比较有意思的是 HeaderDict。</p><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-python data-lang=python><span style=display:flex><span><span style=color:#66d9ef>class</span> <span style=color:#a6e22e>HeaderDict</span>(dict):
+</span></span><span style=display:flex><span>    <span style=color:#66d9ef>def</span> __setitem__(self, key, value):
+</span></span><span style=display:flex><span>        <span style=color:#66d9ef>return</span> dict<span style=color:#f92672>.</span>__setitem__(self,key<span style=color:#f92672>.</span>title(), value)
+</span></span><span style=display:flex><span>    <span style=color:#66d9ef>def</span> __getitem__(self, key):
+</span></span><span style=display:flex><span>        <span style=color:#66d9ef>return</span> dict<span style=color:#f92672>.</span>__getitem__(self,key<span style=color:#f92672>.</span>title())
+</span></span><span style=display:flex><span>    <span style=color:#66d9ef>def</span> __delitem__(self, key):
+</span></span><span style=display:flex><span>        <span style=color:#66d9ef>return</span> dict<span style=color:#f92672>.</span>__delitem__(self,key<span style=color:#f92672>.</span>title())
+</span></span><span style=display:flex><span>    <span style=color:#66d9ef>def</span> __contains__(self, key):
+</span></span><span style=display:flex><span>        <span style=color:#66d9ef>return</span> dict<span style=color:#f92672>.</span>__contains__(self,key<span style=color:#f92672>.</span>title())
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>    <span style=color:#66d9ef>def</span> <span style=color:#a6e22e>items</span>(self):
+</span></span><span style=display:flex><span>        <span style=color:#e6db74>&#34;&#34;&#34; 返回 (key, value) 形式的元组列表 &#34;&#34;&#34;</span>
+</span></span><span style=display:flex><span>        <span style=color:#66d9ef>for</span> key, values <span style=color:#f92672>in</span> dict<span style=color:#f92672>.</span>items(self):
+</span></span><span style=display:flex><span>            <span style=color:#66d9ef>if</span> <span style=color:#f92672>not</span> isinstance(values, list):
+</span></span><span style=display:flex><span>                values <span style=color:#f92672>=</span> [values]
+</span></span><span style=display:flex><span>            <span style=color:#66d9ef>for</span> value <span style=color:#f92672>in</span> values:
+</span></span><span style=display:flex><span>                <span style=color:#66d9ef>yield</span> (key, str(value))
+</span></span><span style=display:flex><span>                
+</span></span><span style=display:flex><span>    <span style=color:#66d9ef>def</span> <span style=color:#a6e22e>add</span>(self, key, value):
+</span></span><span style=display:flex><span>        <span style=color:#e6db74>&#34;&#34;&#34; 添加一个新 header，而不删除旧 header &#34;&#34;&#34;</span>
+</span></span><span style=display:flex><span>        <span style=color:#66d9ef>if</span> isinstance(value, list):
+</span></span><span style=display:flex><span>            <span style=color:#66d9ef>for</span> v <span style=color:#f92672>in</span> value:
+</span></span><span style=display:flex><span>                self<span style=color:#f92672>.</span>add(key, v)
+</span></span><span style=display:flex><span>        <span style=color:#66d9ef>elif</span> key <span style=color:#f92672>in</span> self:
+</span></span><span style=display:flex><span>            <span style=color:#66d9ef>if</span> isinstance(self[key], list):
+</span></span><span style=display:flex><span>                self[key]<span style=color:#f92672>.</span>append(value)
+</span></span><span style=display:flex><span>            <span style=color:#66d9ef>else</span>:
+</span></span><span style=display:flex><span>                self[key] <span style=color:#f92672>=</span> [self[key], value]
+</span></span><span style=display:flex><span>        <span style=color:#66d9ef>else</span>:
+</span></span><span style=display:flex><span>          self[key] <span style=color:#f92672>=</span> [value]
+</span></span></code></pre></div><p>这是一个扩展于 dict 的字典，转化成大小写无关的 Title key ，还可以以列表方式添加多个成员。这个 HeaderDict 有意思的地方有两个：</p><ul><li>与大小无关的 Ttile key，也就是会吧 key 转成以大写头其他小写的 key</li><li>存储重复 kv 值时候 values 会以 list 形式存储。如果 values 是多层 list，会自动解析成一层数据。</li><li>重写 items 方法，以二元元组方式返回数据，包括多值数据。</li></ul><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-python data-lang=python><span style=display:flex><span><span style=color:#f92672>&gt;&gt;&gt;</span> h <span style=color:#f92672>=</span> HeaderDict()
+</span></span><span style=display:flex><span><span style=color:#f92672>&gt;&gt;&gt;</span> h<span style=color:#f92672>.</span>add(<span style=color:#e6db74>&#39;mytest&#39;</span>, [[<span style=color:#e6db74>&#39;Test&#39;</span>, [<span style=color:#e6db74>&#39;test1&#39;</span>, [<span style=color:#e6db74>&#39;test2&#39;</span>]]], {<span style=color:#e6db74>&#39;name&#39;</span>:<span style=color:#e6db74>&#39;two&#39;</span>}])
+</span></span><span style=display:flex><span><span style=color:#f92672>&gt;&gt;&gt;</span> h
+</span></span><span style=display:flex><span>{<span style=color:#e6db74>&#39;Mytest&#39;</span>: [<span style=color:#e6db74>&#39;Test&#39;</span>, <span style=color:#e6db74>&#39;test1&#39;</span>, <span style=color:#e6db74>&#39;test2&#39;</span>, {<span style=color:#e6db74>&#39;name&#39;</span>: <span style=color:#e6db74>&#39;two&#39;</span>}]}
+</span></span><span style=display:flex><span><span style=color:#f92672>&gt;&gt;&gt;</span> print list(h<span style=color:#f92672>.</span>items())
+</span></span><span style=display:flex><span>[(<span style=color:#e6db74>&#39;Mytest&#39;</span>, <span style=color:#e6db74>&#39;Test&#39;</span>), (<span style=color:#e6db74>&#39;Mytest&#39;</span>, <span style=color:#e6db74>&#39;test1&#39;</span>), (<span style=color:#e6db74>&#39;Mytest&#39;</span>, <span style=color:#e6db74>&#39;test2&#39;</span>), (<span style=color:#e6db74>&#39;Mytest&#39;</span>, <span style=color:#e6db74>&#34;{&#39;name&#39;: &#39;two&#39;}&#34;</span>)]
+</span></span><span style=display:flex><span><span style=color:#f92672>&gt;&gt;&gt;</span> 
+</span></span></code></pre></div><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-python data-lang=python><span style=display:flex><span><span style=color:#a6e22e>@property</span>
+</span></span><span style=display:flex><span><span style=color:#66d9ef>def</span> <span style=color:#a6e22e>COOKIES</span>(self):
+</span></span><span style=display:flex><span>    <span style=color:#66d9ef>if</span> <span style=color:#f92672>not</span> self<span style=color:#f92672>.</span>_COOKIES:
+</span></span><span style=display:flex><span>        self<span style=color:#f92672>.</span>_COOKIES <span style=color:#f92672>=</span> Cookie<span style=color:#f92672>.</span>SimpleCookie()
+</span></span><span style=display:flex><span>    <span style=color:#66d9ef>return</span> self<span style=color:#f92672>.</span>_COOKIES
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span><span style=color:#66d9ef>def</span> <span style=color:#a6e22e>set_cookie</span>(self, key, value, <span style=color:#f92672>**</span>kargs):
+</span></span><span style=display:flex><span>    <span style=color:#e6db74>&#34;&#34;&#34; 设置 Cookie &#34;&#34;&#34;</span>
+</span></span><span style=display:flex><span>    self<span style=color:#f92672>.</span>COOKIES[key] <span style=color:#f92672>=</span> value
+</span></span><span style=display:flex><span>    <span style=color:#66d9ef>for</span> k <span style=color:#f92672>in</span> kargs:
+</span></span><span style=display:flex><span>        self<span style=color:#f92672>.</span>COOKIES[key][k] <span style=color:#f92672>=</span> kargs[k]
+</span></span></code></pre></div><p>Response 对 Cookie 的初始化，并且提供了设置的方法。</p><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-python data-lang=python><span style=display:flex><span><span style=color:#66d9ef>def</span> <span style=color:#a6e22e>get_content_type</span>(self):
+</span></span><span style=display:flex><span>    <span style=color:#66d9ef>return</span> self<span style=color:#f92672>.</span>header[<span style=color:#e6db74>&#39;Content-Type&#39;</span>]
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span><span style=color:#66d9ef>def</span> <span style=color:#a6e22e>set_content_type</span>(self, value):
+</span></span><span style=display:flex><span>    self<span style=color:#f92672>.</span>header[<span style=color:#e6db74>&#39;Content-Type&#39;</span>] <span style=color:#f92672>=</span> value
+</span></span><span style=display:flex><span>        
+</span></span><span style=display:flex><span>content_type <span style=color:#f92672>=</span> property(
+</span></span><span style=display:flex><span>    get_content_type,
+</span></span><span style=display:flex><span>    set_content_type,
+</span></span><span style=display:flex><span>    <span style=color:#66d9ef>None</span>,
+</span></span><span style=display:flex><span>    get_content_type<span style=color:#f92672>.</span>__doc__)
+</span></span></code></pre></div><p>为 content_type 属性提供了 set 和 get 方法，针对的是 Header 中的 Content-Type。</p><h2 id=添加路由和-handler>添加路由和 handler</h2><p>这部分由一个装饰器和三个方法组成。</p><ul><li>compile_route：路由正则</li><li>add_route：添加路由</li><li>route：路由装饰器</li></ul><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-python data-lang=python><span style=display:flex><span><span style=color:#66d9ef>def</span> <span style=color:#a6e22e>route</span>(url, <span style=color:#f92672>**</span>kargs):
+</span></span><span style=display:flex><span>    <span style=color:#66d9ef>def</span> <span style=color:#a6e22e>wrapper</span>(handler):
+</span></span><span style=display:flex><span>        add_route(url, handler, <span style=color:#f92672>**</span>kargs)
+</span></span><span style=display:flex><span>        <span style=color:#66d9ef>return</span> handler
+</span></span><span style=display:flex><span>    <span style=color:#66d9ef>return</span> wrapper
+</span></span></code></pre></div><p>路由装饰器，简化 add_route 的调用。</p><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-python data-lang=python><span style=display:flex><span><span style=color:#66d9ef>def</span> <span style=color:#a6e22e>add_route</span>(route, handler, method<span style=color:#f92672>=</span><span style=color:#e6db74>&#39;GET&#39;</span>, simple<span style=color:#f92672>=</span><span style=color:#66d9ef>False</span>):
+</span></span><span style=display:flex><span>    method <span style=color:#f92672>=</span> method<span style=color:#f92672>.</span>strip()<span style=color:#f92672>.</span>upper()
+</span></span><span style=display:flex><span>    <span style=color:#66d9ef>if</span> re<span style=color:#f92672>.</span>match(<span style=color:#e6db74>r</span><span style=color:#e6db74>&#39;^/(\w+/)*\w*$&#39;</span>, route) <span style=color:#f92672>or</span> simple:
+</span></span><span style=display:flex><span>        ROUTES_SIMPLE<span style=color:#f92672>.</span>setdefault(method, {})[route] <span style=color:#f92672>=</span> handler
+</span></span><span style=display:flex><span>    <span style=color:#66d9ef>else</span>:
+</span></span><span style=display:flex><span>        route <span style=color:#f92672>=</span> compile_route(route)
+</span></span><span style=display:flex><span>        ROUTES_REGEXP<span style=color:#f92672>.</span>setdefault(method, [])<span style=color:#f92672>.</span>append([route, handler])
+</span></span></code></pre></div><p>ROUTES_SIMPLE 和 ROUTES_REGEXP 是两个全局字典，用于存储路由相关数据（方法，参数，地址）。</p><p>简单路由放入 ROUTES_SIMPLE，以 method 为 key ，在 method 中再以路由地址为 key，处理函数 handler 为 value 存储。</p><p>复杂路由放入 ROUTES_REGEXP，以 method 为 key，以 route 和 handler 组成的元组列表存储。</p><h2 id=处理请求和响应>处理请求和响应</h2><p>根据 PEP-3333 文档需要为编写一个可调用对象（可以是函数，或者是具有 __call__ 方法的类）。</p><p>Bottle 中的 WSGIHandler 正是这么一个可调用对象。</p><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-python data-lang=python><span style=display:flex><span><span style=color:#66d9ef>def</span> <span style=color:#a6e22e>WSGIHandler</span>(environ, start_response):
+</span></span><span style=display:flex><span>    <span style=color:#75715e># 全局 request、response，每个线程独立</span>
+</span></span><span style=display:flex><span>    <span style=color:#66d9ef>global</span> request
+</span></span><span style=display:flex><span>    <span style=color:#66d9ef>global</span> response
+</span></span><span style=display:flex><span>    
+</span></span><span style=display:flex><span>    <span style=color:#75715e># bind 当前 environ 数据</span>
+</span></span><span style=display:flex><span>    request<span style=color:#f92672>.</span>bind(environ) 
+</span></span><span style=display:flex><span>    response<span style=color:#f92672>.</span>bind()
+</span></span><span style=display:flex><span>    <span style=color:#66d9ef>try</span>:
+</span></span><span style=display:flex><span>        <span style=color:#75715e># 根据 path 和 method 找到处理方法和参数</span>
+</span></span><span style=display:flex><span>        handler, args <span style=color:#f92672>=</span> match_url(request<span style=color:#f92672>.</span>path, request<span style=color:#f92672>.</span>method)
+</span></span><span style=display:flex><span>        <span style=color:#66d9ef>if</span> <span style=color:#f92672>not</span> handler:
+</span></span><span style=display:flex><span>            <span style=color:#66d9ef>raise</span> HTTPError(<span style=color:#ae81ff>404</span>, <span style=color:#e6db74>&#34;Not found&#34;</span>)
+</span></span><span style=display:flex><span>        <span style=color:#75715e># 执行返回 output 数据</span>
+</span></span><span style=display:flex><span>        output <span style=color:#f92672>=</span> handler(<span style=color:#f92672>**</span>args)
+</span></span><span style=display:flex><span>    <span style=color:#66d9ef>except</span> BreakTheBottle, shard:
+</span></span><span style=display:flex><span>        <span style=color:#75715e># Bottle 错误产生的输出</span>
+</span></span><span style=display:flex><span>        output <span style=color:#f92672>=</span> shard<span style=color:#f92672>.</span>output
+</span></span><span style=display:flex><span>    <span style=color:#66d9ef>except</span> <span style=color:#a6e22e>Exception</span>, exception:
+</span></span><span style=display:flex><span>        <span style=color:#75715e># 处理内部错误，500 错误</span>
+</span></span><span style=display:flex><span>        response<span style=color:#f92672>.</span>status <span style=color:#f92672>=</span> getattr(exception, <span style=color:#e6db74>&#39;http_status&#39;</span>, <span style=color:#ae81ff>500</span>)
+</span></span><span style=display:flex><span>        errorhandler <span style=color:#f92672>=</span> ERROR_HANDLER<span style=color:#f92672>.</span>get(response<span style=color:#f92672>.</span>status, error_default)
+</span></span><span style=display:flex><span>        <span style=color:#66d9ef>try</span>:
+</span></span><span style=display:flex><span>            output <span style=color:#f92672>=</span> errorhandler(exception)
+</span></span><span style=display:flex><span>        <span style=color:#66d9ef>except</span>:
+</span></span><span style=display:flex><span>            output <span style=color:#f92672>=</span> <span style=color:#e6db74>&#34;Exception within error handler! Application stopped.&#34;</span>
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>        <span style=color:#66d9ef>if</span> response<span style=color:#f92672>.</span>status <span style=color:#f92672>==</span> <span style=color:#ae81ff>500</span>:
+</span></span><span style=display:flex><span>            request<span style=color:#f92672>.</span>_environ[<span style=color:#e6db74>&#39;wsgi.errors&#39;</span>]<span style=color:#f92672>.</span>write(<span style=color:#e6db74>&#34;Error (500) on &#39;</span><span style=color:#e6db74>%s</span><span style=color:#e6db74>&#39;: </span><span style=color:#e6db74>%s</span><span style=color:#ae81ff>\n</span><span style=color:#e6db74>&#34;</span> <span style=color:#f92672>%</span> (request<span style=color:#f92672>.</span>path, exception))
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>    db<span style=color:#f92672>.</span>close() <span style=color:#75715e># DB cleanup</span>
+</span></span><span style=display:flex><span>	
+</span></span><span style=display:flex><span>    <span style=color:#75715e># 如果是文件，则发送文件</span>
+</span></span><span style=display:flex><span>    <span style=color:#66d9ef>if</span> hasattr(output, <span style=color:#e6db74>&#39;read&#39;</span>):
+</span></span><span style=display:flex><span>        fileoutput <span style=color:#f92672>=</span> output
+</span></span><span style=display:flex><span>        <span style=color:#66d9ef>if</span> <span style=color:#e6db74>&#39;wsgi.file_wrapper&#39;</span> <span style=color:#f92672>in</span> environ:
+</span></span><span style=display:flex><span>            output <span style=color:#f92672>=</span> environ[<span style=color:#e6db74>&#39;wsgi.file_wrapper&#39;</span>](fileoutput)
+</span></span><span style=display:flex><span>        <span style=color:#66d9ef>else</span>:
+</span></span><span style=display:flex><span>            output <span style=color:#f92672>=</span> iter(<span style=color:#66d9ef>lambda</span>: fileoutput<span style=color:#f92672>.</span>read(<span style=color:#ae81ff>8192</span>), <span style=color:#e6db74>&#39;&#39;</span>)
+</span></span><span style=display:flex><span>    <span style=color:#66d9ef>elif</span> isinstance(output, str):
+</span></span><span style=display:flex><span>        output <span style=color:#f92672>=</span> [output]
+</span></span><span style=display:flex><span>	
+</span></span><span style=display:flex><span>    <span style=color:#75715e># 根据 response 的 cookie 添加 Set-Cookie 的 header</span>
+</span></span><span style=display:flex><span>    <span style=color:#66d9ef>for</span> c <span style=color:#f92672>in</span> response<span style=color:#f92672>.</span>COOKIES<span style=color:#f92672>.</span>values():
+</span></span><span style=display:flex><span>        response<span style=color:#f92672>.</span>header<span style=color:#f92672>.</span>add(<span style=color:#e6db74>&#39;Set-Cookie&#39;</span>, c<span style=color:#f92672>.</span>OutputString())
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>    <span style=color:#75715e># 完成本次处理</span>
+</span></span><span style=display:flex><span>    status <span style=color:#f92672>=</span> <span style=color:#e6db74>&#39;</span><span style=color:#e6db74>%d</span><span style=color:#e6db74> </span><span style=color:#e6db74>%s</span><span style=color:#e6db74>&#39;</span> <span style=color:#f92672>%</span> (response<span style=color:#f92672>.</span>status, HTTP_CODES[response<span style=color:#f92672>.</span>status])
+</span></span><span style=display:flex><span>    start_response(status, list(response<span style=color:#f92672>.</span>header<span style=color:#f92672>.</span>items()))
+</span></span><span style=display:flex><span>    <span style=color:#66d9ef>return</span> output
+</span></span></code></pre></div><p>为了和代码契合度高，分析已经注释在当中。</p><p>处理流程如下：</p><ol><li>拿到线程独立的 request 和 response</li><li>bind environ 数据</li><li>根据 match_url 找到处理的 handler 和参数，执行<ol><li>处理 Bottle 错误</li><li>处理内部错误</li></ol></li><li>如果是文件则发送文件，不是的话正常返回字符串</li><li>设置 Set-Cookie header</li><li>结束</li></ol><h2 id=结束>结束</h2><p>Bottle 0.4.10 版本的核心内容就差么多，其他都是一些错误处理之类的。</p><p>该版本的 Bottle 以简单的过程，描述出了一个基于 WSGI 的 Web 框架是怎么样处理请求和响应的过程，完全基于 Python 标准库实现。</p><p>好哒，么么哒~~~，Python 大法好啊，Python 大法好啊，Python 大法好啊。</p></section><nav class="mt-24 flex rounded-lg bg-black/[3%] text-lg dark:bg-white/[8%]"><a class="flex w-1/2 items-center p-6 pr-3 no-underline" href=http://hexiangyu.me/posts/5-ways-to-make-django-admin-safer/><span class=mr-1.5>←</span><span>「译」5 种方法构建安全的 Django Admin</span></a>
+<a class="ml-auto flex w-1/2 items-center justify-end p-6 pl-3 no-underline" href=http://hexiangyu.me/posts/hack-fetch/><span>「震惊」你可能需要一个假的 Fetch API</span><span class=ml-1.5>→</span></a></nav></article></main><footer class="opaco mx-auto flex h-[5rem] max-w-3xl items-center px-8 text-[0.9em] opacity-60"><div class=mr-auto>&copy; 2022
+<a class=link href=http://hexiangyu.me/>正小歪 BLOG</a></div><a class="link mx-6" href=https://gohugo.io/ rel=noopener target=_blank>Powered by Hugo️️</a>️
+<a class=link href=https://github.com/nanxiaobei/hugo-paper rel=noopener target=_blank>▷ Paper 6</a></footer></body></html>

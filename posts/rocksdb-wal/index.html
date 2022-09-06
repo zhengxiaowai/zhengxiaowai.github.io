@@ -1,0 +1,302 @@
+<!doctype html><html class="not-ready text-sm lg:text-base" style=--bg:#faf6f1 lang=en-us><head><meta charset=utf-8><meta http-equiv=x-ua-compatible content="IE=edge"><meta name=viewport content="width=device-width,initial-scale=1,shrink-to-fit=no"><title>Rocksdb WAL 流程分析 - 正小歪 BLOG</title><meta name=theme-color><meta name=description content="WAL(Write Ahead Log) 可以将 memtable 的操作做为日志写入磁盘，在发生故障后可以通过 WAL 重建 memtable，恢复到故障前的状态。当 memtable 刷到磁盘上后，这部分 WAL 会被归档，过一段时间后删除。
+LOG 格式 一个 LOG 文件由 N 个固定长度的 Block 组成，每个 Block 长度是 kBlockSize(32k)。每个 Block 中由 0 到 N 个Record 组成，如果一个 Record 不足 kBlockSize 会用 null 填充，超过一个 kBlockSize 会用 Type 表示出来。
++-----+-------------+--+----+----------+------+-- ... ----+ File | r0 | r1 |P | r2 | r3 | r4 | | +-----+-------------+--+----+----------+------+-- ... ----+ <--- kBlockSize ------>|<-- kBlockSize ------>| rn = variable size records P = Padding Record 有两种格式一种是 Legacy 另一种的 Recyclable。"><meta name=author content><link rel="preload stylesheet" as=style href=http://hexiangyu.me/main.min.css><script defer src=http://hexiangyu.me/highlight.min.js onload=hljs.initHighlightingOnLoad()></script>
+<link rel=preload as=image href=http://hexiangyu.me/theme.png><link rel=icon href=http://hexiangyu.me/favicon.ico><link rel=apple-touch-icon href=http://hexiangyu.me/apple-touch-icon.png><meta name=generator content="Hugo 0.102.3"><meta property="og:title" content="Rocksdb WAL 流程分析"><meta property="og:description" content="WAL(Write Ahead Log) 可以将 memtable 的操作做为日志写入磁盘，在发生故障后可以通过 WAL 重建 memtable，恢复到故障前的状态。当 memtable 刷到磁盘上后，这部分 WAL 会被归档，过一段时间后删除。
+LOG 格式 一个 LOG 文件由 N 个固定长度的 Block 组成，每个 Block 长度是 kBlockSize(32k)。每个 Block 中由 0 到 N 个Record 组成，如果一个 Record 不足 kBlockSize 会用 null 填充，超过一个 kBlockSize 会用 Type 表示出来。
++-----+-------------+--+----+----------+------+-- ... ----+ File | r0 | r1 |P | r2 | r3 | r4 | | +-----+-------------+--+----+----------+------+-- ... ----+ <--- kBlockSize ------>|<-- kBlockSize ------>| rn = variable size records P = Padding Record 有两种格式一种是 Legacy 另一种的 Recyclable。"><meta property="og:type" content="article"><meta property="og:url" content="http://hexiangyu.me/posts/rocksdb-wal/"><meta property="article:section" content="posts"><meta property="article:published_time" content="2022-06-12T19:46:44+00:00"><meta property="article:modified_time" content="2022-06-12T19:46:44+00:00"><meta itemprop=name content="Rocksdb WAL 流程分析"><meta itemprop=description content="WAL(Write Ahead Log) 可以将 memtable 的操作做为日志写入磁盘，在发生故障后可以通过 WAL 重建 memtable，恢复到故障前的状态。当 memtable 刷到磁盘上后，这部分 WAL 会被归档，过一段时间后删除。
+LOG 格式 一个 LOG 文件由 N 个固定长度的 Block 组成，每个 Block 长度是 kBlockSize(32k)。每个 Block 中由 0 到 N 个Record 组成，如果一个 Record 不足 kBlockSize 会用 null 填充，超过一个 kBlockSize 会用 Type 表示出来。
++-----+-------------+--+----+----------+------+-- ... ----+ File | r0 | r1 |P | r2 | r3 | r4 | | +-----+-------------+--+----+----------+------+-- ... ----+ <--- kBlockSize ------>|<-- kBlockSize ------>| rn = variable size records P = Padding Record 有两种格式一种是 Legacy 另一种的 Recyclable。"><meta itemprop=datePublished content="2022-06-12T19:46:44+00:00"><meta itemprop=dateModified content="2022-06-12T19:46:44+00:00"><meta itemprop=wordCount content="1295"><meta itemprop=keywords content><meta name=twitter:card content="summary"><meta name=twitter:title content="Rocksdb WAL 流程分析"><meta name=twitter:description content="WAL(Write Ahead Log) 可以将 memtable 的操作做为日志写入磁盘，在发生故障后可以通过 WAL 重建 memtable，恢复到故障前的状态。当 memtable 刷到磁盘上后，这部分 WAL 会被归档，过一段时间后删除。
+LOG 格式 一个 LOG 文件由 N 个固定长度的 Block 组成，每个 Block 长度是 kBlockSize(32k)。每个 Block 中由 0 到 N 个Record 组成，如果一个 Record 不足 kBlockSize 会用 null 填充，超过一个 kBlockSize 会用 Type 表示出来。
++-----+-------------+--+----+----------+------+-- ... ----+ File | r0 | r1 |P | r2 | r3 | r4 | | +-----+-------------+--+----+----------+------+-- ... ----+ <--- kBlockSize ------>|<-- kBlockSize ------>| rn = variable size records P = Padding Record 有两种格式一种是 Legacy 另一种的 Recyclable。"></head><body class="text-black duration-200 ease-out dark:text-white"><header class="mx-auto flex h-[5rem] max-w-3xl px-8 lg:justify-center"><div class="relative z-50 mr-auto flex items-center"><a class="-translate-x-[1px] -translate-y-0.5 text-3xl font-bold" href=http://hexiangyu.me/>正小歪 BLOG</a>
+<a class="btn-dark ml-6 h-6 w-6 shrink-0 cursor-pointer [background:url(./theme.png)_left_center/_auto_theme('spacing.6')_no-repeat] [transition:_background-position_0.4s_steps(5)] dark:[background-position:right]"></a></div><a class="btn-menu relative z-50 -mr-8 flex h-[5rem] w-[5rem] shrink-0 cursor-pointer flex-col items-center justify-center gap-2.5 lg:hidden"></a>
+<script>const htmlClass=document.documentElement.classList;setTimeout(()=>{htmlClass.remove("not-ready")},10);const btnMenu=document.querySelector(".btn-menu");btnMenu.addEventListener("click",()=>{htmlClass.toggle("open")});const metaTheme=document.querySelector('meta[name="theme-color"]'),lightBg=`"#faf6f1"`.replace(/"/g,""),setDark=e=>{metaTheme.setAttribute("content",e?"#000":lightBg),htmlClass[e?"add":"remove"]("dark"),localStorage.setItem("dark",e)},darkScheme=window.matchMedia("(prefers-color-scheme: dark)"),darkVal=localStorage.getItem("dark");setDark(darkVal?darkVal==="true":darkScheme.matches),darkScheme.addEventListener("change",e=>{setDark(e.matches)});const btnDark=document.querySelector(".btn-dark");btnDark.addEventListener("click",()=>{setDark(localStorage.getItem("dark")!=="true")})</script><div class="nav-wrapper fixed inset-x-0 top-full z-40 flex h-full select-none flex-col justify-center pb-16 duration-200 dark:bg-black lg:static lg:h-auto lg:flex-row lg:!bg-transparent lg:pb-0 lg:transition-none"></div></header><main class="prose prose-neutral relative mx-auto min-h-[calc(100%-10rem)] max-w-3xl px-8 pt-20 pb-32 dark:prose-invert"><article><header class=mb-20><h1 class="!my-0 pb-2.5">Rocksdb WAL 流程分析</h1><div class="text-sm opacity-60"><time>Jun 12, 2022</time></div></header><section><p>WAL(Write Ahead Log) 可以将 memtable 的操作做为日志写入磁盘，在发生故障后可以通过 WAL 重建 memtable，恢复到故障前的状态。当 memtable 刷到磁盘上后，这部分 WAL 会被归档，过一段时间后删除。</p><h2 id=log-格式>LOG 格式</h2><p>一个 LOG 文件由 N 个固定长度的 Block 组成，每个 Block 长度是 kBlockSize(32k)。每个 Block 中由 0 到 N 个Record 组成，如果一个 Record 不足 kBlockSize 会用 null 填充，超过一个 kBlockSize 会用 Type 表示出来。</p><pre tabindex=0><code>       +-----+-------------+--+----+----------+------+-- ... ----+
+ File  | r0  |        r1   |P | r2 |    r3    |  r4  |           |
+       +-----+-------------+--+----+----------+------+-- ... ----+
+       &lt;--- kBlockSize ------&gt;|&lt;-- kBlockSize ------&gt;|
+
+  rn = variable size records
+  P = Padding
+</code></pre><p>Record 有两种格式一种是 Legacy 另一种的 Recyclable。</p><p><strong>Legacy Record Format</strong></p><pre tabindex=0><code>+---------+-----------+-----------+--- ... ---+
+|CRC (4B) | Size (2B) | Type (1B) | Payload   |
++---------+-----------+-----------+--- ... ---+
+
+CRC = 32bit hash computed over the payload using CRC
+Size = Length of the payload data
+Type = Type of record
+       (kZeroType, kFullType, kFirstType, kLastType, kMiddleType )
+       The type is used to group a bunch of records together to represent
+       blocks that are larger than kBlockSize
+Payload = Byte stream as long as specified by the payload size
+</code></pre><p>正常的 Record 由 4 部分组成：CRC、Size、Type、Payload。其中前面三部分都是固定长度，Payload 是可变长度由 Size 表示具体的长度。</p><p>kZeroType 表示空数据理论上不应该出现 ，kFullType 表示 Record 处于当前 Block 中，kFirstType, kLastType, kMiddleType 可以表示当前 Record 是不是跨越 Block 的 Record。</p><p>一个 Record 最小需要 4 + 2 + 1 = 7B 来表示，所以当一个 Block 只剩下 6B 时候就不太合适，需要在读取时候跳过这 6B。假如剩下的正好是 7B，这那么这个 Record 就可以就会被拆分至少两部分：</p><ol><li>位于 Block 尾部，Type 是 kFirstType，Size 等于 0 的 Record</li><li>位于下一个 Block 的头部，类型为 kMiddleType/kLastType 的 Record</li></ol><blockquote><p>一个 Record 如果很大可以跨越多个 Block，用 kFirstType, kLastType, kMiddleType 来表示范围</p></blockquote><p><strong>Recyclable Record Format</strong></p><pre tabindex=0><code>+---------+-----------+-----------+----------------+--- ... ---+
+|CRC (4B) | Size (2B) | Type (1B) | Log number (4B)| Payload   |
++---------+-----------+-----------+----------------+--- ... ---+
+Same as above, with the addition of
+Log number = 32bit log file number, so that we can distinguish between
+records written by the most recent log writer vs a previous one.
+</code></pre><p>Recyclable 的 Record 表示已经被归档可以被回收，在 Legacy Record 基础上多了一个 Log number 以区分出是不是当前的 Record。</p><h2 id=读写流程>读写流程</h2><h3 id=新建>新建</h3><p>WAL 被 Rocksdb 抽象成 log_writer 和 log_reader，对应到实际文件就是 &lt;log_number>.log，WAL 意味着 memtable 中的数据，一旦 memtable 被创建销毁对应的 LOG 文件也随之创建销毁。</p><p>在 DBImpl 内部维护着一个 logs_ 的双端队列，这个 log 队列存储着未完全 flush 和当前的 log 文件。</p><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-c++ data-lang=c++><span style=display:flex><span><span style=color:#66d9ef>class</span> <span style=color:#a6e22e>DBImpl</span> <span style=color:#f92672>:</span> <span style=color:#66d9ef>public</span> DB {
+</span></span><span style=display:flex><span>...
+</span></span><span style=display:flex><span><span style=color:#66d9ef>private</span><span style=color:#f92672>:</span>
+</span></span><span style=display:flex><span>    <span style=color:#66d9ef>struct</span> <span style=color:#a6e22e>LogWriterNumber</span> {
+</span></span><span style=display:flex><span>      <span style=color:#75715e>// pass ownership of _writer
+</span></span></span><span style=display:flex><span><span style=color:#75715e></span>      LogWriterNumber(<span style=color:#66d9ef>uint64_t</span> _number, log<span style=color:#f92672>::</span>Writer<span style=color:#f92672>*</span> _writer)
+</span></span><span style=display:flex><span>          <span style=color:#f92672>:</span> number(_number), writer(_writer) {}
+</span></span><span style=display:flex><span>      ...
+</span></span><span style=display:flex><span>    };
+</span></span><span style=display:flex><span>    
+</span></span><span style=display:flex><span>    std<span style=color:#f92672>::</span>deque<span style=color:#f92672>&lt;</span>LogWriterNumber<span style=color:#f92672>&gt;</span> logs_;
+</span></span><span style=display:flex><span>...
+</span></span><span style=display:flex><span>}
+</span></span></code></pre></div><p>logs_ 队列的第一个 LogWriterNumber 来自于 DB open 时候，这时候如果未发生手动 Flush 或者 memtable 写满，所有的 log 都是写入这个 log_writer。</p><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-c++ data-lang=c++><span style=display:flex><span>Status DBImpl<span style=color:#f92672>::</span>Open(<span style=color:#66d9ef>const</span> DBOptions<span style=color:#f92672>&amp;</span> db_options, <span style=color:#66d9ef>const</span> std<span style=color:#f92672>::</span>string<span style=color:#f92672>&amp;</span> dbname,
+</span></span><span style=display:flex><span>                    <span style=color:#66d9ef>const</span> std<span style=color:#f92672>::</span>vector<span style=color:#f92672>&lt;</span>ColumnFamilyDescriptor<span style=color:#f92672>&gt;&amp;</span> column_families,
+</span></span><span style=display:flex><span>                    std<span style=color:#f92672>::</span>vector<span style=color:#f92672>&lt;</span>ColumnFamilyHandle<span style=color:#f92672>*&gt;*</span> handles, DB<span style=color:#f92672>**</span> dbptr,
+</span></span><span style=display:flex><span>                    <span style=color:#66d9ef>const</span> <span style=color:#66d9ef>bool</span> seq_per_batch, <span style=color:#66d9ef>const</span> <span style=color:#66d9ef>bool</span> batch_per_txn) {
+</span></span><span style=display:flex><span>...
+</span></span><span style=display:flex><span>    {
+</span></span><span style=display:flex><span>      InstrumentedMutexLock <span style=color:#a6e22e>wl</span>(<span style=color:#f92672>&amp;</span>impl<span style=color:#f92672>-&gt;</span>log_write_mutex_);
+</span></span><span style=display:flex><span>      impl<span style=color:#f92672>-&gt;</span>logfile_number_ <span style=color:#f92672>=</span> new_log_number;
+</span></span><span style=display:flex><span>      <span style=color:#66d9ef>const</span> <span style=color:#66d9ef>auto</span><span style=color:#f92672>&amp;</span> listeners <span style=color:#f92672>=</span> impl<span style=color:#f92672>-&gt;</span>immutable_db_options_.listeners;
+</span></span><span style=display:flex><span>      std<span style=color:#f92672>::</span>unique_ptr<span style=color:#f92672>&lt;</span>WritableFileWriter<span style=color:#f92672>&gt;</span> file_writer(
+</span></span><span style=display:flex><span>          <span style=color:#66d9ef>new</span> WritableFileWriter(std<span style=color:#f92672>::</span>move(lfile), log_fname, opt_env_options,
+</span></span><span style=display:flex><span>                                 <span style=color:#66d9ef>nullptr</span> <span style=color:#75715e>/* stats */</span>, listeners));
+</span></span><span style=display:flex><span>      impl<span style=color:#f92672>-&gt;</span>logs_.emplace_back(
+</span></span><span style=display:flex><span>          new_log_number,
+</span></span><span style=display:flex><span>          <span style=color:#66d9ef>new</span> log<span style=color:#f92672>::</span>Writer(
+</span></span><span style=display:flex><span>              std<span style=color:#f92672>::</span>move(file_writer), new_log_number,
+</span></span><span style=display:flex><span>              impl<span style=color:#f92672>-&gt;</span>immutable_db_options_.recycle_log_file_num <span style=color:#f92672>&gt;</span> <span style=color:#ae81ff>0</span>,
+</span></span><span style=display:flex><span>              impl<span style=color:#f92672>-&gt;</span>immutable_db_options_.manual_wal_flush));
+</span></span><span style=display:flex><span>    }
+</span></span><span style=display:flex><span>...
+</span></span><span style=display:flex><span>}
+</span></span></code></pre></div><p>除了第一次在 Open 时候会创建第一个 log，后续的还有 4 个场景会涉及到切换新 log：</p><ol><li>wal 文件大小超过 max_total_wal_size</li><li>所有 cf 的 memtable（包括 active + immutable） 大小超过 db_write_buffer_size</li><li>单个 memtable 超过 write_buffer_size</li><li>手动触发了 flush</li></ol><p>除了情况 1，情况 2 和 3 都是触发了 flush 导致 WAL 切换到新 log。</p><h3 id=写入>写入</h3><p>WAL 的写入一般只发生在 Write 操作当中，也就是在写入 memtable 之前。</p><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-c++ data-lang=c++><span style=display:flex><span>Status DBImpl<span style=color:#f92672>::</span>WriteToWAL(<span style=color:#66d9ef>const</span> WriteThread<span style=color:#f92672>::</span>WriteGroup<span style=color:#f92672>&amp;</span> write_group,
+</span></span><span style=display:flex><span>                          log<span style=color:#f92672>::</span>Writer<span style=color:#f92672>*</span> log_writer, <span style=color:#66d9ef>uint64_t</span><span style=color:#f92672>*</span> log_used,
+</span></span><span style=display:flex><span>                          <span style=color:#66d9ef>bool</span> need_log_sync, <span style=color:#66d9ef>bool</span> need_log_dir_sync,
+</span></span><span style=display:flex><span>                          SequenceNumber sequence) {
+</span></span><span style=display:flex><span>    WriteBatch<span style=color:#f92672>*</span> merged_batch <span style=color:#f92672>=</span> MergeBatch(write_group, <span style=color:#f92672>&amp;</span>tmp_batch_, <span style=color:#f92672>&amp;</span>write_with_wal, <span style=color:#f92672>&amp;</span>to_be_cached_state);
+</span></span><span style=display:flex><span>    
+</span></span><span style=display:flex><span>    status <span style=color:#f92672>=</span> WriteToWAL(<span style=color:#f92672>*</span>merged_batch, log_writer, log_used, <span style=color:#f92672>&amp;</span>log_size);
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>    <span style=color:#66d9ef>for</span> (<span style=color:#66d9ef>auto</span><span style=color:#f92672>&amp;</span> log : logs_) {
+</span></span><span style=display:flex><span>      status <span style=color:#f92672>=</span> log.writer<span style=color:#f92672>-&gt;</span>file()<span style=color:#f92672>-&gt;</span>Sync(immutable_db_options_.use_fsync);
+</span></span><span style=display:flex><span>      <span style=color:#66d9ef>if</span> (<span style=color:#f92672>!</span>status.ok()) {
+</span></span><span style=display:flex><span>        <span style=color:#66d9ef>break</span>;
+</span></span><span style=display:flex><span>      }
+</span></span><span style=display:flex><span>    }
+</span></span><span style=display:flex><span>    <span style=color:#66d9ef>if</span> (status.ok() <span style=color:#f92672>&amp;&amp;</span> need_log_dir_sync) {
+</span></span><span style=display:flex><span>      status <span style=color:#f92672>=</span> directories_.GetWalDir()<span style=color:#f92672>-&gt;</span>Fsync();
+</span></span><span style=display:flex><span>    }
+</span></span><span style=display:flex><span>}
+</span></span></code></pre></div><p>WriteToWAL 函数做了三个操作：merge batch、把 batch 写入 WAL、根据情况 flush WAL。</p><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-c++ data-lang=c++><span style=display:flex><span>Status DBImpl<span style=color:#f92672>::</span>WriteToWAL(<span style=color:#66d9ef>const</span> WriteBatch<span style=color:#f92672>&amp;</span> merged_batch,
+</span></span><span style=display:flex><span>                          log<span style=color:#f92672>::</span>Writer<span style=color:#f92672>*</span> log_writer, <span style=color:#66d9ef>uint64_t</span><span style=color:#f92672>*</span> log_used,
+</span></span><span style=display:flex><span>                          <span style=color:#66d9ef>uint64_t</span><span style=color:#f92672>*</span> log_size) {
+</span></span><span style=display:flex><span>  assert(log_size <span style=color:#f92672>!=</span> <span style=color:#66d9ef>nullptr</span>);
+</span></span><span style=display:flex><span>  Slice log_entry <span style=color:#f92672>=</span> WriteBatchInternal<span style=color:#f92672>::</span>Contents(<span style=color:#f92672>&amp;</span>merged_batch);
+</span></span><span style=display:flex><span>  <span style=color:#f92672>*</span>log_size <span style=color:#f92672>=</span> log_entry.size();
+</span></span><span style=display:flex><span> 
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>  <span style=color:#66d9ef>if</span> (UNLIKELY(needs_locking)) {
+</span></span><span style=display:flex><span>    log_write_mutex_.Lock();
+</span></span><span style=display:flex><span>  }
+</span></span><span style=display:flex><span>  Status status <span style=color:#f92672>=</span> log_writer<span style=color:#f92672>-&gt;</span>AddRecord(log_entry);
+</span></span><span style=display:flex><span>  <span style=color:#66d9ef>if</span> (UNLIKELY(needs_locking)) {
+</span></span><span style=display:flex><span>    log_write_mutex_.Unlock();
+</span></span><span style=display:flex><span>  }
+</span></span><span style=display:flex><span>  <span style=color:#66d9ef>if</span> (log_used <span style=color:#f92672>!=</span> <span style=color:#66d9ef>nullptr</span>) {
+</span></span><span style=display:flex><span>    <span style=color:#f92672>*</span>log_used <span style=color:#f92672>=</span> logfile_number_;
+</span></span><span style=display:flex><span>  }
+</span></span><span style=display:flex><span>  total_log_size_ <span style=color:#f92672>+=</span> log_entry.size();
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>  alive_log_files_.back().AddSize(log_entry.size());
+</span></span><span style=display:flex><span>  log_empty_ <span style=color:#f92672>=</span> false;
+</span></span><span style=display:flex><span>  <span style=color:#66d9ef>return</span> status;
+</span></span><span style=display:flex><span>}
+</span></span></code></pre></div><p>重点放在这个 WriteToWAL 函数里的 WriteToWAL 中，在这个函数中核心操作就是把 merged_batch 变成 log_entry 然后调用 log_writer 的 AddRecord 写入。</p><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-c++ data-lang=c++><span style=display:flex><span>Status Writer<span style=color:#f92672>::</span>AddRecord(<span style=color:#66d9ef>const</span> Slice<span style=color:#f92672>&amp;</span> slice) {
+</span></span><span style=display:flex><span>  <span style=color:#66d9ef>const</span> <span style=color:#66d9ef>char</span><span style=color:#f92672>*</span> ptr <span style=color:#f92672>=</span> slice.data();
+</span></span><span style=display:flex><span>  size_t left <span style=color:#f92672>=</span> slice.size();
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>  <span style=color:#66d9ef>const</span> <span style=color:#66d9ef>int</span> header_size <span style=color:#f92672>=</span>
+</span></span><span style=display:flex><span>      recycle_log_files_ <span style=color:#f92672>?</span> kRecyclableHeaderSize : kHeaderSize;
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>  Status s;
+</span></span><span style=display:flex><span>  <span style=color:#66d9ef>bool</span> begin <span style=color:#f92672>=</span> true;
+</span></span><span style=display:flex><span>  <span style=color:#66d9ef>do</span> {
+</span></span><span style=display:flex><span>    <span style=color:#66d9ef>const</span> <span style=color:#66d9ef>int64_t</span> leftover <span style=color:#f92672>=</span> kBlockSize <span style=color:#f92672>-</span> block_offset_;
+</span></span><span style=display:flex><span>    assert(<span style=color:#66d9ef>static_cast</span><span style=color:#f92672>&lt;</span><span style=color:#66d9ef>int64_t</span><span style=color:#f92672>&gt;</span>(kBlockSize <span style=color:#f92672>-</span> block_offset_) <span style=color:#f92672>&gt;=</span> header_size);
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>    <span style=color:#66d9ef>const</span> size_t avail <span style=color:#f92672>=</span> kBlockSize <span style=color:#f92672>-</span> block_offset_ <span style=color:#f92672>-</span> header_size;
+</span></span><span style=display:flex><span>    <span style=color:#66d9ef>const</span> size_t fragment_length <span style=color:#f92672>=</span> (left <span style=color:#f92672>&lt;</span> avail) <span style=color:#f92672>?</span> left : avail;
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>    RecordType type;
+</span></span><span style=display:flex><span>    <span style=color:#66d9ef>const</span> <span style=color:#66d9ef>bool</span> end <span style=color:#f92672>=</span> (left <span style=color:#f92672>==</span> fragment_length);
+</span></span><span style=display:flex><span>    <span style=color:#66d9ef>if</span> (begin <span style=color:#f92672>&amp;&amp;</span> end) {
+</span></span><span style=display:flex><span>      type <span style=color:#f92672>=</span> recycle_log_files_ <span style=color:#f92672>?</span> kRecyclableFullType : kFullType;
+</span></span><span style=display:flex><span>    } <span style=color:#66d9ef>else</span> <span style=color:#a6e22e>if</span> (begin) {
+</span></span><span style=display:flex><span>      type <span style=color:#f92672>=</span> recycle_log_files_ <span style=color:#f92672>?</span> kRecyclableFirstType : kFirstType;
+</span></span><span style=display:flex><span>    } <span style=color:#66d9ef>else</span> <span style=color:#a6e22e>if</span> (end) {
+</span></span><span style=display:flex><span>      type <span style=color:#f92672>=</span> recycle_log_files_ <span style=color:#f92672>?</span> kRecyclableLastType : kLastType;
+</span></span><span style=display:flex><span>    } <span style=color:#66d9ef>else</span> {
+</span></span><span style=display:flex><span>      type <span style=color:#f92672>=</span> recycle_log_files_ <span style=color:#f92672>?</span> kRecyclableMiddleType : kMiddleType;
+</span></span><span style=display:flex><span>    }
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>    s <span style=color:#f92672>=</span> EmitPhysicalRecord(type, ptr, fragment_length);
+</span></span><span style=display:flex><span>    ptr <span style=color:#f92672>+=</span> fragment_length;
+</span></span><span style=display:flex><span>    left <span style=color:#f92672>-=</span> fragment_length;
+</span></span><span style=display:flex><span>    begin <span style=color:#f92672>=</span> false;
+</span></span><span style=display:flex><span>  } <span style=color:#66d9ef>while</span> (s.ok() <span style=color:#f92672>&amp;&amp;</span> left <span style=color:#f92672>&gt;</span> <span style=color:#ae81ff>0</span>);
+</span></span><span style=display:flex><span>  <span style=color:#66d9ef>return</span> s;
+</span></span><span style=display:flex><span>}
+</span></span></code></pre></div><p>AddRecord 函数中先根据预定义好的 BlockSize 和实际和 offset 计算出实际的 fragment 个数和长度，调用 EmitPhysicalRecord 构建 Record 写入 log 中。</p><p>至此 WAL 写入流程结束，回到第一个 WriteToWAL 中，还需要根据情况是否把调用 Sync 强制落盘。</p><h3 id=读取>读取</h3><p>WAL 的读取一般发生在执行 Recover 时候，而 Recover 实在 Open 时候被调用，也就是说打开一个存在的 DB 时候会尝试给所有的 cf 执行一次 Recover 操作，用于重建 cf 的 memtable。</p><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-c++ data-lang=c++><span style=display:flex><span>Status DBImpl<span style=color:#f92672>::</span>Recover(
+</span></span><span style=display:flex><span>    <span style=color:#66d9ef>const</span> std<span style=color:#f92672>::</span>vector<span style=color:#f92672>&lt;</span>ColumnFamilyDescriptor<span style=color:#f92672>&gt;&amp;</span> column_families, <span style=color:#66d9ef>bool</span> read_only,
+</span></span><span style=display:flex><span>    <span style=color:#66d9ef>bool</span> error_if_log_file_exist, <span style=color:#66d9ef>bool</span> error_if_data_exists_in_logs) {
+</span></span><span style=display:flex><span>    ...
+</span></span><span style=display:flex><span>    <span style=color:#66d9ef>if</span> (<span style=color:#f92672>!</span>logs.empty()) {
+</span></span><span style=display:flex><span>      <span style=color:#75715e>// Recover in the order in which the logs were generated
+</span></span></span><span style=display:flex><span><span style=color:#75715e></span>      std<span style=color:#f92672>::</span>sort(logs.begin(), logs.end());
+</span></span><span style=display:flex><span>      s <span style=color:#f92672>=</span> RecoverLogFiles(logs, <span style=color:#f92672>&amp;</span>next_sequence, read_only);
+</span></span><span style=display:flex><span>      <span style=color:#66d9ef>if</span> (<span style=color:#f92672>!</span>s.ok()) {
+</span></span><span style=display:flex><span>        <span style=color:#75715e>// Clear memtables if recovery failed
+</span></span></span><span style=display:flex><span><span style=color:#75715e></span>        <span style=color:#66d9ef>for</span> (<span style=color:#66d9ef>auto</span> cfd : <span style=color:#f92672>*</span>versions_<span style=color:#f92672>-&gt;</span>GetColumnFamilySet()) {
+</span></span><span style=display:flex><span>          cfd<span style=color:#f92672>-&gt;</span>CreateNewMemtable(<span style=color:#f92672>*</span>cfd<span style=color:#f92672>-&gt;</span>GetLatestMutableCFOptions(),
+</span></span><span style=display:flex><span>                                 kMaxSequenceNumber);
+</span></span><span style=display:flex><span>        }
+</span></span><span style=display:flex><span>      }
+</span></span><span style=display:flex><span>    }
+</span></span><span style=display:flex><span>    ...
+</span></span><span style=display:flex><span><span style=color:#960050;background-color:#1e0010>｝</span>
+</span></span></code></pre></div><p>Recover 函数中经过各种检查后，如果存在可用的 log 就会调用 RecoverLogFiles 函数，读取 log 中的 Records 恢复 memtable，如果失败就重建一个空的 memtable。</p><p>RecoverLogFiles 的流程很长，这里先关注 reader.ReadRecord 函数。</p><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-c++ data-lang=c++><span style=display:flex><span><span style=color:#66d9ef>bool</span> Reader<span style=color:#f92672>::</span>ReadRecord(Slice<span style=color:#f92672>*</span> record, std<span style=color:#f92672>::</span>string<span style=color:#f92672>*</span> scratch,
+</span></span><span style=display:flex><span>                        WALRecoveryMode wal_recovery_mode) {
+</span></span><span style=display:flex><span>  scratch<span style=color:#f92672>-&gt;</span>clear();
+</span></span><span style=display:flex><span>  record<span style=color:#f92672>-&gt;</span>clear();
+</span></span><span style=display:flex><span>  <span style=color:#66d9ef>bool</span> in_fragmented_record <span style=color:#f92672>=</span> false;
+</span></span><span style=display:flex><span>  <span style=color:#66d9ef>uint64_t</span> prospective_record_offset <span style=color:#f92672>=</span> <span style=color:#ae81ff>0</span>;
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>  Slice fragment;
+</span></span><span style=display:flex><span>  <span style=color:#66d9ef>while</span> (true) {
+</span></span><span style=display:flex><span>    <span style=color:#66d9ef>uint64_t</span> physical_record_offset <span style=color:#f92672>=</span> end_of_buffer_offset_ <span style=color:#f92672>-</span> buffer_.size();
+</span></span><span style=display:flex><span>    size_t drop_size <span style=color:#f92672>=</span> <span style=color:#ae81ff>0</span>;
+</span></span><span style=display:flex><span>    <span style=color:#66d9ef>const</span> <span style=color:#66d9ef>unsigned</span> <span style=color:#66d9ef>int</span> record_type <span style=color:#f92672>=</span> ReadPhysicalRecord(<span style=color:#f92672>&amp;</span>fragment, <span style=color:#f92672>&amp;</span>drop_size);
+</span></span><span style=display:flex><span>    <span style=color:#66d9ef>switch</span> (record_type) {
+</span></span><span style=display:flex><span>      <span style=color:#66d9ef>case</span> kFullType:
+</span></span><span style=display:flex><span>      <span style=color:#66d9ef>case</span> kRecyclableFullType:
+</span></span><span style=display:flex><span>        prospective_record_offset <span style=color:#f92672>=</span> physical_record_offset;
+</span></span><span style=display:flex><span>        scratch<span style=color:#f92672>-&gt;</span>clear();
+</span></span><span style=display:flex><span>        <span style=color:#f92672>*</span>record <span style=color:#f92672>=</span> fragment;
+</span></span><span style=display:flex><span>        last_record_offset_ <span style=color:#f92672>=</span> prospective_record_offset;
+</span></span><span style=display:flex><span>        <span style=color:#66d9ef>return</span> true;
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>      <span style=color:#66d9ef>case</span> kFirstType:
+</span></span><span style=display:flex><span>      <span style=color:#66d9ef>case</span> kRecyclableFirstType:
+</span></span><span style=display:flex><span>        prospective_record_offset <span style=color:#f92672>=</span> physical_record_offset;
+</span></span><span style=display:flex><span>        scratch<span style=color:#f92672>-&gt;</span>assign(fragment.data(), fragment.size());
+</span></span><span style=display:flex><span>        in_fragmented_record <span style=color:#f92672>=</span> true;
+</span></span><span style=display:flex><span>        <span style=color:#66d9ef>break</span>;
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>      <span style=color:#66d9ef>case</span> kMiddleType:
+</span></span><span style=display:flex><span>      <span style=color:#66d9ef>case</span> kRecyclableMiddleType:
+</span></span><span style=display:flex><span>        scratch<span style=color:#f92672>-&gt;</span>append(fragment.data(), fragment.size());
+</span></span><span style=display:flex><span>        <span style=color:#66d9ef>break</span>;
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>      <span style=color:#66d9ef>case</span> kLastType:
+</span></span><span style=display:flex><span>      <span style=color:#66d9ef>case</span> kRecyclableLastType:
+</span></span><span style=display:flex><span>        scratch<span style=color:#f92672>-&gt;</span>append(fragment.data(), fragment.size());
+</span></span><span style=display:flex><span>        <span style=color:#f92672>*</span>record <span style=color:#f92672>=</span> Slice(<span style=color:#f92672>*</span>scratch);
+</span></span><span style=display:flex><span>        last_record_offset_ <span style=color:#f92672>=</span> prospective_record_offset;
+</span></span><span style=display:flex><span>        <span style=color:#66d9ef>return</span> true;
+</span></span><span style=display:flex><span>        <span style=color:#66d9ef>break</span>;
+</span></span><span style=display:flex><span>      ...
+</span></span><span style=display:flex><span>    }
+</span></span><span style=display:flex><span>  }
+</span></span><span style=display:flex><span>  <span style=color:#66d9ef>return</span> false;
+</span></span><span style=display:flex><span>}
+</span></span></code></pre></div><p>这部分是根据 Record 的 Type 读取一个完整的 Record，在 kFirstType 和 kMiddleType 的时候都把 fragment 暂存在 scratch 中，同时没有 return 而是 break 后继续读取下一个 fragment，直到 <em>kLastType 为止。</em></p><blockquote><p>不同的 wal_recovery_mode 会导致不同情况下的错误，这里省略了这些错误。</p></blockquote><p>ReadPhysicalRecord 函数主要就是根据 Record 格式读取内容，逻辑比较少也比较简单。</p><h2 id=recovery>Recovery</h2><table><thead><tr><th>kTolerateCorruptedTailRecords</th><th>忽略文件末尾的发生的错误，系统无法区分文件末尾的数据损坏和不完全写入</th></tr></thead><tbody><tr><td>kAbsoluteConsistency</td><td>任何 IO 错误都被视为数据损坏，适用于不能接受丢失任何数据，而且有方法恢复未提交的数据</td></tr><tr><td>kSkipAnyCorruptedRecords</td><td>发生 IO 错误时，会停止 recover，系统恢复到一个一致性的时间点上，适用于有从集群可以恢复数据</td></tr><tr><td>kSkipAnyCorruptedRecords</td><td>忽略任何错误，适用于尽可能恢复更多的数据</td></tr></tbody></table><p>这里接着 Reader::ReadRecord 中 switch-case 的异常分支。</p><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-c++ data-lang=c++><span style=display:flex><span><span style=color:#66d9ef>case</span> kBadHeader:
+</span></span><span style=display:flex><span>  <span style=color:#66d9ef>if</span> (wal_recovery_mode <span style=color:#f92672>==</span> WALRecoveryMode<span style=color:#f92672>::</span>kAbsoluteConsistency) {
+</span></span><span style=display:flex><span>    ReportCorruption(drop_size, <span style=color:#e6db74>&#34;truncated header&#34;</span>);
+</span></span><span style=display:flex><span>  }
+</span></span><span style=display:flex><span>  FALLTHROUGH_INTENDED;
+</span></span><span style=display:flex><span><span style=color:#66d9ef>case</span> kEof:
+</span></span><span style=display:flex><span>  <span style=color:#66d9ef>if</span> (in_fragmented_record) {
+</span></span><span style=display:flex><span>    <span style=color:#66d9ef>if</span> (wal_recovery_mode <span style=color:#f92672>==</span> WALRecoveryMode<span style=color:#f92672>::</span>kAbsoluteConsistency) {
+</span></span><span style=display:flex><span>      ReportCorruption(scratch<span style=color:#f92672>-&gt;</span>size(), <span style=color:#e6db74>&#34;error reading trailing data&#34;</span>);
+</span></span><span style=display:flex><span>    }
+</span></span><span style=display:flex><span>    scratch<span style=color:#f92672>-&gt;</span>clear();
+</span></span><span style=display:flex><span>  }
+</span></span><span style=display:flex><span>  <span style=color:#66d9ef>return</span> false;
+</span></span><span style=display:flex><span><span style=color:#66d9ef>case</span> kOldRecord:
+</span></span><span style=display:flex><span>  <span style=color:#66d9ef>if</span> (wal_recovery_mode <span style=color:#f92672>!=</span> WALRecoveryMode<span style=color:#f92672>::</span>kSkipAnyCorruptedRecords) {
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>    <span style=color:#66d9ef>if</span> (in_fragmented_record) {
+</span></span><span style=display:flex><span>      <span style=color:#66d9ef>if</span> (wal_recovery_mode <span style=color:#f92672>==</span> WALRecoveryMode<span style=color:#f92672>::</span>kAbsoluteConsistency) {
+</span></span><span style=display:flex><span>        ReportCorruption(scratch<span style=color:#f92672>-&gt;</span>size(), <span style=color:#e6db74>&#34;error reading trailing data&#34;</span>);
+</span></span><span style=display:flex><span>      }
+</span></span><span style=display:flex><span>      scratch<span style=color:#f92672>-&gt;</span>clear();
+</span></span><span style=display:flex><span>    }
+</span></span><span style=display:flex><span>    <span style=color:#66d9ef>return</span> false;
+</span></span><span style=display:flex><span>  }
+</span></span><span style=display:flex><span>  FALLTHROUGH_INTENDED;
+</span></span><span style=display:flex><span><span style=color:#66d9ef>case</span> kBadRecord:
+</span></span><span style=display:flex><span>  <span style=color:#66d9ef>if</span> (in_fragmented_record) {
+</span></span><span style=display:flex><span>    ReportCorruption(scratch<span style=color:#f92672>-&gt;</span>size(), <span style=color:#e6db74>&#34;error in middle of record&#34;</span>);
+</span></span><span style=display:flex><span>    in_fragmented_record <span style=color:#f92672>=</span> false;
+</span></span><span style=display:flex><span>    scratch<span style=color:#f92672>-&gt;</span>clear();
+</span></span><span style=display:flex><span>  }
+</span></span><span style=display:flex><span>  <span style=color:#66d9ef>break</span>;
+</span></span></code></pre></div><p>可以看出只有当数据真正损坏或者遇到最严格的 kAbsoluteConsistency 的时候才会 report 数据损坏。</p><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-c++ data-lang=c++><span style=display:flex><span>status <span style=color:#f92672>=</span> WriteBatchInternal<span style=color:#f92672>::</span>InsertInto(
+</span></span><span style=display:flex><span>    <span style=color:#f92672>&amp;</span>batch, column_family_memtables_.get(), <span style=color:#f92672>&amp;</span>flush_scheduler_, true,
+</span></span><span style=display:flex><span>    log_number, <span style=color:#66d9ef>this</span>, false <span style=color:#75715e>/* concurrent_memtable_writes */</span>,
+</span></span><span style=display:flex><span>    next_sequence, <span style=color:#f92672>&amp;</span>has_valid_writes, seq_per_batch_, batch_per_txn_);
+</span></span></code></pre></div><p>Reader::ReadRecord 读出一个 Record 以后就可以用 WriteBatchInternal::InsertInto 插入 memtable。</p><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-c++ data-lang=c++><span style=display:flex><span><span style=color:#66d9ef>if</span> (<span style=color:#f92672>!</span>status.ok()) {
+</span></span><span style=display:flex><span>  <span style=color:#66d9ef>if</span> (status.IsNotSupported()) {
+</span></span><span style=display:flex><span>    <span style=color:#66d9ef>return</span> status;
+</span></span><span style=display:flex><span>  }
+</span></span><span style=display:flex><span>  <span style=color:#66d9ef>if</span> (immutable_db_options_.wal_recovery_mode <span style=color:#f92672>==</span>
+</span></span><span style=display:flex><span>      WALRecoveryMode<span style=color:#f92672>::</span>kSkipAnyCorruptedRecords) {
+</span></span><span style=display:flex><span>    <span style=color:#75715e>// We should ignore all errors unconditionally
+</span></span></span><span style=display:flex><span><span style=color:#75715e></span>    status <span style=color:#f92672>=</span> Status<span style=color:#f92672>::</span>OK();
+</span></span><span style=display:flex><span>  } <span style=color:#66d9ef>else</span> <span style=color:#a6e22e>if</span> (immutable_db_options_.wal_recovery_mode <span style=color:#f92672>==</span>
+</span></span><span style=display:flex><span>             WALRecoveryMode<span style=color:#f92672>::</span>kPointInTimeRecovery) {
+</span></span><span style=display:flex><span>    <span style=color:#75715e>// We should ignore the error but not continue replaying
+</span></span></span><span style=display:flex><span><span style=color:#75715e></span>    status <span style=color:#f92672>=</span> Status<span style=color:#f92672>::</span>OK();
+</span></span><span style=display:flex><span>    stop_replay_for_corruption <span style=color:#f92672>=</span> true;
+</span></span><span style=display:flex><span>    corrupted_log_number <span style=color:#f92672>=</span> log_number;
+</span></span><span style=display:flex><span>    ROCKS_LOG_INFO(immutable_db_options_.info_log,
+</span></span><span style=display:flex><span>                   <span style=color:#e6db74>&#34;Point in time recovered to log #%&#34;</span> PRIu64
+</span></span><span style=display:flex><span>                   <span style=color:#e6db74>&#34; seq #%&#34;</span> PRIu64,
+</span></span><span style=display:flex><span>                   log_number, <span style=color:#f92672>*</span>next_sequence);
+</span></span><span style=display:flex><span>  } <span style=color:#66d9ef>else</span> {
+</span></span><span style=display:flex><span>    assert(immutable_db_options_.wal_recovery_mode <span style=color:#f92672>==</span>
+</span></span><span style=display:flex><span>               WALRecoveryMode<span style=color:#f92672>::</span>kTolerateCorruptedTailRecords <span style=color:#f92672>||</span>
+</span></span><span style=display:flex><span>           immutable_db_options_.wal_recovery_mode <span style=color:#f92672>==</span>
+</span></span><span style=display:flex><span>               WALRecoveryMode<span style=color:#f92672>::</span>kAbsoluteConsistency);
+</span></span><span style=display:flex><span>    <span style=color:#66d9ef>return</span> status;
+</span></span><span style=display:flex><span>  }
+</span></span><span style=display:flex><span>}
+</span></span></code></pre></div><p>根据 recovery mode 的定义会接着处理这些插入失败的 Record，可以看出如果是 <em>kSkipAnyCorruptedRecords</em> 就会直接返回 Status::OK()，如果是 kPointInTimeRecovery 就停止回放 WAL同时返回 Status::OK()。</p><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-c++ data-lang=c++><span style=display:flex><span><span style=color:#66d9ef>if</span> (stop_replay_for_corruption <span style=color:#f92672>==</span> true <span style=color:#f92672>&amp;&amp;</span>
+</span></span><span style=display:flex><span>    (immutable_db_options_.wal_recovery_mode <span style=color:#f92672>==</span>
+</span></span><span style=display:flex><span>         WALRecoveryMode<span style=color:#f92672>::</span>kPointInTimeRecovery <span style=color:#f92672>||</span>
+</span></span><span style=display:flex><span>     immutable_db_options_.wal_recovery_mode <span style=color:#f92672>==</span>
+</span></span><span style=display:flex><span>         WALRecoveryMode<span style=color:#f92672>::</span>kTolerateCorruptedTailRecords)) {
+</span></span><span style=display:flex><span>  <span style=color:#66d9ef>for</span> (<span style=color:#66d9ef>auto</span> cfd : <span style=color:#f92672>*</span>versions_<span style=color:#f92672>-&gt;</span>GetColumnFamilySet()) {
+</span></span><span style=display:flex><span>    <span style=color:#66d9ef>if</span> (cfd<span style=color:#f92672>-&gt;</span>GetLogNumber() <span style=color:#f92672>&gt;</span> corrupted_log_number) {
+</span></span><span style=display:flex><span>      ROCKS_LOG_ERROR(immutable_db_options_.info_log,
+</span></span><span style=display:flex><span>                      <span style=color:#e6db74>&#34;Column family inconsistency: SST file contains data&#34;</span>
+</span></span><span style=display:flex><span>                      <span style=color:#e6db74>&#34; beyond the point of corruption.&#34;</span>);
+</span></span><span style=display:flex><span>      <span style=color:#66d9ef>return</span> Status<span style=color:#f92672>::</span>Corruption(<span style=color:#e6db74>&#34;SST file is ahead of WALs&#34;</span>);
+</span></span><span style=display:flex><span>    }
+</span></span><span style=display:flex><span>  }
+</span></span></code></pre></div><p>kPointInTimeRecovery 和 kTolerateCorruptedTailRecords 还需要判断发生损坏的 log 是不是在当前 log 之前，如果是需要打印包含 log 信息的错误日志。</p><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-c++ data-lang=c++><span style=display:flex><span><span style=color:#66d9ef>if</span> (flushed <span style=color:#f92672>||</span> <span style=color:#f92672>!</span>immutable_db_options_.avoid_flush_during_recovery) {
+</span></span><span style=display:flex><span>  status <span style=color:#f92672>=</span> WriteLevel0TableForRecovery(job_id, cfd, cfd<span style=color:#f92672>-&gt;</span>mem(), edit);
+</span></span><span style=display:flex><span>  <span style=color:#66d9ef>if</span> (<span style=color:#f92672>!</span>status.ok()) {
+</span></span><span style=display:flex><span>    <span style=color:#75715e>// Recovery failed
+</span></span></span><span style=display:flex><span><span style=color:#75715e></span>    <span style=color:#66d9ef>break</span>;
+</span></span><span style=display:flex><span>  }
+</span></span><span style=display:flex><span>  flushed <span style=color:#f92672>=</span> true;
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>  cfd<span style=color:#f92672>-&gt;</span>CreateNewMemtable(<span style=color:#f92672>*</span>cfd<span style=color:#f92672>-&gt;</span>GetLatestMutableCFOptions(),
+</span></span><span style=display:flex><span>                         versions_<span style=color:#f92672>-&gt;</span>LastSequence());
+</span></span><span style=display:flex><span>}
+</span></span></code></pre></div><p>如果需要 flush 会调用 WriteLevel0TableForRecovery 把数据刷到 L0，同时修改了 VersionEdit。</p><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-c++ data-lang=c++><span style=display:flex><span>versions_<span style=color:#f92672>-&gt;</span>MarkFileNumberUsed(max_log_number <span style=color:#f92672>+</span> <span style=color:#ae81ff>1</span>);
+</span></span><span style=display:flex><span>status <span style=color:#f92672>=</span> versions_<span style=color:#f92672>-&gt;</span>LogAndApply(cfd, <span style=color:#f92672>*</span>cfd<span style=color:#f92672>-&gt;</span>GetLatestMutableCFOptions(),
+</span></span><span style=display:flex><span>                                edit, <span style=color:#f92672>&amp;</span>mutex_);
+</span></span></code></pre></div><p>最后调用 LogAndApply 把 VersionEdit 持久化到 MANIFEST 完成整个 recover 流程。</p></section><nav class="mt-24 flex rounded-lg bg-black/[3%] text-lg dark:bg-white/[8%]"><a class="flex w-1/2 items-center p-6 pr-3 no-underline" href=http://hexiangyu.me/posts/mvcc-concepts-and-hbase-impl/><span class=mr-1.5>←</span><span>MVCC Concepts and HBase Implementation</span></a>
+<a class="ml-auto flex w-1/2 items-center justify-end p-6 pl-3 no-underline" href=http://hexiangyu.me/posts/cpp-primer-learning/><span>C++ Primer 读书笔记</span><span class=ml-1.5>→</span></a></nav></article></main><footer class="opaco mx-auto flex h-[5rem] max-w-3xl items-center px-8 text-[0.9em] opacity-60"><div class=mr-auto>&copy; 2022
+<a class=link href=http://hexiangyu.me/>正小歪 BLOG</a></div><a class="link mx-6" href=https://gohugo.io/ rel=noopener target=_blank>Powered by Hugo️️</a>️
+<a class=link href=https://github.com/nanxiaobei/hugo-paper rel=noopener target=_blank>▷ Paper 6</a></footer></body></html>
