@@ -1,4 +1,22 @@
-<?xml version="1.0" encoding="utf-8" standalone="yes"?><rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom"><channel><title>Posts on 正小歪 BLOG</title><link>http://hexiangyu.me/posts/</link><description>Recent content in Posts on 正小歪 BLOG</description><generator>Hugo -- gohugo.io</generator><language>en-us</language><lastBuildDate>Tue, 06 Sep 2022 08:00:44 +0800</lastBuildDate><atom:link href="http://hexiangyu.me/posts/index.xml" rel="self" type="application/rss+xml"/><item><title>RocksDB WAL 单写者写入优化</title><link>http://hexiangyu.me/posts/rocksdb-single-write/</link><pubDate>Tue, 06 Sep 2022 08:00:44 +0800</pubDate><guid>http://hexiangyu.me/posts/rocksdb-single-write/</guid><description>背景 由于 WAL 需要有序写入，但是 RocksDB 的 DBImpl::Write 本身又是多线程并发，所以在调用 Write 时候有一个先后顺序的问题，一般的解决办法就是写入一个队列中，然后不断的从队列读取写入 WAL 中，这种方式比较低效，LevelDB 优化成把多个 Write 合并成一个 WriteBatch 写入 WAL 中，其他线程等待完成，RocksDB 使用自旋和自适应的 short-wait 进步一优化，使得 WAL 的写入效率进一步提高。
+<?xml version="1.0" encoding="utf-8" standalone="yes"?><rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom"><channel><title>Posts on 正小歪 BLOG</title><link>http://hexiangyu.me/posts/</link><description>Recent content in Posts on 正小歪 BLOG</description><generator>Hugo -- gohugo.io</generator><language>en-us</language><lastBuildDate>Fri, 11 Nov 2022 09:15:53 +0800</lastBuildDate><atom:link href="http://hexiangyu.me/posts/index.xml" rel="self" type="application/rss+xml"/><item><title>CMU 15-445/645 Lecture 6: Trees Indexes I</title><link>http://hexiangyu.me/posts/cmu-15-445-tree-indexes1/</link><pubDate>Fri, 11 Nov 2022 09:15:53 +0800</pubDate><guid>http://hexiangyu.me/posts/cmu-15-445-tree-indexes1/</guid><description>表索引是表属性子集中的一个副本，负责组织和排序，通过这些属性，可以更有效地访问。DBMS 需要确保表中的内容和索引在逻辑同步。
+DBMS 工作之一就是要找出最佳的索引去执行每一次查询。在实际情况中，索引的数量经常需要做出取舍，如果索引数量过多会有：
+存储数据过大：索引往往需要额外的存储空间
+维护成本过高：更新数据时候索引也要被更新
+在表索引中经常使用的数据结构是 B-Tree，B-Tree 既指的是平衡树一族的数据结构，也是它们当中的一个数据结构，B-Tree 一族包括：
+B-Tree(1971)
+B+Tree(1973)
+B*Tree(1977)
+B-Link-Tree(1981)
+B+Tree 是自平衡树，总是保持数据的有序性，方便查找和顺序访问，插入和删除的时间复杂度都是 O(log n)。
+二分查找树的更通用形式，node 上可以拥有两个以上的节点
+为大量读取读写数据的系统进行了优化
+虽然这种数据结构是为了慢速硬盘和内存设计的数据结构，但是即使放在现在有更快的硬件加持下，也是最好的选择之一。
+B+Tree 是一棵多路查找树，意味着它一个叶子节点可以被多条路径找到，拥有如下性质：
+完美的平衡（例如，叶子节点总是保持一样的高度）
+除了根节点外，至少要保持半满状态，M/2-1 &amp;lt;= #key &amp;lt;= M-1
+每个内部节点有 k 个 key，就会有 k+1 个非空子节点
+在 B+ Tree 中节点分为 inner node、leaf node，leadf nodes 使用双向链表链接。inner node 结构为 &amp;lt;node*&amp;gt; | ，这里的 node 指针指向下一层的 node，如果没有可能是 null；leaf node 结构与 inner node 不同，组织形式为 | ，value 可以是具体的值也可以是某些 ID。
+B+ 树 node 本质就是一个 kv 对组成的数组，value 在 inner node 和 leaf node 上有不同的表现形式，node 组成的数组经常按照有序的方式排列，方便顺序查找。</description></item><item><title>RocksDB WAL 单写者写入优化</title><link>http://hexiangyu.me/posts/rocksdb-single-write/</link><pubDate>Tue, 06 Sep 2022 08:00:44 +0800</pubDate><guid>http://hexiangyu.me/posts/rocksdb-single-write/</guid><description>背景 由于 WAL 需要有序写入，但是 RocksDB 的 DBImpl::Write 本身又是多线程并发，所以在调用 Write 时候有一个先后顺序的问题，一般的解决办法就是写入一个队列中，然后不断的从队列读取写入 WAL 中，这种方式比较低效，LevelDB 优化成把多个 Write 合并成一个 WriteBatch 写入 WAL 中，其他线程等待完成，RocksDB 使用自旋和自适应的 short-wait 进步一优化，使得 WAL 的写入效率进一步提高。
 LevelDB 实现 LevelDB 对这种情况做了一个简单优化，每次只有队头是真正的处理线程，对头会把队列中的其他待写入的内容合并成一个 WriteBatch 一次性写入 WAL 中，同时非对头线程会被 pthread_cond_wait 阻塞住，等待对头线程完成。
 MutexLock l(&amp;amp;mutex_); writers_.push_back(&amp;amp;w); while (!w.done &amp;amp;&amp;amp; &amp;amp;w != writers_.front()) { w.cv.Wait(); } if (w.done) { return w.status; } 完成了以后非队头只需要判断一下状态就可以返回了，这么一看确实提升了不少效率，每次 IO 对一个单点写入的来说都是比较重的操作，合并成一次写入极大解决的耗在 IO 的时间。
 pthread_cond_wait 存在的问题 虽然解决了 IO 的耗时，但是非队头线程会在各自的线程中 pthread_cond_wait 等待对头完成。几乎当前主流平台的 condition variable 都有虚假唤醒 （Spurious wakeup） 的问题，同样基于 futex 实现的 pthread_cond_wait 也有这个问题。</description></item><item><title>MVCC Concepts and HBase Implementation</title><link>http://hexiangyu.me/posts/mvcc-concepts-and-hbase-impl/</link><pubDate>Sun, 10 Jul 2022 22:27:56 +0000</pubDate><guid>http://hexiangyu.me/posts/mvcc-concepts-and-hbase-impl/</guid><description>Multi-Version Concurrency Control 包含两个部分：

@@ -4,7 +4,7 @@
 简介
 并发编程允许开发者使用多个执行者去解决问题，这么做通常可以提高性能。并发并不意味着多个执行者同时运行，意味着执行的顺序从有序变成无序。在过去这种编程方法（并发编程）一般是由标准库或者第三方开发者为主导。
 在 Go 中类似 Gotoutines 和 channels 的并发特性都是集成语言中同时减少乃至移除了对库的依赖，这就造成了在 Go 中写并发编程很容易的错觉。在决定使用并发的时候还是需要谨慎，如果没有正确的使用还是会带来一些特别的副作用和陷阱。如果你不小心，这些陷阱会产生复杂和令人厌恶的错误。"><meta name=author content><link rel="preload stylesheet" as=style href=http://hexiangyu.me/main.min.css><script defer src=http://hexiangyu.me/highlight.min.js onload=hljs.initHighlightingOnLoad()></script>
-<link rel=preload as=image href=http://hexiangyu.me/theme.png><link rel=icon href=http://hexiangyu.me/favicon.ico><link rel=apple-touch-icon href=http://hexiangyu.me/apple-touch-icon.png><meta name=generator content="Hugo 0.102.3"><meta property="og:title" content="「译」Goroutine 泄露——被遗忘的发送者"><meta property="og:description" content="
+<link rel=preload as=image href=http://hexiangyu.me/theme.png><link rel=icon href=http://hexiangyu.me/favicon.ico><link rel=apple-touch-icon href=http://hexiangyu.me/apple-touch-icon.png><meta name=generator content="Hugo 0.105.0"><meta property="og:title" content="「译」Goroutine 泄露——被遗忘的发送者"><meta property="og:description" content="
 原文地址
 
 简介

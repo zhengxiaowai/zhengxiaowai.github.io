@@ -5,7 +5,7 @@ int array[50] = {}; for(int i = 0; i < 100; i++) { if(0 == i % 2) array[i] = i; 
 Python也有这种土逼的写法，当然也有更牛逼的写法，你可以这样写：
 [i for i in xrange(100) if (i % 2) is 0] Python的enmuerate内建函数十分有用，不仅能取元素还可以取序号
 >>> l = ['a', 'b', 'c', 'd'] >>> for i, e in enumerate(l): ... print &#34;{0} : {1}&#34;.format(i,e) ... 0 : a 1 : b 2 : c 3 : d >>> 结合列表推导，可以写出很简洁的代码："><meta name=author content><link rel="preload stylesheet" as=style href=http://hexiangyu.me/main.min.css><script defer src=http://hexiangyu.me/highlight.min.js onload=hljs.initHighlightingOnLoad()></script>
-<link rel=preload as=image href=http://hexiangyu.me/theme.png><link rel=icon href=http://hexiangyu.me/favicon.ico><link rel=apple-touch-icon href=http://hexiangyu.me/apple-touch-icon.png><meta name=generator content="Hugo 0.102.3"><meta property="og:title" content="《Python 高级编程》读书笔记"><meta property="og:description" content="列表推导 在Python中总是要透着一种极简主义，这样才能显示出Python牛逼哄哄。所以Python语法中总是能写的短就写的短，这是Python的精髓。
+<link rel=preload as=image href=http://hexiangyu.me/theme.png><link rel=icon href=http://hexiangyu.me/favicon.ico><link rel=apple-touch-icon href=http://hexiangyu.me/apple-touch-icon.png><meta name=generator content="Hugo 0.105.0"><meta property="og:title" content="《Python 高级编程》读书笔记"><meta property="og:description" content="列表推导 在Python中总是要透着一种极简主义，这样才能显示出Python牛逼哄哄。所以Python语法中总是能写的短就写的短，这是Python的精髓。
 列表推导就是为了简化列表生成，换一种说法就是用一行代码生成复杂的列表。
 在C语言中你要生成一个0~100中偶数构成的数组你只能这么写：
 int array[50] = {}; for(int i = 0; i < 100; i++) { if(0 == i % 2) array[i] = i; } 一共用了5行，当然更多时候是6行。
