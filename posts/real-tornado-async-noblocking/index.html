@@ -1,21 +1,21 @@
 <!doctype html><html class="not-ready text-sm lg:text-base" style=--bg:#faf6f1 lang=en-us><head><meta charset=utf-8><meta http-equiv=x-ua-compatible content="IE=edge"><meta name=viewport content="width=device-width,initial-scale=1,shrink-to-fit=no"><title>真正的 Tornado 异步非阻塞 - 正小歪 BLOG</title><meta name=theme-color><meta name=description content="其中 Tornado 的定义是 Web 框架和异步网络库，其中他具备有异步非阻塞能力，能解决他两个框架请求阻塞的问题，在需要并发能力时候就应该使用 Tornado。
 但是在实际使用过程中很容易把 Tornado 使用成异步阻塞框架，这样对比其他两大框架没有任何优势而言，本文就如何实现真正的异步非阻塞记录。"><meta name=author content><link rel="preload stylesheet" as=style href=http://hexiangyu.me/main.min.css><script defer src=http://hexiangyu.me/highlight.min.js onload=hljs.initHighlightingOnLoad()></script>
-<link rel=preload as=image href=http://hexiangyu.me/theme.png><link rel=icon href=http://hexiangyu.me/favicon.ico><link rel=apple-touch-icon href=http://hexiangyu.me/apple-touch-icon.png><meta name=generator content="Hugo 0.105.0"><meta property="og:title" content="真正的 Tornado 异步非阻塞"><meta property="og:description" content="其中 Tornado 的定义是 Web 框架和异步网络库，其中他具备有异步非阻塞能力，能解决他两个框架请求阻塞的问题，在需要并发能力时候就应该使用 Tornado。
+<link rel=preload as=image href=http://hexiangyu.me/theme.png><link rel=icon href=http://hexiangyu.me/favicon.ico><link rel=apple-touch-icon href=http://hexiangyu.me/apple-touch-icon.png><meta name=generator content="Hugo 0.107.0"><meta property="og:title" content="真正的 Tornado 异步非阻塞"><meta property="og:description" content="其中 Tornado 的定义是 Web 框架和异步网络库，其中他具备有异步非阻塞能力，能解决他两个框架请求阻塞的问题，在需要并发能力时候就应该使用 Tornado。
 但是在实际使用过程中很容易把 Tornado 使用成异步阻塞框架，这样对比其他两大框架没有任何优势而言，本文就如何实现真正的异步非阻塞记录。"><meta property="og:type" content="article"><meta property="og:url" content="http://hexiangyu.me/posts/real-tornado-async-noblocking/"><meta property="article:section" content="posts"><meta property="article:published_time" content="2017-01-29T16:26:41+00:00"><meta property="article:modified_time" content="2017-01-29T16:26:41+00:00"><meta itemprop=name content="真正的 Tornado 异步非阻塞"><meta itemprop=description content="其中 Tornado 的定义是 Web 框架和异步网络库，其中他具备有异步非阻塞能力，能解决他两个框架请求阻塞的问题，在需要并发能力时候就应该使用 Tornado。
 但是在实际使用过程中很容易把 Tornado 使用成异步阻塞框架，这样对比其他两大框架没有任何优势而言，本文就如何实现真正的异步非阻塞记录。"><meta itemprop=datePublished content="2017-01-29T16:26:41+00:00"><meta itemprop=dateModified content="2017-01-29T16:26:41+00:00"><meta itemprop=wordCount content="480"><meta itemprop=keywords content><meta name=twitter:card content="summary"><meta name=twitter:title content="真正的 Tornado 异步非阻塞"><meta name=twitter:description content="其中 Tornado 的定义是 Web 框架和异步网络库，其中他具备有异步非阻塞能力，能解决他两个框架请求阻塞的问题，在需要并发能力时候就应该使用 Tornado。
 但是在实际使用过程中很容易把 Tornado 使用成异步阻塞框架，这样对比其他两大框架没有任何优势而言，本文就如何实现真正的异步非阻塞记录。"></head><body class="text-black duration-200 ease-out dark:text-white"><header class="mx-auto flex h-[5rem] max-w-3xl px-8 lg:justify-center"><div class="relative z-50 mr-auto flex items-center"><a class="-translate-x-[1px] -translate-y-0.5 text-3xl font-bold" href=http://hexiangyu.me/>正小歪 BLOG</a>
 <a class="btn-dark ml-6 h-6 w-6 shrink-0 cursor-pointer [background:url(./theme.png)_left_center/_auto_theme('spacing.6')_no-repeat] [transition:_background-position_0.4s_steps(5)] dark:[background-position:right]"></a></div><a class="btn-menu relative z-50 -mr-8 flex h-[5rem] w-[5rem] shrink-0 cursor-pointer flex-col items-center justify-center gap-2.5 lg:hidden"></a>
 <script>const htmlClass=document.documentElement.classList;setTimeout(()=>{htmlClass.remove("not-ready")},10);const btnMenu=document.querySelector(".btn-menu");btnMenu.addEventListener("click",()=>{htmlClass.toggle("open")});const metaTheme=document.querySelector('meta[name="theme-color"]'),lightBg=`"#faf6f1"`.replace(/"/g,""),setDark=e=>{metaTheme.setAttribute("content",e?"#000":lightBg),htmlClass[e?"add":"remove"]("dark"),localStorage.setItem("dark",e)},darkScheme=window.matchMedia("(prefers-color-scheme: dark)"),darkVal=localStorage.getItem("dark");setDark(darkVal?darkVal==="true":darkScheme.matches),darkScheme.addEventListener("change",e=>{setDark(e.matches)});const btnDark=document.querySelector(".btn-dark");btnDark.addEventListener("click",()=>{setDark(localStorage.getItem("dark")!=="true")})</script><div class="nav-wrapper fixed inset-x-0 top-full z-40 flex h-full select-none flex-col justify-center pb-16 duration-200 dark:bg-black lg:static lg:h-auto lg:flex-row lg:!bg-transparent lg:pb-0 lg:transition-none"></div></header><main class="prose prose-neutral relative mx-auto min-h-[calc(100%-10rem)] max-w-3xl px-8 pt-20 pb-32 dark:prose-invert"><article><header class=mb-20><h1 class="!my-0 pb-2.5">真正的 Tornado 异步非阻塞</h1><div class="text-sm opacity-60"><time>Jan 29, 2017</time></div></header><section><p>其中 <strong>Tornado</strong> 的定义是 Web 框架和异步网络库，其中他具备有异步非阻塞能力，能解决他两个框架请求阻塞的问题，在需要并发能力时候就应该使用 <strong>Tornado</strong>。</p><p>但是在实际使用过程中很容易把 <strong>Tornado</strong> 使用成异步阻塞框架，这样对比其他两大框架没有任何优势而言，本文就如何实现真正的异步非阻塞记录。</p><blockquote><p>以下使用的 Python 版本为 2.7.13</p><p>平台为 Macbook Pro 2016</p></blockquote><h2 id=使用-gencoroutine-异步编程>使用 gen.coroutine 异步编程</h2><p>在 Tornado 中两个装饰器：</p><ul><li>tornado.web.asynchronous</li><li>tornado.gen.coroutine</li></ul><p>asynchronous 装饰器是让请求变成长连接的方式，必须手动调用 <code>self.finish()</code> 才会响应</p><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-python data-lang=python><span style=display:flex><span><span style=color:#66d9ef>class</span> <span style=color:#a6e22e>MainHandler</span>(tornado<span style=color:#f92672>.</span>web<span style=color:#f92672>.</span>RequestHandler):
-</span></span><span style=display:flex><span>    <span style=color:#a6e22e>@tornado</span><span style=color:#f92672>.</span>web<span style=color:#f92672>.</span>asynchronous
+</span></span><span style=display:flex><span>    <span style=color:#a6e22e>@tornado.web.asynchronous</span>
 </span></span><span style=display:flex><span>    <span style=color:#66d9ef>def</span> <span style=color:#a6e22e>get</span>(self):
 </span></span><span style=display:flex><span>        <span style=color:#75715e># bad </span>
 </span></span><span style=display:flex><span>        self<span style=color:#f92672>.</span>write(<span style=color:#e6db74>&#34;Hello, world&#34;</span>)
 </span></span></code></pre></div><p>asynchronous 装饰器不会自动调用<code>self.finish()</code> ，如果没有没有指定结束，该长连接会一直保持直到 pending 状态。</p><p><img src=https://static.zhengxiaowai.cc/ipic/2017-01-24-160529.jpg alt=peding></p><p>所以正确是使用方式是使用了 asynchronous 需要手动 finish</p><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-python data-lang=python><span style=display:flex><span><span style=color:#66d9ef>class</span> <span style=color:#a6e22e>MainHandler</span>(tornado<span style=color:#f92672>.</span>web<span style=color:#f92672>.</span>RequestHandler):
-</span></span><span style=display:flex><span>    <span style=color:#a6e22e>@tornado</span><span style=color:#f92672>.</span>web<span style=color:#f92672>.</span>asynchronous
+</span></span><span style=display:flex><span>    <span style=color:#a6e22e>@tornado.web.asynchronous</span>
 </span></span><span style=display:flex><span>    <span style=color:#66d9ef>def</span> <span style=color:#a6e22e>get</span>(self):
 </span></span><span style=display:flex><span>        self<span style=color:#f92672>.</span>write(<span style=color:#e6db74>&#34;Hello, world&#34;</span>)
 </span></span><span style=display:flex><span>        self<span style=color:#f92672>.</span>finish()
-</span></span></code></pre></div><p>coroutine 装饰器是指定改请求为协程模式，说明白点就是能使用 <code>yield</code> 配合 Tornado 编写异步程序。</p><p>Tronado 为协程实现了一套自己的协议，不能使用 Python 普通的生成器。</p><p>在使用协程模式编程之前要知道如何编写 Tornado 中的异步函数，Tornado 提供了多种的异步编写形式：回调、Future、协程等，其中以协程模式最是简单和用的最多。</p><p>编写一个基于协程的异步函数同样需要 coroutine 装饰器</p><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-python data-lang=python><span style=display:flex><span><span style=color:#a6e22e>@gen</span><span style=color:#f92672>.</span>coroutine
+</span></span></code></pre></div><p>coroutine 装饰器是指定改请求为协程模式，说明白点就是能使用 <code>yield</code> 配合 Tornado 编写异步程序。</p><p>Tronado 为协程实现了一套自己的协议，不能使用 Python 普通的生成器。</p><p>在使用协程模式编程之前要知道如何编写 Tornado 中的异步函数，Tornado 提供了多种的异步编写形式：回调、Future、协程等，其中以协程模式最是简单和用的最多。</p><p>编写一个基于协程的异步函数同样需要 coroutine 装饰器</p><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-python data-lang=python><span style=display:flex><span><span style=color:#a6e22e>@gen.coroutine</span>
 </span></span><span style=display:flex><span><span style=color:#66d9ef>def</span> <span style=color:#a6e22e>sleep</span>(self):
 </span></span><span style=display:flex><span>    <span style=color:#66d9ef>yield</span> gen<span style=color:#f92672>.</span>sleep(<span style=color:#ae81ff>10</span>)
 </span></span><span style=display:flex><span>    <span style=color:#66d9ef>raise</span> gen<span style=color:#f92672>.</span>Return([<span style=color:#ae81ff>1</span>, <span style=color:#ae81ff>2</span>, <span style=color:#ae81ff>3</span>, <span style=color:#ae81ff>4</span>, <span style=color:#ae81ff>5</span>])
@@ -29,14 +29,14 @@
 </span></span><span style=display:flex><span>tornado<span style=color:#f92672>.</span>options<span style=color:#f92672>.</span>parse_command_line()
 </span></span><span style=display:flex><span>
 </span></span><span style=display:flex><span><span style=color:#66d9ef>class</span> <span style=color:#a6e22e>MainHandler</span>(tornado<span style=color:#f92672>.</span>web<span style=color:#f92672>.</span>RequestHandler):
-</span></span><span style=display:flex><span>    <span style=color:#a6e22e>@tornado</span><span style=color:#f92672>.</span>web<span style=color:#f92672>.</span>asynchronous
+</span></span><span style=display:flex><span>    <span style=color:#a6e22e>@tornado.web.asynchronous</span>
 </span></span><span style=display:flex><span>    <span style=color:#66d9ef>def</span> <span style=color:#a6e22e>get</span>(self):
 </span></span><span style=display:flex><span>        self<span style=color:#f92672>.</span>write(<span style=color:#e6db74>&#34;Hello, world&#34;</span>)
 </span></span><span style=display:flex><span>        self<span style=color:#f92672>.</span>finish()
 </span></span><span style=display:flex><span>
 </span></span><span style=display:flex><span>
 </span></span><span style=display:flex><span><span style=color:#66d9ef>class</span> <span style=color:#a6e22e>NoBlockingHnadler</span>(tornado<span style=color:#f92672>.</span>web<span style=color:#f92672>.</span>RequestHandler):
-</span></span><span style=display:flex><span>    <span style=color:#a6e22e>@gen</span><span style=color:#f92672>.</span>coroutine
+</span></span><span style=display:flex><span>    <span style=color:#a6e22e>@gen.coroutine</span>
 </span></span><span style=display:flex><span>    <span style=color:#66d9ef>def</span> <span style=color:#a6e22e>get</span>(self):
 </span></span><span style=display:flex><span>        <span style=color:#66d9ef>yield</span> gen<span style=color:#f92672>.</span>sleep(<span style=color:#ae81ff>10</span>)
 </span></span><span style=display:flex><span>        self<span style=color:#f92672>.</span>write(<span style=color:#e6db74>&#39;Blocking Request&#39;</span>)
@@ -70,7 +70,7 @@
 </span></span><span style=display:flex><span>tornado<span style=color:#f92672>.</span>options<span style=color:#f92672>.</span>parse_command_line()
 </span></span><span style=display:flex><span>
 </span></span><span style=display:flex><span><span style=color:#66d9ef>class</span> <span style=color:#a6e22e>MainHandler</span>(tornado<span style=color:#f92672>.</span>web<span style=color:#f92672>.</span>RequestHandler):
-</span></span><span style=display:flex><span>    <span style=color:#a6e22e>@tornado</span><span style=color:#f92672>.</span>web<span style=color:#f92672>.</span>asynchronous
+</span></span><span style=display:flex><span>    <span style=color:#a6e22e>@tornado.web.asynchronous</span>
 </span></span><span style=display:flex><span>    <span style=color:#66d9ef>def</span> <span style=color:#a6e22e>get</span>(self):
 </span></span><span style=display:flex><span>        self<span style=color:#f92672>.</span>write(<span style=color:#e6db74>&#34;Hello, world&#34;</span>)
 </span></span><span style=display:flex><span>        self<span style=color:#f92672>.</span>finish()
@@ -84,7 +84,7 @@
 </span></span><span style=display:flex><span>        time<span style=color:#f92672>.</span>sleep(second)
 </span></span><span style=display:flex><span>        <span style=color:#66d9ef>return</span> second
 </span></span><span style=display:flex><span>    
-</span></span><span style=display:flex><span>    <span style=color:#a6e22e>@gen</span><span style=color:#f92672>.</span>coroutine
+</span></span><span style=display:flex><span>    <span style=color:#a6e22e>@gen.coroutine</span>
 </span></span><span style=display:flex><span>    <span style=color:#66d9ef>def</span> <span style=color:#a6e22e>get</span>(self):
 </span></span><span style=display:flex><span>        second <span style=color:#f92672>=</span> <span style=color:#66d9ef>yield</span> self<span style=color:#f92672>.</span>sleep(<span style=color:#ae81ff>5</span>)
 </span></span><span style=display:flex><span>        self<span style=color:#f92672>.</span>write(<span style=color:#e6db74>&#39;noBlocking Request: </span><span style=color:#e6db74>{}</span><span style=color:#e6db74>&#39;</span><span style=color:#f92672>.</span>format(second))
@@ -113,14 +113,14 @@
 </span></span><span style=display:flex><span>
 </span></span><span style=display:flex><span>
 </span></span><span style=display:flex><span><span style=color:#66d9ef>class</span> <span style=color:#a6e22e>MainHandler</span>(tornado<span style=color:#f92672>.</span>web<span style=color:#f92672>.</span>RequestHandler):
-</span></span><span style=display:flex><span>    <span style=color:#a6e22e>@tornado</span><span style=color:#f92672>.</span>web<span style=color:#f92672>.</span>asynchronous
+</span></span><span style=display:flex><span>    <span style=color:#a6e22e>@tornado.web.asynchronous</span>
 </span></span><span style=display:flex><span>    <span style=color:#66d9ef>def</span> <span style=color:#a6e22e>get</span>(self):
 </span></span><span style=display:flex><span>        self<span style=color:#f92672>.</span>write(<span style=color:#e6db74>&#34;Hello, world&#34;</span>)
 </span></span><span style=display:flex><span>        self<span style=color:#f92672>.</span>finish()
 </span></span><span style=display:flex><span>
 </span></span><span style=display:flex><span>
 </span></span><span style=display:flex><span><span style=color:#66d9ef>class</span> <span style=color:#a6e22e>CeleryHandler</span>(tornado<span style=color:#f92672>.</span>web<span style=color:#f92672>.</span>RequestHandler):
-</span></span><span style=display:flex><span>    <span style=color:#a6e22e>@gen</span><span style=color:#f92672>.</span>coroutine
+</span></span><span style=display:flex><span>    <span style=color:#a6e22e>@gen.coroutine</span>
 </span></span><span style=display:flex><span>    <span style=color:#66d9ef>def</span> <span style=color:#a6e22e>get</span>(self):
 </span></span><span style=display:flex><span>        response <span style=color:#f92672>=</span> <span style=color:#66d9ef>yield</span> gen<span style=color:#f92672>.</span>Task(tasks<span style=color:#f92672>.</span>sleep<span style=color:#f92672>.</span>apply_async, args<span style=color:#f92672>=</span>[<span style=color:#ae81ff>5</span>])
 </span></span><span style=display:flex><span>        self<span style=color:#f92672>.</span>write(<span style=color:#e6db74>&#39;CeleryBlocking Request: </span><span style=color:#e6db74>{}</span><span style=color:#e6db74>&#39;</span><span style=color:#f92672>.</span>format(response<span style=color:#f92672>.</span>result))
@@ -144,7 +144,7 @@
 </span></span><span style=display:flex><span>celery <span style=color:#f92672>=</span> Celery(<span style=color:#e6db74>&#34;tasks&#34;</span>, broker<span style=color:#f92672>=</span><span style=color:#e6db74>&#34;amqp://&#34;</span>)
 </span></span><span style=display:flex><span>celery<span style=color:#f92672>.</span>conf<span style=color:#f92672>.</span>CELERY_RESULT_BACKEND <span style=color:#f92672>=</span> os<span style=color:#f92672>.</span>environ<span style=color:#f92672>.</span>get(<span style=color:#e6db74>&#39;CELERY_RESULT_BACKEND&#39;</span>, <span style=color:#e6db74>&#39;amqp&#39;</span>)
 </span></span><span style=display:flex><span>
-</span></span><span style=display:flex><span><span style=color:#a6e22e>@celery</span><span style=color:#f92672>.</span>task
+</span></span><span style=display:flex><span><span style=color:#a6e22e>@celery.task</span>
 </span></span><span style=display:flex><span><span style=color:#66d9ef>def</span> <span style=color:#a6e22e>sleep</span>(seconds):
 </span></span><span style=display:flex><span>    time<span style=color:#f92672>.</span>sleep(float(seconds))
 </span></span><span style=display:flex><span>    <span style=color:#66d9ef>return</span> seconds
